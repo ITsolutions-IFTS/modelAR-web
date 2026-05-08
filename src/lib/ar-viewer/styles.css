@@ -1,0 +1,178 @@
+/* ============================================================
+   AR VIEWER — src/lib/ar-viewer
+   ============================================================ */
+
+/* Wrapper externo para encuadrar el viewer en las páginas */
+.ar-viewer-wrap {
+  border-radius: var(--r-lg, 18px);
+  overflow: hidden;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.07));
+  box-shadow: var(--shadow-lg, 0 8px 40px rgba(0, 0, 0, 0.55));
+  background: #080c12;
+  height: 100%;
+}
+
+/* Root de ARViewer */
+.ar-viewer {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Overlay de carga */
+.ar-viewer__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans, system-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: rgba(240, 242, 245, 0.55);
+  background: rgba(8, 12, 18, 0.8);
+  z-index: 10;
+  animation: ar-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes ar-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* Descripción debajo del viewer */
+.ar-viewer__description {
+  padding: 0.6rem 1rem;
+  font-family: var(--font-sans, system-ui);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: rgba(240, 242, 245, 0.5);
+  background: rgba(8, 12, 18, 0.6);
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.07));
+  text-align: center;
+}
+
+/* Botón toggle model-viewer ↔ ThreeARSurface */
+.ar-viewer__toggle {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: rgba(13, 18, 28, 0.9);
+  color: rgba(240, 242, 245, 0.65);
+  border: none;
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.07));
+  font-family: var(--font-sans, system-ui);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 180ms, color 180ms;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  flex-shrink: 0;
+}
+
+.ar-viewer__toggle:hover {
+  background: rgba(26, 33, 48, 0.95);
+  color: var(--accent, #9bf00b);
+}
+
+/* Label dentro de la sesión AR */
+.ar-viewer__scene-label {
+  position: fixed;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  color: #f0f2f5;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-family: var(--font-sans, system-ui);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 88vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ---- ThreeARSurface ------------------------------------------------------- */
+
+.three-ar-shell {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, #0f1824 0%, #080c12 75%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Canvas de Three.js — ocupa todo el contenedor */
+.three-ar-host {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.three-ar-host canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Botón "Iniciar AR precisa" inyectado por ARButton */
+.three-ar-launch {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 5;
+}
+
+/* Barra de estado */
+.three-ar-status {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.07));
+  color: rgba(240, 242, 245, 0.45);
+  font-family: var(--font-sans, system-ui);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  background: rgba(8, 12, 18, 0.7);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  flex-shrink: 0;
+}
+
+/* Label del modelo dentro del canvas */
+.three-ar-label {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f0f2f5;
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  font-family: var(--font-sans, system-ui);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 88%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
