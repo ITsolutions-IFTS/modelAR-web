@@ -1,7 +1,7 @@
-/// <reference path="./model-viewer.d.ts" />
 import { useEffect, useState, useRef, useCallback } from 'react'
 import '@google/model-viewer'
 import type { ARViewerProps, ARTrackingStatus } from './types'
+import './model-viewer'
 import { ThreeARSurface } from './ThreeARSurface'
 import './styles.css'
 
