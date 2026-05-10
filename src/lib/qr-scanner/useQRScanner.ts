@@ -19,10 +19,10 @@ export interface UseQRScannerReturn {
   stop: () => void
 }
 
-export function useQRScanner(
+export const useQRScanner = (
   videoRef: React.RefObject<HTMLVideoElement | null>,
   { onResult, onError }: UseQRScannerOptions,
-): UseQRScannerReturn {
+): UseQRScannerReturn => {
   const [status, setStatus] = useState<QRScannerStatus>('idle')
   const [lastResult, setLastResult] = useState<string | null>(null)
   const controlsRef = useRef<{ stop: () => void } | null>(null)
@@ -77,7 +77,7 @@ export function useQRScanner(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function stop() {
+  const stop = () => {
     controlsRef.current?.stop()
     controlsRef.current = null
     setStatus('idle')

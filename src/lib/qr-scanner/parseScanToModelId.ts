@@ -6,7 +6,7 @@
  *   - URL con path:        "https://.../ar/abc123"
  *   - URL con query param: "https://...?id=abc123"
  */
-export function parseScanToModelId(scan: string): string | null {
+export const parseScanToModelId = (scan: string): string | null => {
   const text = scan.trim()
   if (!text) return null
 
