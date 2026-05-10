@@ -23,13 +23,13 @@ const SKETCHFAB_BASE = 'https://api.sketchfab.com/v3'
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? SKETCHFAB_BASE
 const USE_PROXY = !!import.meta.env.VITE_API_BASE_URL
 
-function getHeaders(): HeadersInit {
+const getHeaders = (): HeadersInit => {
   if (USE_PROXY) return {}
   const key = import.meta.env.VITE_SKETCHFAB_API_KEY as string | undefined
   return key ? { Authorization: `Token ${key}` } : {}
 }
 
-export async function searchModels(params: SketchfabSearchParams): Promise<SketchfabSearchResult> {
+export const searchModels = async (params: SketchfabSearchParams): Promise<SketchfabSearchResult> => {
   const { keyword, count = 24, cursor, categories } = params
   const query = new URLSearchParams()
   query.set('downloadable', 'true')
@@ -47,7 +47,7 @@ export async function searchModels(params: SketchfabSearchParams): Promise<Sketc
   return res.json() as Promise<SketchfabSearchResult>
 }
 
-export async function getModel(uid: string): Promise<SketchfabModel> {
+export const getModel = async (uid: string): Promise<SketchfabModel> => {
   const res = await fetch(`${API_BASE}/models/${encodeURIComponent(uid)}`, {
     headers: getHeaders(),
   })
@@ -60,7 +60,7 @@ export async function getModel(uid: string): Promise<SketchfabModel> {
  * Las URLs de descarga de Sketchfab son time-limited (expiran en minutos),
  * así que NO se cachean — siempre se piden frescas.
  */
-export async function getDownloadUrl(uid: string): Promise<string> {
+export const getDownloadUrl = async (uid: string): Promise<string> => {
   const res = await fetch(`${API_BASE}/models/${encodeURIComponent(uid)}/download`, {
     headers: getHeaders(),
     cache: 'no-store',
