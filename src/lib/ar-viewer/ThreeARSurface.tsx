@@ -7,7 +7,7 @@ import type { ThreeARSurfaceProps, ARTrackingStatus } from './types'
 
 // ---- Helpers puros -----------------------------------------------------------
 
-function parseScale(scaleText?: string): [number, number, number] {
+const parseScale = (scaleText?: string): [number, number, number] => {
   const parts = `${scaleText ?? '1 1 1'}`
     .trim()
     .split(/\s+/)
@@ -17,7 +17,7 @@ function parseScale(scaleText?: string): [number, number, number] {
 }
 
 /** Centra el modelo en X/Z y lo pisa en Y=0 para que quede apoyado en el suelo */
-function normalizeModelForPlacement(model: THREE.Object3D): void {
+const normalizeModelForPlacement = (model: THREE.Object3D): void => {
   const box = new THREE.Box3().setFromObject(model)
   if (box.isEmpty()) return
   const center = new THREE.Vector3()
@@ -28,7 +28,7 @@ function normalizeModelForPlacement(model: THREE.Object3D): void {
 }
 
 /** Modelo de fallback cuando el GLB no carga */
-function createFallbackModel(): THREE.Group {
+const createFallbackModel = (): THREE.Group => {
   const group = new THREE.Group()
   const base = new THREE.Mesh(
     new THREE.CylinderGeometry(0.09, 0.09, 0.02, 32),
@@ -46,7 +46,7 @@ function createFallbackModel(): THREE.Group {
 }
 
 /** Prepara materiales para renderizado WebXR */
-function prepareModelForRender(model: THREE.Object3D): number {
+const prepareModelForRender = (model: THREE.Object3D): number => {
   let meshCount = 0
   model.traverse((node) => {
     if (!(node as THREE.Mesh).isMesh) return
@@ -67,7 +67,7 @@ function prepareModelForRender(model: THREE.Object3D): number {
 }
 
 /** Libera memoria de geometrías, materiales y texturas */
-function disposeObject(object: THREE.Object3D | null): void {
+const disposeObject = (object: THREE.Object3D | null): void => {
   if (!object) return
   object.traverse((node) => {
     const mesh = node as THREE.Mesh
@@ -91,26 +91,26 @@ function disposeObject(object: THREE.Object3D | null): void {
 
 // ---- Helpers de gestos -------------------------------------------------------
 
-function touchDist(t1: Touch, t2: Touch): number {
+const touchDist = (t1: Touch, t2: Touch): number => {
   const dx = t1.clientX - t2.clientX
   const dy = t1.clientY - t2.clientY
   return Math.sqrt(dx * dx + dy * dy)
 }
 
-function touchAngle(t1: Touch, t2: Touch): number {
+const touchAngle = (t1: Touch, t2: Touch): number => {
   return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX)
 }
 
 // ---- Componente -------------------------------------------------------------
 
-export function ThreeARSurface({
+export const ThreeARSurface = ({
   modelUrl,
   modelScale = '1 1 1',
   modelLabel = 'modelo-3d',
   showLabel = true,
   targetHeight = 0.4,
   onStatusChange,
-}: ThreeARSurfaceProps) {
+}: ThreeARSurfaceProps) => {
   const hostRef = useRef<HTMLDivElement>(null)
   const [bootStatus, setBootStatus] = useState('inicializando')
 
@@ -218,7 +218,7 @@ export function ThreeARSurface({
     )
 
     // ---- Colocar modelo (tap / primer placement) ----------------------------
-    function placeModel() {
+    const placeModel = () => {
       if (!modelTemplate || !reticle?.visible) return
       if (placedModel) { scene!.remove(placedModel); disposeObject(placedModel) }
 
@@ -253,7 +253,7 @@ export function ThreeARSurface({
     // ---- Gestos táctiles ---------------------------------------------------
     const canvas = renderer.domElement
 
-    function onTouchStart(e: TouchEvent) {
+    const onTouchStart = (e: TouchEvent) => {
       g.hasMoved = false
       if (e.touches.length === 1) {
         g.isDragging = true
@@ -270,7 +270,7 @@ export function ThreeARSurface({
       }
     }
 
-    function onTouchMove(e: TouchEvent) {
+    const onTouchMove = (e: TouchEvent) => {
       if (!inXRSession) return
       e.preventDefault()
       if (e.touches.length === 1) {
@@ -301,7 +301,7 @@ export function ThreeARSurface({
       }
     }
 
-    function onTouchEnd(e: TouchEvent) {
+    const onTouchEnd = (e: TouchEvent) => {
       if (e.touches.length === 0) {
         g.isDragging = false
       } else if (e.touches.length === 1 && placedModel) {

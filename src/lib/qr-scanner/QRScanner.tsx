@@ -16,7 +16,7 @@ const STATUS_LABEL: Record<string, string> = {
   error:        'No se pudo acceder a la cámara — revisá los permisos',
 }
 
-export function QRScanner({ onDetected, onError, className = 'qr-scanner' }: QRScannerProps) {
+export const QRScanner = ({ onDetected, onError, className = 'qr-scanner' }: QRScannerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const { status } = useQRScanner(videoRef, { onResult: onDetected, onError })
 

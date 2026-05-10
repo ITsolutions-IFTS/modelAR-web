@@ -5,7 +5,7 @@ import './model-viewer'
 import { ThreeARSurface } from './ThreeARSurface'
 import './styles.css'
 
-export function ARViewer({
+export const ARViewer = ({
   modelUrl,
   modelScale = '1 1 1',
   modelLabel = 'modelo-3d',
@@ -18,7 +18,7 @@ export function ARViewer({
   onModelLoad,
   style,
   children,
-}: ARViewerProps) {
+}: ARViewerProps) => {
   const [isWebXRSupported, setIsWebXRSupported] = useState(false)
   const [showPreciseAR, setShowPreciseAR] = useState(false)
   const [modelLoading, setModelLoading] = useState(true)
@@ -35,7 +35,7 @@ export function ARViewer({
   // Detectar soporte WebXR una sola vez al montar
   useEffect(() => {
     let cancelled = false
-    async function check() {
+    const check = async () => {
       if (!navigator.xr?.isSessionSupported) return
       try {
         const ok = await navigator.xr.isSessionSupported('immersive-ar')
@@ -57,15 +57,15 @@ export function ARViewer({
     const el = modelViewerRef.current
     if (!el) return
 
-    function handleLoad() {
+    const handleLoad = () => {
       setModelLoading(false)
       onModelLoadRef.current?.()
     }
-    function handleTracking(e: Event) {
+    const handleTracking = (e: Event) => {
       const status = (e as CustomEvent<{ status?: ARTrackingStatus }>).detail?.status ?? 'idle'
       onStatusChangeRef.current?.(status)
     }
-    function handleArStatus(e: Event) {
+    const handleArStatus = (e: Event) => {
       const status = (e as CustomEvent<{ status?: string }>).detail?.status ?? 'not-presenting'
       setArSessionActive(status !== 'not-presenting')
     }
