@@ -111,12 +111,12 @@ export const SECTOR_META: Record<ITSector, SectorMeta> = {
 }
 
 /** Slugs de categorías de un sector como string separado por comas */
-export function sectorCategories(sector: ITSector): string {
+export const sectorCategories = (sector: ITSector): string => {
   return SECTOR_META[sector].categories.map((c) => c.slug).join(',')
 }
 
 /** Mejor thumbnail para un ancho objetivo */
-export function getBestThumbnail(model: SketchfabModel, targetWidth = 300): string {
+export const getBestThumbnail = (model: SketchfabModel, targetWidth = 300): string => {
   const images = model.thumbnails?.images ?? []
   if (!images.length) return ''
   const sorted = [...images].sort((a, b) => a.width - b.width)
