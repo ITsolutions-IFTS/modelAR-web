@@ -892,46 +892,186 @@ console.<span class="function">log</span>(<span class="string">"3"</span>);
                         </tbody>
                     </table>
 
+                    <h3>¿POR QUÉ Promises Se Ejecutan Primero?</h3>
+
+                    <p>Esta es la pregunta más importante. La respuesta está en <strong>HISTORIA de JavaScript</strong>:</p>
+
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <strong>1995-2008: Era setTimeout</strong>
+                            <p>setTimeout era la ÚNICA forma de diferir ejecución. No había "prioritarios".</p>
+                        </div>
+                        <div class="timeline-item">
+                            <strong>2009: Nacen las Promises</strong>
+                            <p>Problema: Si Promise.then() espera a setTimeout, esto es LENTO:</p>
+                            <div class="example" style="font-size: 0.8em; margin-top: 8px;">
+<span class="keyword">const</span> p1 = Promise.<span class="function">resolve</span>().<span class="function">then</span>(() => <span class="string">'a'</span>);
+<span class="keyword">const</span> p2 = p1.<span class="function">then</span>(() => <span class="string">'b'</span>);
+<span class="keyword">const</span> p3 = p2.<span class="function">then</span>(() => <span class="string">'c'</span>);
+
+<span class="comment">// CON setTimeout (macro): 600-1500ms total!</span>
+<span class="comment">// p1 espera 200ms, p2 espera 200ms, p3 espera 200ms</span>
+
+<span class="comment">// CON microtasks: &lt;1ms total ✅</span>
+                            </div>
+                            <p style="margin-top: 10px;"><strong>Decisión:</strong> "Promises NECESITAN ir primero"</p>
+                        </div>
+                        <div class="timeline-item">
+                            <strong>2011: MutationObserver</strong>
+                            <p>Observa cambios en DOM. "Ponlo con Promises" → Microtask</p>
+                        </div>
+                        <div class="timeline-item">
+                            <strong>2013: El Estándar (ECMAScript)</strong>
+                            <p><strong>DOS QUEUES:</strong> Microtask Queue (prioritario) + Macrotask Queue (normal)</p>
+                        </div>
+                    </div>
+
+                    <h3>¿QUÉ Determina Micro vs Macro?</h3>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>MICROTASKS (Prioritario)</th>
+                                <th>MACROTASKS (Normal)</th>
+                                <th>SPECIAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Promise.then()</td>
+                                <td>setTimeout()</td>
+                                <td>requestAnimationFrame()</td>
+                            </tr>
+                            <tr>
+                                <td>Promise.catch()</td>
+                                <td>setInterval()</td>
+                                <td>(Ejecuta ANTES de repaint)</td>
+                            </tr>
+                            <tr>
+                                <td>Promise.finally()</td>
+                                <td>setImmediate() (Node.js)</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>queueMicrotask()</td>
+                                <td>fetch() (I/O)</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>MutationObserver</td>
+                                <td>Eventos (click, input)</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>async/await (es Promise debajo)</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>El Algoritmo Real del Event Loop</h3>
+
+                    <div class="example">
+<span class="keyword">while</span> (eventLoop.waitForTask()) {
+  <span class="comment">// 1. Ejecuta UNA macrotask</span>
+  <span class="keyword">const</span> macrotask = macrotaskQueue.<span class="function">pop</span>();
+  <span class="function">execute</span>(macrotask);
+
+  <span class="comment">// 2. EJECUTA TODAS las microtasks</span>
+  <span class="keyword">while</span> (microtaskQueue.<span class="function">hasTasks</span>()) {
+    <span class="keyword">const</span> microtask = microtaskQueue.<span class="function">pop</span>();
+    <span class="function">execute</span>(microtask);
+  }
+
+  <span class="comment">// 3. Si hay cambios, renderiza</span>
+  <span class="keyword">if</span> (<span class="function">isRepaintTime</span>()) {
+    <span class="function">repaint</span>();
+  }
+}
+
+<span class="comment">// CLAVE:</span>
+<span class="comment">// - UNA macrotask por ciclo</span>
+<span class="comment">// - TODAS las microtasks por ciclo ← POR ESO PROMISES PRIMERO</span>
+                    </div>
+
                     <h3>Ejemplo Real: Orden de Ejecución</h3>
                     <div class="example">
 console.<span class="function">log</span>(<span class="string">"1"</span>); <span class="comment">// Sincrónico</span>
 
 <span class="function">setTimeout</span>(() => {
-  console.<span class="function">log</span>(<span class="string">"2"</span>); <span class="comment">// Macrotask</span>
+  console.<span class="function">log</span>(<span class="string">"2"</span>); <span class="comment">// MACROTASK</span>
 }, <span class="number">0</span>);
 
 Promise.<span class="function">resolve</span>()
-  .<span class="function">then</span>(() => {
-    console.<span class="function">log</span>(<span class="string">"3"</span>); <span class="comment">// Microtask</span>
-  })
-  .<span class="function">catch</span>(() => {
-    console.<span class="function">log</span>(<span class="string">"4"</span>); <span class="comment">// Microtask</span>
-  });
-
-Promise.<span class="function">resolve</span>()
-  .<span class="function">finally</span>(() => {
-    console.<span class="function">log</span>(<span class="string">"5"</span>); <span class="comment">// Microtask</span>
-  });
+  .<span class="function">then</span>(() => console.<span class="function">log</span>(<span class="string">"3"</span>)) <span class="comment">// MICROTASK</span>
+  .<span class="function">catch</span>(() => console.<span class="function">log</span>(<span class="string">"4"</span>)) <span class="comment">// MICROTASK</span>
+  .<span class="function">finally</span>(() => console.<span class="function">log</span>(<span class="string">"5"</span>)); <span class="comment">// MICROTASK</span>
 
 <span class="function">queueMicrotask</span>(() => {
-  console.<span class="function">log</span>(<span class="string">"6"</span>); <span class="comment">// Microtask</span>
+  console.<span class="function">log</span>(<span class="string">"6"</span>); <span class="comment">// MICROTASK</span>
+});
+
+<span class="keyword">const</span> observer = <span class="keyword">new</span> <span class="function">MutationObserver</span>(() => {
+  console.<span class="function">log</span>(<span class="string">"7"</span>); <span class="comment">// MICROTASK</span>
+});
+observer.<span class="function">observe</span>(document.body, { attributes: <span class="keyword">true</span> });
+document.body.<span class="function">setAttribute</span>(<span class="string">'data'</span>, <span class="string">'changed'</span>);
+
+<span class="function">requestAnimationFrame</span>(() => {
+  console.<span class="function">log</span>(<span class="string">"8"</span>); <span class="comment">// SPECIAL (antes de repaint)</span>
 });
 
 <span class="function">setInterval</span>(() => {
-  console.<span class="function">log</span>(<span class="string">"7"</span>); <span class="comment">// Macrotask</span>
+  console.<span class="function">log</span>(<span class="string">"9"</span>); <span class="comment">// MACROTASK</span>
 }, <span class="number">0</span>);
 
-console.<span class="function">log</span>(<span class="string">"8"</span>); <span class="comment">// Sincrónico</span>
+console.<span class="function">log</span>(<span class="string">"10"</span>); <span class="comment">// Sincrónico</span>
 
 <span class="comment">// RESULTADO:</span>
-<span class="comment">// 1 (sincrónico 1)</span>
-<span class="comment">// 8 (sincrónico 2)</span>
-<span class="comment">// 3 (Microtask 1 - Promise.then)</span>
-<span class="comment">// 4 (Microtask 2 - Promise.catch)</span>
-<span class="comment">// 5 (Microtask 3 - Promise.finally)</span>
-<span class="comment">// 6 (Microtask 4 - queueMicrotask)</span>
-<span class="comment">// 2 (Macrotask 1 - setTimeout)</span>
-<span class="comment">// 7 (Macrotask 2 - setInterval)</span>
+<span class="comment">// 1  ← Sincrónico (primero)</span>
+<span class="comment">// 10 ← Sincrónico (primero)</span>
+<span class="comment">// 3  ← Promise.then (MICROTASK)</span>
+<span class="comment">// 4  ← Promise.catch (MICROTASK)</span>
+<span class="comment">// 5  ← Promise.finally (MICROTASK)</span>
+<span class="comment">// 6  ← queueMicrotask (MICROTASK)</span>
+<span class="comment">// 7  ← MutationObserver (MICROTASK)</span>
+<span class="comment">// 8  ← requestAnimationFrame (SPECIAL)</span>
+<span class="comment">// 2  ← setTimeout (MACROTASK)</span>
+<span class="comment">// 9  ← setInterval (MACROTASK)</span>
+                    </div>
+
+                    <h3>¿Por Qué Este Orden? (3 Razones Técnicas)</h3>
+
+                    <div class="grid-2">
+                        <div class="comparison-card">
+                            <h4>1️⃣ Promises Cadenas Largas</h4>
+                            <p>Sin microtasks: Cada .then() espera 200ms</p>
+                            <p style="margin-top: 10px; color: var(--danger); font-weight: bold;">p1→p2→p3 = 600ms ❌</p>
+                            <p style="margin-top: 10px; color: var(--success); font-weight: bold;">Con microtasks = &lt;1ms ✅</p>
+                        </div>
+                        <div class="comparison-card">
+                            <h4>2️⃣ DOM Mutations</h4>
+                            <p>MutationObserver DEBE verse en siguiente repaint</p>
+                            <p style="margin-top: 10px;">Si espera a setTimeout, DOM se ve viejo</p>
+                        </div>
+                    </div>
+
+                    <div class="comparison-card" style="margin: 20px 0;">
+                        <h4>3️⃣ Rendering Budget (16.67ms)</h4>
+                        <div class="example" style="font-size: 0.8em; margin-top: 10px;">
+Frame:
+├─ Sync code (2ms)
+├─ ALL Microtasks (3ms) ← ANTES de repaint
+├─ ONE Macrotask (4ms) ← DESPUÉS
+└─ Render (6ms)
+
+Si Promises esperan a setTimeout:
+├─ Sync
+├─ setTimeout #1
+├─ AHORA ejecutan Promises (TOO LATE)
+└─ Render ya ocurrió (con datos viejos)
+        </div>
                     </div>
 
                     <h3>Por Qué Importa en React Native</h3>
