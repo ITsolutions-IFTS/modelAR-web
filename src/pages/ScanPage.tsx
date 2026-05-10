@@ -2,17 +2,17 @@ import { useNavigate } from 'react-router-dom'
 import { QRScanner } from '@/lib/qr-scanner'
 import { parseScanToModelId } from '@/lib/qr-scanner'
 
-export function ScanPage() {
+export const ScanPage = () => {
   const navigate = useNavigate()
 
-  function handleDetected(text: string) {
+  const handleDetected = (text: string) => {
     const id = parseScanToModelId(text)
     if (id) {
       navigate(`/ar/${id}`)
     }
   }
 
-  function handleError(err: Error) {
+  const handleError = (err: Error) => {
     console.warn('[ScanPage] QR error:', err)
   }
 

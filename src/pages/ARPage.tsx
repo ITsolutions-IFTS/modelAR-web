@@ -8,7 +8,7 @@ import type { SketchfabModel } from '@/types/sketchfab'
 
 type LoadPhase = 'loading' | 'ready' | 'error'
 
-export function ARPage() {
+export const ARPage = () => {
   const { uid } = useParams<{ uid: string }>()
   const navigate = useNavigate()
 

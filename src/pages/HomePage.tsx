@@ -13,7 +13,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'educacion', label: 'Educación' },
 ]
 
-export function HomePage() {
+export const HomePage = () => {
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('all')
   const [category, setCategory] = useState<string>('')
@@ -27,7 +27,7 @@ export function HomePage() {
   // Categorías disponibles según tab activa
   const categories = tab === 'all' ? [] : SECTOR_META[tab as ITSector].categories
 
-  function buildSearchParams() {
+  const buildSearchParams = () => {
     return {
       keyword: keyword.trim() || undefined,
       categories: category || (tab !== 'all' ? sectorCategories(tab as ITSector) : undefined),
@@ -56,12 +56,12 @@ export function HomePage() {
   }, [tab, category, keyword])
 
   // Resetear categoría al cambiar tab
-  function handleTabChange(id: Tab) {
+  const handleTabChange = (id: Tab) => {
     setTab(id)
     setCategory('')
   }
 
-  function loadMore() {
+  const loadMore = () => {
     if (!nextCursor || loading) return
     setLoading(true)
     searchModels({ ...buildSearchParams(), cursor: nextCursor })
