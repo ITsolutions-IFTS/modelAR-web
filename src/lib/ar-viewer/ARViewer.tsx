@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
-import '@google/model-viewer'
-import type { ARViewerProps, ARTrackingStatus } from './types'
-import './model-viewer'
-import { ThreeARSurface } from './ThreeARSurface'
-import './styles.css'
+import { useEffect, useState, useRef, useCallback } from 'react';
+import '@google/model-viewer';
+import type { ARViewerProps, ARTrackingStatus } from './types';
+import './model-viewer';
+import { ThreeARSurface } from './ThreeARSurface';
+import './styles.css';
 
 export const ARViewer = ({
   modelUrl,
@@ -19,70 +19,82 @@ export const ARViewer = ({
   style,
   children,
 }: ARViewerProps) => {
-  const [isWebXRSupported, setIsWebXRSupported] = useState(false)
-  const [showPreciseAR, setShowPreciseAR] = useState(false)
-  const [modelLoading, setModelLoading] = useState(true)
-  const [arSessionActive, setArSessionActive] = useState(false)
-  const modelViewerRef = useRef<HTMLElement>(null)
+  const [isWebXRSupported, setIsWebXRSupported] = useState(false);
+  const [showPreciseAR, setShowPreciseAR] = useState(false);
+  const [modelLoading, setModelLoading] = useState(true);
+  const [arSessionActive, setArSessionActive] = useState(false);
+  const modelViewerRef = useRef<HTMLElement>(null);
 
   // Estabilizar callbacks en refs para no teardown/re-register listeners
   // cada vez que el padre pasa una nueva función inline
-  const onModelLoadRef = useRef(onModelLoad)
-  useEffect(() => { onModelLoadRef.current = onModelLoad }, [onModelLoad])
-  const onStatusChangeRef = useRef(onStatusChange)
-  useEffect(() => { onStatusChangeRef.current = onStatusChange }, [onStatusChange])
+  const onModelLoadRef = useRef(onModelLoad);
+  useEffect(() => {
+    onModelLoadRef.current = onModelLoad;
+  }, [onModelLoad]);
+  const onStatusChangeRef = useRef(onStatusChange);
+  useEffect(() => {
+    onStatusChangeRef.current = onStatusChange;
+  }, [onStatusChange]);
 
   // Detectar soporte WebXR una sola vez al montar
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
     const check = async () => {
-      if (!navigator.xr?.isSessionSupported) return
+      if (!navigator.xr?.isSessionSupported) return;
       try {
-        const ok = await navigator.xr.isSessionSupported('immersive-ar')
-        if (!cancelled) setIsWebXRSupported(ok)
-      } catch { /* sin WebXR */ }
-    }
-    check()
-    return () => { cancelled = true }
-  }, [])
+        const ok = await navigator.xr.isSessionSupported('immersive-ar');
+        if (!cancelled) setIsWebXRSupported(ok);
+      } catch {
+        /* sin WebXR */
+      }
+    };
+    check();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Resetear estado de carga cuando cambia el modelo
   useEffect(() => {
-    setModelLoading(true)
-    setShowPreciseAR(false)
-  }, [modelUrl])
+    setModelLoading(true);
+    setShowPreciseAR(false);
+  }, [modelUrl]);
 
   // Listeners de model-viewer
   useEffect(() => {
-    const el = modelViewerRef.current
-    if (!el) return
+    const el = modelViewerRef.current;
+    if (!el) return;
 
     const handleLoad = () => {
-      setModelLoading(false)
-      onModelLoadRef.current?.()
-    }
+      setModelLoading(false);
+      onModelLoadRef.current?.();
+    };
     const handleTracking = (e: Event) => {
-      const status = (e as CustomEvent<{ status?: ARTrackingStatus }>).detail?.status ?? 'idle'
-      onStatusChangeRef.current?.(status)
-    }
+      const status =
+        (e as CustomEvent<{ status?: ARTrackingStatus }>).detail?.status ??
+        'idle';
+      onStatusChangeRef.current?.(status);
+    };
     const handleArStatus = (e: Event) => {
-      const status = (e as CustomEvent<{ status?: string }>).detail?.status ?? 'not-presenting'
-      setArSessionActive(status !== 'not-presenting')
-    }
+      const status =
+        (e as CustomEvent<{ status?: string }>).detail?.status ??
+        'not-presenting';
+      setArSessionActive(status !== 'not-presenting');
+    };
 
-    el.addEventListener('load', handleLoad)
-    el.addEventListener('ar-tracking', handleTracking)
-    el.addEventListener('ar-status', handleArStatus)
+    el.addEventListener('load', handleLoad);
+    el.addEventListener('ar-tracking', handleTracking);
+    el.addEventListener('ar-status', handleArStatus);
     return () => {
-      el.removeEventListener('load', handleLoad)
-      el.removeEventListener('ar-tracking', handleTracking)
-      el.removeEventListener('ar-status', handleArStatus)
-    }
-  }, [modelUrl])
+      el.removeEventListener('load', handleLoad);
+      el.removeEventListener('ar-tracking', handleTracking);
+      el.removeEventListener('ar-status', handleArStatus);
+    };
+  }, [modelUrl]);
 
   const handleTrackingChange = useCallback((status: ARTrackingStatus) => {
-    onStatusChangeRef.current?.(status)
-  }, [])
+    onStatusChangeRef.current?.(status);
+  }, []);
 
   return (
     <div className="ar-viewer">
@@ -138,9 +150,11 @@ export const ARViewer = ({
           className="ar-viewer__toggle"
           onClick={() => setShowPreciseAR((prev) => !prev)}
         >
-          {showPreciseAR ? 'Volver a vista previa 3D' : 'Usar AR precisa (Three.js)'}
+          {showPreciseAR
+            ? 'Volver a vista previa 3D'
+            : 'Usar AR precisa (Three.js)'}
         </button>
       )}
     </div>
-  )
-}
+  );
+};

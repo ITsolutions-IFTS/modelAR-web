@@ -1,24 +1,28 @@
-import { useRef } from 'react'
-import { useQRScanner } from './useQRScanner'
-import './styles.css'
+import { useRef } from 'react';
+import { useQRScanner } from './useQRScanner';
+import './styles.css';
 
 interface QRScannerProps {
-  onDetected: (text: string) => void
-  onError?: (error: Error) => void
-  className?: string
+  onDetected: (text: string) => void;
+  onError?: (error: Error) => void;
+  className?: string;
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  idle:         'Iniciando cámara...',
+  idle: 'Iniciando cámara...',
   initializing: 'Abriendo cámara...',
-  scanning:     'Apuntá la cámara al código QR',
-  detected:     'Código detectado ✓',
-  error:        'No se pudo acceder a la cámara — revisá los permisos',
-}
+  scanning: 'Apuntá la cámara al código QR',
+  detected: 'Código detectado ✓',
+  error: 'No se pudo acceder a la cámara — revisá los permisos',
+};
 
-export const QRScanner = ({ onDetected, onError, className = 'qr-scanner' }: QRScannerProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const { status } = useQRScanner(videoRef, { onResult: onDetected, onError })
+export const QRScanner = ({
+  onDetected,
+  onError,
+  className = 'qr-scanner',
+}: QRScannerProps) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { status } = useQRScanner(videoRef, { onResult: onDetected, onError });
 
   return (
     <div className={className}>
@@ -30,5 +34,5 @@ export const QRScanner = ({ onDetected, onError, className = 'qr-scanner' }: QRS
         {STATUS_LABEL[status] ?? status}
       </p>
     </div>
-  )
-}
+  );
+};

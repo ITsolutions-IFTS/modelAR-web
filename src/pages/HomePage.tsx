@@ -1,77 +1,86 @@
-import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { searchModels } from '@/services/sketchfab'
-import { SECTOR_META, sectorCategories, getBestThumbnail } from '@/types/sketchfab'
-import type { SketchfabModel, ITSector } from '@/types/sketchfab'
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { searchModels } from '@/services/sketchfab';
+import {
+  SECTOR_META,
+  sectorCategories,
+  getBestThumbnail,
+} from '@/types/sketchfab';
+import type { SketchfabModel, ITSector } from '@/types/sketchfab';
 
-type Tab = 'all' | ITSector
+type Tab = 'all' | ITSector;
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'all',       label: 'Todos' },
+  { id: 'all', label: 'Todos' },
   { id: 'ecommerce', label: 'Ecommerce' },
-  { id: 'turismo',   label: 'Turismo' },
+  { id: 'turismo', label: 'Turismo' },
   { id: 'educacion', label: 'Educación' },
-]
+];
 
 export const HomePage = () => {
-  const navigate = useNavigate()
-  const [tab, setTab] = useState<Tab>('all')
-  const [category, setCategory] = useState<string>('')
-  const [keyword, setKeyword] = useState('')
-  const [models, setModels] = useState<SketchfabModel[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [nextCursor, setNextCursor] = useState<string | null>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<Tab>('all');
+  const [category, setCategory] = useState<string>('');
+  const [keyword, setKeyword] = useState('');
+  const [models, setModels] = useState<SketchfabModel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Categorías disponibles según tab activa
-  const categories = tab === 'all' ? [] : SECTOR_META[tab as ITSector].categories
+  const categories =
+    tab === 'all' ? [] : SECTOR_META[tab as ITSector].categories;
 
   const buildSearchParams = () => {
     return {
       keyword: keyword.trim() || undefined,
-      categories: category || (tab !== 'all' ? sectorCategories(tab as ITSector) : undefined),
+      categories:
+        category ||
+        (tab !== 'all' ? sectorCategories(tab as ITSector) : undefined),
       count: 24,
-    }
-  }
+    };
+  };
 
   // Cargar modelos cuando cambia tab, category o keyword (con debounce en keyword)
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    const delay = keyword ? 400 : 0
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const delay = keyword ? 400 : 0;
     debounceRef.current = setTimeout(() => {
-      setLoading(true)
-      setError(null)
-      setNextCursor(null)
+      setLoading(true);
+      setError(null);
+      setNextCursor(null);
       searchModels(buildSearchParams())
         .then((res) => {
-          setModels(res.results)
-          setNextCursor(res.next ?? null)
+          setModels(res.results);
+          setNextCursor(res.next ?? null);
         })
         .catch((err: Error) => setError(err.message))
-        .finally(() => setLoading(false))
-    }, delay)
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+        .finally(() => setLoading(false));
+    }, delay);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, category, keyword])
+  }, [tab, category, keyword]);
 
   // Resetear categoría al cambiar tab
   const handleTabChange = (id: Tab) => {
-    setTab(id)
-    setCategory('')
-  }
+    setTab(id);
+    setCategory('');
+  };
 
   const loadMore = () => {
-    if (!nextCursor || loading) return
-    setLoading(true)
+    if (!nextCursor || loading) return;
+    setLoading(true);
     searchModels({ ...buildSearchParams(), cursor: nextCursor })
       .then((res) => {
-        setModels((prev) => [...prev, ...res.results])
-        setNextCursor(res.next ?? null)
+        setModels((prev) => [...prev, ...res.results]);
+        setNextCursor(res.next ?? null);
       })
       .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false))
-  }
+      .finally(() => setLoading(false));
+  };
 
   return (
     <main className="page">
@@ -109,7 +118,9 @@ export const HomePage = () => {
           >
             <option value="">Todas las categorías</option>
             {categories.map((c) => (
-              <option key={c.slug} value={c.slug}>{c.label}</option>
+              <option key={c.slug} value={c.slug}>
+                {c.label}
+              </option>
             ))}
           </select>
         )}
@@ -122,7 +133,7 @@ export const HomePage = () => {
 
         <div className="catalog-grid">
           {models.map((model) => {
-            const thumb = getBestThumbnail(model)
+            const thumb = getBestThumbnail(model);
             return (
               <article
                 key={model.uid}
@@ -130,28 +141,38 @@ export const HomePage = () => {
                 onClick={() => navigate(`/ar/${model.uid}`)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && navigate(`/ar/${model.uid}`)}
+                onKeyDown={(e) =>
+                  e.key === 'Enter' && navigate(`/ar/${model.uid}`)
+                }
               >
                 <div className="model-card__thumb">
-                  {thumb
-                    ? <img src={thumb} alt={model.name} loading="lazy" />
-                    : <div className="model-card__thumb-placeholder">📦</div>
-                  }
+                  {thumb ? (
+                    <img src={thumb} alt={model.name} loading="lazy" />
+                  ) : (
+                    <div className="model-card__thumb-placeholder">📦</div>
+                  )}
                 </div>
                 <div className="model-card__body">
-                  <p className="model-card__name" title={model.name}>{model.name}</p>
+                  <p className="model-card__name" title={model.name}>
+                    {model.name}
+                  </p>
                   <p className="model-card__meta">@{model.user.username}</p>
                   {model.animationCount > 0 && (
-                    <span className="sector-badge sector-badge--educacion">Animado</span>
+                    <span className="sector-badge sector-badge--educacion">
+                      Animado
+                    </span>
                   )}
                   <div className="model-card__action">
-                    <span className="btn btn-primary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
+                    <span
+                      className="btn btn-primary"
+                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
+                    >
                       Ver en AR
                     </span>
                   </div>
                 </div>
               </article>
-            )
+            );
           })}
         </div>
 
@@ -167,5 +188,5 @@ export const HomePage = () => {
         {loading && <div className="state-loading">Cargando modelos...</div>}
       </div>
     </main>
-  )
-}
+  );
+};

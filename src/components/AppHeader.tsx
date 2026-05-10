@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom';
 
 export const AppHeader = () => {
   return (
@@ -73,5 +73,5 @@ export const AppHeader = () => {
         </NavLink>
       </nav>
     </header>
-  )
-}
+  );
+};

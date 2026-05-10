@@ -14,46 +14,50 @@ import type {
   SketchfabSearchResult,
   SketchfabDownload,
   SketchfabSearchParams,
-} from '@/types/sketchfab'
+} from '@/types/sketchfab';
 
-const SKETCHFAB_BASE = 'https://api.sketchfab.com/v3'
+const SKETCHFAB_BASE = 'https://api.sketchfab.com/v3';
 
 // Si VITE_API_BASE_URL está seteada, el cliente habla con el proxy propio.
 // En ese caso NO incluye la API key (el backend la pone).
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? SKETCHFAB_BASE
-const USE_PROXY = !!import.meta.env.VITE_API_BASE_URL
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? SKETCHFAB_BASE;
+const USE_PROXY = !!import.meta.env.VITE_API_BASE_URL;
 
 const getHeaders = (): HeadersInit => {
-  if (USE_PROXY) return {}
-  const key = import.meta.env.VITE_SKETCHFAB_API_KEY as string | undefined
-  return key ? { Authorization: `Token ${key}` } : {}
-}
+  if (USE_PROXY) return {};
+  const key = import.meta.env.VITE_SKETCHFAB_API_KEY as string | undefined;
+  return key ? { Authorization: `Token ${key}` } : {};
+};
 
-export const searchModels = async (params: SketchfabSearchParams): Promise<SketchfabSearchResult> => {
-  const { keyword, count = 24, cursor, categories } = params
-  const query = new URLSearchParams()
-  query.set('downloadable', 'true')
-  query.set('count', String(count))
-  if (keyword?.trim()) query.set('q', keyword.trim())
-  if (cursor)          query.set('cursor', cursor)
+export const searchModels = async (
+  params: SketchfabSearchParams
+): Promise<SketchfabSearchResult> => {
+  const { keyword, count = 24, cursor, categories } = params;
+  const query = new URLSearchParams();
+  query.set('downloadable', 'true');
+  query.set('count', String(count));
+  if (keyword?.trim()) query.set('q', keyword.trim());
+  if (cursor) query.set('cursor', cursor);
   // Sketchfab requiere comas literales en `categories` — URLSearchParams las
   // codifica como %2C y devuelve 400, por eso se append manual
-  const qs = categories ? `${query.toString()}&categories=${categories}` : query.toString()
+  const qs = categories
+    ? `${query.toString()}&categories=${categories}`
+    : query.toString();
 
   const res = await fetch(`${API_BASE}/search?type=models&${qs}`, {
     headers: getHeaders(),
-  })
-  if (!res.ok) throw new Error(`Sketchfab search failed: ${res.status}`)
-  return res.json() as Promise<SketchfabSearchResult>
-}
+  });
+  if (!res.ok) throw new Error(`Sketchfab search failed: ${res.status}`);
+  return res.json() as Promise<SketchfabSearchResult>;
+};
 
 export const getModel = async (uid: string): Promise<SketchfabModel> => {
   const res = await fetch(`${API_BASE}/models/${encodeURIComponent(uid)}`, {
     headers: getHeaders(),
-  })
-  if (!res.ok) throw new Error(`Sketchfab model ${uid} failed: ${res.status}`)
-  return res.json() as Promise<SketchfabModel>
-}
+  });
+  if (!res.ok) throw new Error(`Sketchfab model ${uid} failed: ${res.status}`);
+  return res.json() as Promise<SketchfabModel>;
+};
 
 /**
  * Obtiene la URL de descarga del GLB.
@@ -61,13 +65,17 @@ export const getModel = async (uid: string): Promise<SketchfabModel> => {
  * así que NO se cachean — siempre se piden frescas.
  */
 export const getDownloadUrl = async (uid: string): Promise<string> => {
-  const res = await fetch(`${API_BASE}/models/${encodeURIComponent(uid)}/download`, {
-    headers: getHeaders(),
-    cache: 'no-store',
-  })
-  if (!res.ok) throw new Error(`Sketchfab download ${uid} failed: ${res.status}`)
-  const data = (await res.json()) as SketchfabDownload
-  const url = data.glb?.url ?? data.gltf?.url
-  if (!url) throw new Error(`Sin descarga GLB/GLTF disponible para ${uid}`)
-  return url
-}
+  const res = await fetch(
+    `${API_BASE}/models/${encodeURIComponent(uid)}/download`,
+    {
+      headers: getHeaders(),
+      cache: 'no-store',
+    }
+  );
+  if (!res.ok)
+    throw new Error(`Sketchfab download ${uid} failed: ${res.status}`);
+  const data = (await res.json()) as SketchfabDownload;
+  const url = data.glb?.url ?? data.gltf?.url;
+  if (!url) throw new Error(`Sin descarga GLB/GLTF disponible para ${uid}`);
+  return url;
+};
