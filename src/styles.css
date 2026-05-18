@@ -13,30 +13,30 @@
   --font-mono:    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Colores de fondo */
-  --bg:        #0b0f16;
-  --surface:   #131820;
-  --surface-2: #1a2130;
-  --surface-3: #202840;
+  --bg:        oklch(0.985 0.003 80);
+  --surface:   oklch(1 0 0);
+  --surface-2: oklch(0.965 0.005 80);
+  --surface-3: oklch(0.935 0.008 80);
 
   /* Bordes */
-  --line:      rgba(255, 255, 255, 0.07);
-  --line-md:   rgba(255, 255, 255, 0.12);
-  --line-lg:   rgba(255, 255, 255, 0.20);
+  --line:      oklch(0.90 0.006 70);
+  --line-md:   oklch(0.84 0.008 70);
+  --line-lg:   oklch(0.76 0.012 70);
 
   /* Texto */
-  --text:      #f0f2f5;
-  --text-2:    rgba(240, 242, 245, 0.65);
-  --text-3:    rgba(240, 242, 245, 0.38);
+  --text:      oklch(0.16 0.005 60);
+  --text-2:    oklch(0.42 0.008 70);
+  --text-3:    oklch(0.60 0.008 70);
 
   /* Acento */
-  --accent:    #9bf00b;
-  --accent-2:  #7bca08;      /* hover / pressed */
-  --accent-fg: #0b0f16;      /* texto sobre acento */
+  --accent:    oklch(0.55 0.118 165);
+  --accent-2:  oklch(0.47 0.118 165);  /* hover / pressed */
+  --accent-fg: #ffffff;                /* texto sobre acento */
 
   /* Sectores */
-  --sector-ecommerce: #9bf00b;
-  --sector-turismo:   #fb923c;
-  --sector-educacion: #60a5fa;
+  --sector-ecommerce: oklch(0.55 0.118 165);
+  --sector-turismo:   oklch(0.62 0.14 55);
+  --sector-educacion: oklch(0.52 0.13 240);
 
   /* Radios — sistema escalado (base 0.875rem como samantha-web) */
   --r-xs: 0.375rem;   /* 6px  */
@@ -48,10 +48,10 @@
   --r-pill: 9999px;
 
   /* Sombras */
-  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.25);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.55);
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.07);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.10);
+  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.16);
 
   /* Layout */
   --header-h: 58px;
@@ -108,7 +108,7 @@ img, video {
 /* ---- Scrollbar (estilo de samantha-web) ----------------------------------- */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(240, 242, 245, 0.18) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -121,12 +121,12 @@ img, video {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(240, 242, 245, 0.18);
+  background: rgba(0, 0, 0, 0.18);
   border-radius: var(--r-pill);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(240, 242, 245, 0.32);
+  background: rgba(0, 0, 0, 0.28);
 }
 
 /* ---- Tipografía ----------------------------------------------------------- */
@@ -184,13 +184,13 @@ code, pre {
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.04);
   color: var(--text-2);
   border: 1px solid var(--line);
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(0, 0, 0, 0.07);
   border-color: var(--line-md);
   color: var(--text);
 }
@@ -354,7 +354,7 @@ code, pre {
 
 .search-bar__input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(155, 240, 11, 0.12);
+  box-shadow: 0 0 0 3px oklch(0.93 0.04 165 / 0.6);
 }
 
 .search-bar__input::placeholder {
@@ -440,9 +440,9 @@ code, pre {
   line-height: 1.4;
 }
 
-.sector-badge--ecommerce { background: rgba(155, 240, 11, 0.15); color: var(--sector-ecommerce); }
-.sector-badge--turismo   { background: rgba(251, 146, 60, 0.15); color: var(--sector-turismo); }
-.sector-badge--educacion { background: rgba(96, 165, 250, 0.15); color: var(--sector-educacion); }
+.sector-badge--ecommerce { background: oklch(0.93 0.04 165); color: oklch(0.36 0.118 165); }
+.sector-badge--turismo   { background: rgba(251, 146, 60, 0.12); color: var(--sector-turismo); }
+.sector-badge--educacion { background: rgba(96, 165, 250, 0.12); color: var(--sector-educacion); }
 
 /* ---- Loading / Error / Empty states --------------------------------------- */
 .state-loading,
