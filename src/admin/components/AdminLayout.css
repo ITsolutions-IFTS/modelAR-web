@@ -1,0 +1,125 @@
+@import '../admin-theme.css';
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--sm-bg);
+  color: var(--sm-fg);
+}
+
+/* ── Sidebar ── */
+.admin-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background-color: var(--sm-bg-elev);
+  border-right: 1px solid var(--sm-line);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.admin-sidebar-brand {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--sm-line);
+}
+
+.admin-sidebar-brand h2 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--sm-fg);
+  letter-spacing: -0.01em;
+}
+
+.admin-sidebar-client-tag {
+  display: inline-block;
+  background-color: var(--sm-accent-soft);
+  color: var(--sm-accent-deep);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.admin-sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--sm-r-md);
+  color: var(--sm-fg-2);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.admin-nav-link:hover {
+  background-color: var(--sm-bg-soft);
+  color: var(--sm-fg);
+}
+
+.admin-nav-link.active {
+  background-color: var(--sm-accent-soft);
+  color: var(--sm-accent-deep);
+  font-weight: 600;
+}
+
+.admin-nav-icon {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.admin-sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--sm-line);
+}
+
+.admin-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--sm-r-md);
+  background: transparent;
+  color: var(--sm-fg-2);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+  text-align: left;
+}
+
+.admin-logout-btn:hover {
+  background-color: var(--sm-accent-soft);
+  color: var(--sm-danger);
+}
+
+/* ── Main content ── */
+.admin-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  min-width: 0;
+}
