@@ -10,6 +10,8 @@ import { LoginPage } from './admin/pages/LoginPage'
 import { DashboardPage } from './admin/pages/DashboardPage'
 import { CampaignFormPage } from './admin/pages/CampaignFormPage'
 import { CampaignQRPage } from './admin/pages/CampaignQRPage'
+import { MetricsPage } from './admin/pages/MetricsPage'
+import { OrganizationsPage } from './admin/pages/OrganizationsPage'
 
 function AppShell() {
   const location = useLocation()
@@ -32,6 +34,9 @@ function AppShell() {
             <Route path="/admin/dashboard" element={<DashboardPage />} />
             <Route path="/admin/campanas/nueva" element={<CampaignFormPage />} />
             <Route path="/admin/campanas/:id/qr" element={<CampaignQRPage />} />
+            <Route path="/admin/metricas" element={<MetricsPage />} />
+            <Route path="/admin/organizaciones/:slug" element={<OrganizationsPage />} />
+            <Route path="/admin/organizaciones" element={<OrganizationsPage />} />
           </Route>
         </Route>
 

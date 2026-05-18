@@ -26,8 +26,8 @@ export function LoginPage() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-brand">
-          <h1>modelAR Admin</h1>
-          <p>Panel de administración — Santillana</p>
+          <h1>model.ar</h1>
+          <p>Plataforma AR para educación</p>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
@@ -67,9 +67,14 @@ export function LoginPage() {
         <div className="login-demo-hint">
           <p>Credenciales de demo</p>
           <code>
-            admin@santillana.com
+            admin@itsolutions.com / demo1234
             <br />
-            demo1234
+            (Superadmin — todas las orgs)
+            <br />
+            <br />
+            admin@santillana.com / demo1234
+            <br />
+            (Cliente — Santillana)
           </code>
         </div>
       </div>
