@@ -12,7 +12,7 @@ export const AppHeader = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 1.25rem',
-        background: 'rgba(11, 15, 22, 0.85)',
+        background: 'rgba(252, 251, 249, 0.92)',
         borderBottom: '1px solid var(--line)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
@@ -45,8 +45,8 @@ export const AppHeader = () => {
             fontWeight: 600,
             letterSpacing: '0.005em',
             color: isActive ? 'var(--accent)' : 'var(--text-2)',
-            background: isActive ? 'rgba(155, 240, 11, 0.08)' : 'transparent',
-            border: `1px solid ${isActive ? 'rgba(155, 240, 11, 0.25)' : 'transparent'}`,
+            background: isActive ? 'oklch(0.93 0.04 165 / 0.7)' : 'transparent',
+            border: `1px solid ${isActive ? 'oklch(0.82 0.07 165)' : 'transparent'}`,
             transition: 'all 120ms',
           })}
         >
@@ -64,8 +64,8 @@ export const AppHeader = () => {
             fontWeight: 600,
             letterSpacing: '0.005em',
             color: isActive ? 'var(--accent)' : 'var(--text-2)',
-            background: isActive ? 'rgba(155, 240, 11, 0.08)' : 'transparent',
-            border: `1px solid ${isActive ? 'rgba(155, 240, 11, 0.25)' : 'transparent'}`,
+            background: isActive ? 'oklch(0.93 0.04 165 / 0.7)' : 'transparent',
+            border: `1px solid ${isActive ? 'oklch(0.82 0.07 165)' : 'transparent'}`,
             transition: 'all 120ms',
           })}
         >
