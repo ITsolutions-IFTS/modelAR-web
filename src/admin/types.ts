@@ -16,7 +16,11 @@ export interface Campaign {
   qrValue: string
 }
 
+export type UserRole = 'superadmin' | 'client'
+
 export interface AdminUser {
   email: string
   name: string
+  role: UserRole
+  org: string
 }

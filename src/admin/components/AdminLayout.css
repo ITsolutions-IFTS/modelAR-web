@@ -34,17 +34,6 @@
   letter-spacing: -0.01em;
 }
 
-.admin-sidebar-client-tag {
-  display: inline-block;
-  background-color: var(--sm-accent-soft);
-  color: var(--sm-accent-deep);
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 999px;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
 
 .admin-sidebar-nav {
   flex: 1;
@@ -113,6 +102,87 @@
 .admin-logout-btn:hover {
   background-color: var(--sm-accent-soft);
   color: var(--sm-danger);
+}
+
+.admin-sidebar-org-tag {
+  display: inline-block;
+  background-color: var(--sm-accent-soft);
+  color: var(--sm-accent-deep);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.admin-nav-section-label {
+  padding: 8px 12px 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sm-fg-3);
+}
+
+.admin-orgs-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--sm-r-md);
+  color: var(--sm-fg-2);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+  text-align: left;
+  border: none;
+  background: transparent;
+}
+
+.admin-orgs-toggle:hover {
+  background-color: var(--sm-bg-soft);
+  color: var(--sm-fg);
+}
+
+.admin-orgs-toggle-chevron {
+  margin-left: auto;
+  font-size: 0.7rem;
+  transition: transform 0.15s;
+}
+
+.admin-orgs-toggle-chevron--open {
+  transform: rotate(90deg);
+}
+
+.admin-orgs-list {
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-org-link {
+  display: block;
+  padding: 7px 12px;
+  border-radius: var(--sm-r-md);
+  color: var(--sm-fg-2);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.admin-org-link:hover {
+  background-color: var(--sm-bg-soft);
+  color: var(--sm-fg);
+}
+
+.admin-org-link.active {
+  background-color: var(--sm-accent-soft);
+  color: var(--sm-accent-deep);
+  font-weight: 600;
 }
 
 /* ── Main content ── */

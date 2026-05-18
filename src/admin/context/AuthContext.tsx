@@ -1,13 +1,19 @@
 import { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { AdminUser } from '../types'
+export type { UserRole } from '../types'
 
-const SESSION_KEY = SESSION_KEY
-const MOCK_EMAIL = 'admin@santillana.com'
-const MOCK_PASSWORD = 'demo1234'
-const MOCK_USER: AdminUser = {
-  email: 'admin@santillana.com',
-  name: 'Administrador Santillana',
+const SESSION_KEY = 'modelar_admin_session'
+
+const CREDENTIALS: Record<string, { password: string; user: AdminUser }> = {
+  'admin@santillana.com': {
+    password: 'demo1234',
+    user: { email: 'admin@santillana.com', name: 'Santillana Admin', role: 'client', org: 'Santillana' },
+  },
+  'admin@itsolutions.com': {
+    password: 'demo1234',
+    user: { email: 'admin@itsolutions.com', name: 'ITSolutions Admin', role: 'superadmin', org: 'ITSolutions' },
+  },
 }
 
 interface AuthContextValue {
@@ -28,9 +34,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   function login(email: string, password: string): boolean {
-    if (email === MOCK_EMAIL && password === MOCK_PASSWORD) {
-      setUser(MOCK_USER)
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(MOCK_USER))
+    const entry = CREDENTIALS[email]
+    if (entry && entry.password === password) {
+      setUser(entry.user)
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(entry.user))
       return true
     }
     return false
