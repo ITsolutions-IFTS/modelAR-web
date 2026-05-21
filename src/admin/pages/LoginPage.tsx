@@ -1,29 +1,31 @@
-import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import './LoginPage.css'
+import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { STORAGE_KEYS } from '../constants/storageKeys';
+import './LoginPage.css';
 
 export function LoginPage() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const dark = localStorage.getItem(STORAGE_KEYS.DARK_MODE) === '1';
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setError('')
-    const ok = login(email, password)
+    e.preventDefault();
+    setError('');
+    const ok = login(email, password);
     if (ok) {
-      navigate('/admin/dashboard', { replace: true })
+      navigate('/admin/dashboard', { replace: true });
     } else {
-      setError('Credenciales incorrectas. Revisá el email y la contraseña.')
+      setError('Credenciales incorrectas. Revisá el email y la contraseña.');
     }
   }
 
   return (
-    <div className="login-page">
+    <div className={`login-page${dark ? ' dark' : ''}`}>
       <div className="login-card">
         <div className="login-brand">
           <h1>model.ar</h1>
@@ -38,7 +40,7 @@ export function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@santillana.com"
+              placeholder="admin@itsolutions.com"
               required
               autoComplete="username"
             />
@@ -75,9 +77,14 @@ export function LoginPage() {
             admin@santillana.com / demo1234
             <br />
             (Cliente — Santillana)
+            <br />
+            <br />
+            admin@vegadesarrollos.com / demo1234
+            <br />
+            (Cliente — Vega Desarrollos)
           </code>
         </div>
       </div>
     </div>
-  )
+  );
 }

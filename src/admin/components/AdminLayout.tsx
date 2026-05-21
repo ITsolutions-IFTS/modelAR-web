@@ -1,89 +1,294 @@
-import { useState } from 'react'
-import { Outlet, NavLink } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import './AdminLayout.css'
+import { useState, useMemo } from 'react';
+import {
+  Outlet,
+  NavLink,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
+import {
+  MagnifyingGlassIcon,
+  XIcon,
+  CheckIcon,
+  BooksIcon,
+  BuildingsIcon,
+  SquaresFourIcon,
+  ChartLineUpIcon,
+  MegaphoneIcon,
+  GearIcon,
+  MoonIcon,
+  SunIcon,
+  SignOutIcon,
+} from '@phosphor-icons/react';
+import { useAuth } from '../context/AuthContext';
+import { useActiveOrg } from '../context/ActiveOrgContext';
+import { useCampaigns } from '../context/CampaignsContext';
+import { useCollections } from '../context/CollectionsContext';
+import { ORGS } from '../constants/orgs';
+import { STORAGE_KEYS } from '../constants/storageKeys';
+import './AdminLayout.css';
 
-export function AdminLayout() {
-  const { logout, user } = useAuth()
-  const [orgsOpen, setOrgsOpen] = useState(false)
+function OrgSearch() {
+  const [query, setQuery] = useState('');
+  const { activeOrg, setActiveOrg } = useActiveOrg();
+  const { campaigns } = useCampaigns();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const visibleOrgs = useMemo(() => {
+    const base =
+      user?.role === 'client'
+        ? ORGS.filter(
+            (o) =>
+              o.slug === (user.org?.toLowerCase().replace(/\s+/g, '-') ?? '')
+          )
+        : ORGS;
+    if (!query.trim()) return base;
+    const q = query.toLowerCase();
+    return base.filter((o) => o.name.toLowerCase().includes(q));
+  }, [query, user]);
+
+  function handleSelect(slug: string, name: string) {
+    setActiveOrg({ slug, name });
+    navigate('/admin/dashboard');
+  }
 
   return (
-    <div className="admin-layout admin-root">
+    <div className="admin-org-search">
+      <div className="admin-org-search-input-wrap">
+        <MagnifyingGlassIcon
+          className="admin-org-search-icon"
+          weight="bold"
+          size={14}
+        />
+        <input
+          className="admin-org-search-input"
+          type="text"
+          placeholder="Buscar organización..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {query && (
+          <button
+            className="admin-org-search-clear"
+            onClick={() => setQuery('')}
+            type="button"
+          >
+            <XIcon weight="bold" size={12} />
+          </button>
+        )}
+      </div>
+      <ul className="admin-org-list">
+        {visibleOrgs.map((org) => {
+          const isActive = activeOrg?.slug === org.slug;
+          const hasData = campaigns.some((c) => c.orgSlug === org.slug);
+          return (
+            <li key={org.slug}>
+              <button
+                className={`admin-org-list-item${isActive ? ' admin-org-list-item--active' : ''}`}
+                onClick={() => handleSelect(org.slug, org.name)}
+                type="button"
+              >
+                <span
+                  className={`admin-org-dot ${hasData ? 'admin-org-dot--ok' : 'admin-org-dot--idle'}`}
+                />
+                <span className="admin-org-list-name">{org.name}</span>
+                {isActive && (
+                  <CheckIcon
+                    className="admin-org-list-check"
+                    weight="bold"
+                    size={14}
+                  />
+                )}
+              </button>
+            </li>
+          );
+        })}
+        {visibleOrgs.length === 0 && (
+          <li className="admin-org-list-empty">Sin resultados</li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+function CollectionsSidebar() {
+  const { collections } = useCollections();
+  const { activeOrg } = useActiveOrg();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const activeColId = searchParams.get('col');
+
+  const org = useMemo(
+    () => ORGS.find((o) => o.slug === activeOrg?.slug),
+    [activeOrg]
+  );
+  const orgCollections = useMemo(
+    () => collections.filter((c) => c.orgSlug === activeOrg?.slug),
+    [collections, activeOrg]
+  );
+
+  if (orgCollections.length === 0) return null;
+
+  return (
+    <div className="admin-collections-section">
+      <button
+        className="admin-nav-section-link"
+        onClick={() => navigate('/admin/colecciones')}
+        type="button"
+      >
+        <BooksIcon className="admin-nav-icon" weight="regular" size={18} />
+        {org?.collectionLabelPlural ?? 'Colecciones'}
+      </button>
+      <ul className="admin-collections-list">
+        {orgCollections.map((col) => (
+          <li key={col.id}>
+            <NavLink
+              to={`/admin/campanas?col=${col.id}`}
+              className={() =>
+                `admin-collection-link${activeColId === col.id ? ' active' : ''}`
+              }
+            >
+              <span className="admin-collection-dot" />
+              {col.name}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function AdminLayout() {
+  const { logout, user } = useAuth();
+  const { activeOrg } = useActiveOrg();
+  const isSuperadmin = user?.role === 'superadmin';
+  const [dark, setDark] = useState(
+    () => localStorage.getItem(STORAGE_KEYS.DARK_MODE) === '1'
+  );
+
+  const toggleDark = () => {
+    setDark((prev) => {
+      const next = !prev;
+      localStorage.setItem(STORAGE_KEYS.DARK_MODE, next ? '1' : '0');
+      return next;
+    });
+  };
+
+  return (
+    <div className={`admin-layout admin-root${dark ? ' dark' : ''}`}>
       <aside className="admin-sidebar">
         <div className="admin-sidebar-brand">
           <h2>model.ar</h2>
-          {user && (
-            <span className="admin-sidebar-org-tag">Org — {user.org}</span>
-          )}
         </div>
 
         <nav className="admin-sidebar-nav">
-          <NavLink
-            to="/admin/dashboard"
-            className={({ isActive }) => `admin-nav-link${isActive ? ' active' : ''}`}
-          >
-            <span className="admin-nav-icon">📊</span>
-            Dashboard
-          </NavLink>
+          {isSuperadmin && (
+            <NavLink
+              to="/admin/organizaciones"
+              end
+              className={({ isActive }) =>
+                `admin-nav-link${isActive ? ' active' : ''}`
+              }
+            >
+              <BuildingsIcon
+                className="admin-nav-icon"
+                weight="regular"
+                size={18}
+              />
+              Organizaciones
+            </NavLink>
+          )}
 
-          <NavLink
-            to="/admin/campanas/nueva"
-            className={({ isActive }) => `admin-nav-link${isActive ? ' active' : ''}`}
-          >
-            <span className="admin-nav-icon">➕</span>
-            Nueva campaña
-          </NavLink>
+          {isSuperadmin && <OrgSearch />}
 
-          <NavLink
-            to="/admin/metricas"
-            className={({ isActive }) => `admin-nav-link${isActive ? ' active' : ''}`}
-          >
-            <span className="admin-nav-icon">📈</span>
-            Métricas
-          </NavLink>
-
-          {user?.role === 'superadmin' && (
-            <div className="admin-orgs-section">
-              <button
-                className="admin-orgs-toggle"
-                onClick={() => setOrgsOpen(prev => !prev)}
-                type="button"
+          {activeOrg && (
+            <>
+              <div className="admin-nav-org-header">
+                <span className="admin-nav-org-name">{activeOrg.name}</span>
+              </div>
+              <NavLink
+                to="/admin/dashboard"
+                className={({ isActive }) =>
+                  `admin-nav-link admin-nav-link--sub${isActive ? ' active' : ''}`
+                }
               >
-                <span className="admin-nav-icon">🏢</span>
-                Organizaciones
-                <span className={`admin-orgs-toggle-chevron${orgsOpen ? ' admin-orgs-toggle-chevron--open' : ''}`}>
-                  ▶
-                </span>
-              </button>
-              {orgsOpen && (
-                <div className="admin-orgs-list">
-                  <NavLink
-                    to="/admin/organizaciones/santillana"
-                    className={({ isActive }) => `admin-org-link${isActive ? ' active' : ''}`}
-                  >
-                    Santillana
-                  </NavLink>
-                  <NavLink
-                    to="/admin/organizaciones/garbarino"
-                    className={({ isActive }) => `admin-org-link${isActive ? ' active' : ''}`}
-                  >
-                    Garbarino
-                  </NavLink>
-                  <NavLink
-                    to="/admin/organizaciones/museo-mar"
-                    className={({ isActive }) => `admin-org-link${isActive ? ' active' : ''}`}
-                  >
-                    Museo Mar
-                  </NavLink>
-                </div>
+                <SquaresFourIcon
+                  className="admin-nav-icon"
+                  weight="regular"
+                  size={18}
+                />
+                Dashboard
+              </NavLink>
+              <NavLink
+                to="/admin/metricas"
+                className={({ isActive }) =>
+                  `admin-nav-link admin-nav-link--sub${isActive ? ' active' : ''}`
+                }
+              >
+                <ChartLineUpIcon
+                  className="admin-nav-icon"
+                  weight="regular"
+                  size={18}
+                />
+                Métricas
+              </NavLink>
+              <NavLink
+                to="/admin/campanas"
+                end
+                className={({ isActive }) =>
+                  `admin-nav-link admin-nav-link--sub${isActive ? ' active' : ''}`
+                }
+              >
+                <MegaphoneIcon
+                  className="admin-nav-icon"
+                  weight="regular"
+                  size={18}
+                />
+                Campañas
+              </NavLink>
+
+              <CollectionsSidebar />
+
+              {isSuperadmin && (
+                <NavLink
+                  to="/admin/colecciones"
+                  className={({ isActive }) =>
+                    `admin-nav-link admin-nav-link--sub${isActive ? ' active' : ''}`
+                  }
+                >
+                  <GearIcon
+                    className="admin-nav-icon"
+                    weight="regular"
+                    size={18}
+                  />
+                  Gestionar{' '}
+                  {ORGS.find((o) => o.slug === activeOrg.slug)
+                    ?.collectionLabelPlural ?? 'Colecciones'}
+                </NavLink>
               )}
-            </div>
+            </>
           )}
         </nav>
 
         <div className="admin-sidebar-footer">
+          <button
+            className="admin-theme-btn"
+            onClick={toggleDark}
+            type="button"
+          >
+            {dark ? (
+              <SunIcon className="admin-nav-icon" weight="regular" size={18} />
+            ) : (
+              <MoonIcon className="admin-nav-icon" weight="regular" size={18} />
+            )}
+            {dark ? 'Modo claro' : 'Modo oscuro'}
+          </button>
           <button className="admin-logout-btn" onClick={logout}>
-            <span className="admin-nav-icon">🚪</span>
+            <SignOutIcon
+              className="admin-nav-icon"
+              weight="regular"
+              size={18}
+            />
             Cerrar sesión
           </button>
         </div>
@@ -93,5 +298,5 @@ export function AdminLayout() {
         <Outlet />
       </main>
     </div>
-  )
+  );
 }
