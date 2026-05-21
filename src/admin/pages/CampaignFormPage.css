@@ -51,6 +51,12 @@
   color: var(--sm-fg-2);
 }
 
+.cfp-field-optional {
+  font-weight: 400;
+  color: var(--sm-fg-3);
+  font-size: 0.8rem;
+}
+
 .cfp-field input,
 .cfp-field textarea,
 .cfp-field select {
@@ -362,8 +368,8 @@
 }
 
 .cfp-preview-empty-icon {
-  font-size: 2.5rem;
   opacity: 0.4;
+  color: var(--sm-fg-2);
 }
 
 .cfp-preview-empty p {
@@ -456,9 +462,8 @@
   width: 64px;
   height: 64px;
   background-color: var(--sm-accent-soft);
-  color: var(--sm-ok);
+  color: var(--sm-accent);
   border-radius: 50%;
-  font-size: 1.75rem;
   font-weight: 700;
   margin: 0 auto 20px;
 }
@@ -510,6 +515,9 @@
 }
 
 .cfp-btn-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 4px 10px;
   font-size: 0.75rem;
   font-weight: 600;

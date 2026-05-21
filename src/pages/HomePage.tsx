@@ -1,91 +1,42 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { searchModels } from '@/services/sketchfab';
-import {
-  SECTOR_META,
-  sectorCategories,
-  getBestThumbnail,
-} from '@/types/sketchfab';
-import type { SketchfabModel, ITSector } from '@/types/sketchfab';
-
-type Tab = 'all' | ITSector;
-
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'all', label: 'Todos' },
-  { id: 'ecommerce', label: 'Ecommerce' },
-  { id: 'turismo', label: 'Turismo' },
-  { id: 'educacion', label: 'Educación' },
-];
+import { getModel } from '@/services/sketchfab';
+import { getBestThumbnail } from '@/types/sketchfab';
+import type { SketchfabModel } from '@/types/sketchfab';
+import { useCampaigns } from '@/admin/context/CampaignsContext';
 
 export const HomePage = () => {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>('all');
-  const [category, setCategory] = useState<string>('');
-  const [keyword, setKeyword] = useState('');
+  const { campaigns } = useCampaigns();
   const [models, setModels] = useState<SketchfabModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [keyword, setKeyword] = useState('');
 
-  // Categorías disponibles según tab activa
-  const categories =
-    tab === 'all' ? [] : SECTOR_META[tab as ITSector].categories;
+  // Derive unique UIDs from all campaigns
+  const uids = [...new Set(campaigns.map((c) => c.sketchfabUid))];
 
-  const buildSearchParams = () => {
-    return {
-      keyword: keyword.trim() || undefined,
-      categories:
-        category ||
-        (tab !== 'all' ? sectorCategories(tab as ITSector) : undefined),
-      count: 24,
-    };
-  };
-
-  // Cargar modelos cuando cambia tab, category o keyword (con debounce en keyword)
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    const delay = keyword ? 400 : 0;
-    debounceRef.current = setTimeout(() => {
-      setLoading(true);
-      setError(null);
-      setNextCursor(null);
-      searchModels(buildSearchParams())
-        .then((res) => {
-          setModels(res.results);
-          setNextCursor(res.next ?? null);
-        })
-        .catch((err: Error) => setError(err.message))
-        .finally(() => setLoading(false));
-    }, delay);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, category, keyword]);
-
-  // Resetear categoría al cambiar tab
-  const handleTabChange = (id: Tab) => {
-    setTab(id);
-    setCategory('');
-  };
-
-  const loadMore = () => {
-    if (!nextCursor || loading) return;
+    if (uids.length === 0) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    searchModels({ ...buildSearchParams(), cursor: nextCursor })
-      .then((res) => {
-        setModels((prev) => [...prev, ...res.results]);
-        setNextCursor(res.next ?? null);
-      })
+    setError(null);
+    Promise.all(uids.map((uid) => getModel(uid)))
+      .then((results) => setModels(results))
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaigns.length]);
+
+  const filtered = keyword.trim()
+    ? models.filter((m) => m.name.toLowerCase().includes(keyword.toLowerCase()))
+    : models;
 
   return (
     <main className="page">
       <div className="container">
-        {/* Búsqueda */}
         <div className="search-bar">
           <input
             className="search-bar__input"
@@ -96,43 +47,13 @@ export const HomePage = () => {
           />
         </div>
 
-        {/* Tabs de sector */}
-        <div className="sector-tabs">
-          {TABS.map(({ id, label }) => (
-            <button
-              key={id}
-              className={`sector-tab sector-tab--${id} ${tab === id ? 'sector-tab--active' : ''}`}
-              onClick={() => handleTabChange(id)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* Filtro por categoría (solo cuando hay sector seleccionado) */}
-        {categories.length > 0 && (
-          <select
-            className="category-select"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">Todas las categorías</option>
-            {categories.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        )}
-
-        {/* Grid de resultados */}
         {error && <div className="state-error">{error}</div>}
-        {!error && models.length === 0 && !loading && (
-          <div className="state-empty">Sin resultados para esta búsqueda</div>
+        {!error && filtered.length === 0 && !loading && (
+          <div className="state-empty">Sin resultados</div>
         )}
 
         <div className="catalog-grid">
-          {models.map((model) => {
+          {filtered.map((model) => {
             const thumb = getBestThumbnail(model);
             return (
               <article
@@ -157,11 +78,6 @@ export const HomePage = () => {
                     {model.name}
                   </p>
                   <p className="model-card__meta">@{model.user.username}</p>
-                  {model.animationCount > 0 && (
-                    <span className="sector-badge sector-badge--educacion">
-                      Animado
-                    </span>
-                  )}
                   <div className="model-card__action">
                     <span
                       className="btn btn-primary"
@@ -175,15 +91,6 @@ export const HomePage = () => {
             );
           })}
         </div>
-
-        {/* Cargar más */}
-        {nextCursor && !loading && (
-          <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-            <button className="btn btn-ghost" onClick={loadMore}>
-              Cargar más
-            </button>
-          </div>
-        )}
 
         {loading && <div className="state-loading">Cargando modelos...</div>}
       </div>

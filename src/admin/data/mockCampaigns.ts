@@ -1,7 +1,8 @@
-import type { Campaign } from '../types'
-import { buildArQrUrl } from '../constants/urls'
+import type { Campaign } from '../types';
+import { buildArQrUrl } from '../constants/urls';
 
 export const mockCampaigns: Campaign[] = [
+  // Santillana — libros escolares
   {
     id: 'camp-001',
     title: 'Geometría en 3D - 6° Primaria',
@@ -15,6 +16,8 @@ export const mockCampaigns: Campaign[] = [
     ctaClicks: 287,
     createdAt: '2025-03-10T09:00:00.000Z',
     qrValue: buildArQrUrl('fe85107a4491481f8b176f85df856365'),
+    orgSlug: 'santillana',
+    collectionId: 'col-san-1',
   },
   {
     id: 'camp-002',
@@ -29,6 +32,8 @@ export const mockCampaigns: Campaign[] = [
     ctaClicks: 342,
     createdAt: '2025-03-18T10:30:00.000Z',
     qrValue: buildArQrUrl('0bebd0fe3124417dba7e7a4b62bbc8a3'),
+    orgSlug: 'santillana',
+    collectionId: 'col-san-2',
   },
   {
     id: 'camp-003',
@@ -43,6 +48,8 @@ export const mockCampaigns: Campaign[] = [
     ctaClicks: 98,
     createdAt: '2025-04-02T08:15:00.000Z',
     qrValue: buildArQrUrl('01810314feca4415a33a51dd151eacb3'),
+    orgSlug: 'santillana',
+    collectionId: 'col-san-1',
   },
   {
     id: 'camp-004',
@@ -57,5 +64,54 @@ export const mockCampaigns: Campaign[] = [
     ctaClicks: 72,
     createdAt: '2025-04-20T11:00:00.000Z',
     qrValue: buildArQrUrl('78b4b0b2c690485c9ea776bc2daa0569'),
+    orgSlug: 'santillana',
+    collectionId: 'col-san-4',
   },
-]
+
+  // Vega Desarrollos — proyectos inmobiliarios
+  {
+    id: 'camp-005',
+    title: 'Reserva Norte — Unidad tipo A',
+    description:
+      'Escaneá el QR en el brochure del proyecto para ver la unidad tipo A en 3D a escala real. Recorrés el departamento de 3 ambientes antes de la primera visita presencial.',
+    subject: 'espacio',
+    sketchfabUid: 'fe85107a4491481f8b176f85df856365',
+    views: 1420,
+    arActivations: 980,
+    ctaClicks: 310,
+    createdAt: '2025-03-10T09:00:00.000Z',
+    qrValue: buildArQrUrl('fe85107a4491481f8b176f85df856365'),
+    orgSlug: 'vega',
+    collectionId: 'col-vega-1',
+  },
+  {
+    id: 'camp-006',
+    title: 'Reserva Norte — Amenities',
+    description:
+      'Visualizá el área de amenities del complejo: pileta, SUM y coworking en 3D. Ideal para presentaciones comerciales y feria de desarrolladores.',
+    subject: 'espacio',
+    sketchfabUid: '0bebd0fe3124417dba7e7a4b62bbc8a3',
+    views: 890,
+    arActivations: 540,
+    ctaClicks: 195,
+    createdAt: '2025-03-20T10:00:00.000Z',
+    qrValue: buildArQrUrl('0bebd0fe3124417dba7e7a4b62bbc8a3'),
+    orgSlug: 'vega',
+    collectionId: 'col-vega-1',
+  },
+  {
+    id: 'camp-007',
+    title: 'Palermo Chico — Torre Residencial',
+    description:
+      'Explorá la fachada y los pisos tipo de la torre desde el material de inversores. El modelo 3D muestra orientación, vistas y distribución de planta.',
+    subject: 'espacio',
+    sketchfabUid: '01810314feca4415a33a51dd151eacb3',
+    views: 1105,
+    arActivations: 720,
+    ctaClicks: 248,
+    createdAt: '2025-04-05T08:00:00.000Z',
+    qrValue: buildArQrUrl('01810314feca4415a33a51dd151eacb3'),
+    orgSlug: 'vega',
+    collectionId: 'col-vega-2',
+  },
+];

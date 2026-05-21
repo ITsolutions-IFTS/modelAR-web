@@ -60,6 +60,7 @@
 }
 
 .org-santillana .org-avatar { background: oklch(0.92 0.05 240); color: oklch(0.40 0.14 240); }
+.org-vega .org-avatar       { background: oklch(0.92 0.05 155); color: oklch(0.36 0.14 155); }
 .org-garbarino .org-avatar  { background: oklch(0.93 0.06 55);  color: oklch(0.45 0.16 55); }
 .org-museo-mar .org-avatar  { background: oklch(0.92 0.05 290); color: oklch(0.40 0.14 290); }
 
@@ -138,4 +139,124 @@
   background: var(--sm-line);
   color: var(--sm-fg-3);
   cursor: not-allowed;
+}
+
+/* Observability section */
+.org-header-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.org-header-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.org-uptime-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.org-uptime-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.org-uptime--ok   { background: oklch(0.92 0.06 145); color: oklch(0.35 0.14 145); }
+.org-uptime--ok .org-uptime-dot   { background: oklch(0.52 0.18 145); }
+.org-uptime--warn { background: oklch(0.94 0.06 70);  color: oklch(0.45 0.14 70); }
+.org-uptime--warn .org-uptime-dot { background: oklch(0.65 0.18 70); }
+.org-uptime--down { background: oklch(0.94 0.06 25);  color: oklch(0.45 0.14 25); }
+.org-uptime--down .org-uptime-dot { background: oklch(0.58 0.18 25); }
+
+.org-trend {
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-left: 5px;
+}
+.org-trend--up   { color: oklch(0.45 0.16 145); }
+.org-trend--down { color: oklch(0.50 0.16 25); }
+
+.org-observability {
+  border-top: 1px solid var(--sm-line-soft);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.org-obs-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.org-obs-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.org-obs-item--right {
+  text-align: right;
+}
+
+.org-obs-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--sm-fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.org-obs-value {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--sm-fg-2);
+}
+
+.org-obs-campaign {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.org-obs-spark-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Mini sparkline bar chart */
+.org-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 32px;
+}
+
+.org-spark-bar {
+  flex: 1;
+  background: var(--sm-accent);
+  border-radius: 2px 2px 0 0;
+  min-height: 3px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.org-spark-bar:hover {
+  opacity: 1;
 }

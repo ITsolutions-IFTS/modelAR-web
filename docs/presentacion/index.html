@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>model.ar — Script Demo Santillana</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Tokens (del design system de model.ar) ─── */
+    :root {
+      --font: 'Figtree', system-ui, -apple-system, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      --bg:        #f9f8f6;
+      --surface:   #ffffff;
+      --surface-2: #f4f3f0;
+      --line:      #e8e5e0;
+      --line-md:   #d6d2cb;
+
+      --text:      #1a1614;
+      --text-2:    #6b6560;
+      --text-3:    #9c958d;
+
+      --accent:    #6d28d9;
+      --accent-bg: #f5f3ff;
+
+      --r-sm: 6px;
+      --r-md: 10px;
+      --r-lg: 14px;
+      --r-xl: 18px;
+      --r-pill: 9999px;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08);
+    }
+
+    /* ─── Colores por integrante ─── */
+    :root {
+      /* Betania — violet (acento del producto) */
+      --c-betania:        #6d28d9;
+      --c-betania-bg:     #f5f3ff;
+      --c-betania-border: #c4b5fd;
+      --c-betania-dark:   #4c1d95;
+
+      /* Eduardo — blue */
+      --c-eduardo:        #1d4ed8;
+      --c-eduardo-bg:     #eff6ff;
+      --c-eduardo-border: #bfdbfe;
+      --c-eduardo-dark:   #1e3a8a;
+
+      /* Matías — green */
+      --c-matias:        #047857;
+      --c-matias-bg:     #ecfdf5;
+      --c-matias-border: #a7f3d0;
+      --c-matias-dark:   #064e3b;
+
+      /* Micaela — amber */
+      --c-micaela:        #b45309;
+      --c-micaela-bg:     #fffbeb;
+      --c-micaela-border: #fde68a;
+      --c-micaela-dark:   #78350f;
+
+      /* Euge — rose */
+      --c-euge:        #be185d;
+      --c-euge-bg:     #fdf2f8;
+      --c-euge-border: #fbcfe8;
+      --c-euge-dark:   #831843;
+
+      /* Demo action — neutral */
+      --c-demo:        #374151;
+      --c-demo-bg:     #f1f5f9;
+      --c-demo-border: #cbd5e1;
+    }
+
+    /* ─── Reset ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      font-size: 1rem;
+      line-height: 1.6;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Header ─── */
+    .site-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .site-header__brand {
+      display: flex;
+      align-items: baseline;
+      gap: 0.625rem;
+    }
+
+    .site-header__logo {
+      font-size: 1.125rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+    }
+
+    .site-header__sep {
+      color: var(--line-md);
+      font-weight: 300;
+      font-size: 1.25rem;
+    }
+
+    .site-header__title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .site-header__meta {
+      font-size: 0.8rem;
+      color: var(--text-3);
+      font-weight: 400;
+    }
+
+    /* ─── Layout ─── */
+    .main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem;
+    }
+
+    /* ─── Leyenda ─── */
+    .legend {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .legend__title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 0.875rem;
+    }
+
+    .legend__grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .legend__item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.75rem 0.35rem 0.5rem;
+      border-radius: var(--r-pill);
+      border: 1px solid;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .legend__dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend__name { color: var(--text); }
+    .legend__role { color: var(--text-3); font-weight: 400; margin-left: 0.125rem; }
+
+    .legend__item--betania { background: var(--c-betania-bg); border-color: var(--c-betania-border); }
+    .legend__item--betania .legend__dot { background: var(--c-betania); }
+
+    .legend__item--eduardo { background: var(--c-eduardo-bg); border-color: var(--c-eduardo-border); }
+    .legend__item--eduardo .legend__dot { background: var(--c-eduardo); }
+
+    .legend__item--matias { background: var(--c-matias-bg); border-color: var(--c-matias-border); }
+    .legend__item--matias .legend__dot { background: var(--c-matias); }
+
+    .legend__item--micaela { background: var(--c-micaela-bg); border-color: var(--c-micaela-border); }
+    .legend__item--micaela .legend__dot { background: var(--c-micaela); }
+
+    .legend__item--euge { background: var(--c-euge-bg); border-color: var(--c-euge-border); }
+    .legend__item--euge .legend__dot { background: var(--c-euge); }
+
+    .legend__item--demo { background: var(--c-demo-bg); border-color: var(--c-demo-border); }
+    .legend__item--demo .legend__dot { background: var(--c-demo); border-radius: var(--r-sm); }
+
+    .legend__divider {
+      width: 1px;
+      height: 20px;
+      background: var(--line-md);
+      align-self: center;
+      margin: 0 0.25rem;
+    }
+
+    /* ─── Turno ─── */
+    .turn {
+      margin-bottom: 1rem;
+      border-radius: var(--r-xl);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .turn-header {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .speaker-badge {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--r-pill);
+      flex-shrink: 0;
+    }
+
+    .speaker-role {
+      font-size: 0.78rem;
+      color: var(--text-3);
+      font-weight: 400;
+    }
+
+    .demo-pill {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--r-pill);
+      background: var(--c-betania-bg);
+      color: var(--c-betania);
+      border: 1px solid var(--c-betania-border);
+      flex-shrink: 0;
+    }
+
+    .demo-pill::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--c-betania);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .turn-body {
+      padding: 1.125rem 1.25rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+    }
+
+    .dialogue {
+      font-size: 0.95rem;
+      color: var(--text-2);
+      line-height: 1.75;
+    }
+
+    .dialogue p + p {
+      margin-top: 0.625rem;
+    }
+
+    .dialogue strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ─── Acción de demo ─── */
+    .demo-action {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.625rem;
+      padding: 0.75rem 1rem;
+      background: var(--c-demo-bg);
+      border: 1px solid var(--c-demo-border);
+      border-radius: var(--r-md);
+      font-size: 0.85rem;
+      color: var(--c-demo);
+      font-style: italic;
+    }
+
+    .demo-action__icon {
+      flex-shrink: 0;
+      font-style: normal;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .demo-action__text {
+      line-height: 1.55;
+    }
+
+    /* ─── Colores por turno ─── */
+
+    /* Betania */
+    .turn--betania { border-color: var(--c-betania-border); }
+    .turn--betania .turn-header { background: var(--c-betania-bg); border-bottom-color: var(--c-betania-border); }
+    .turn--betania .speaker-badge { background: var(--c-betania); color: #fff; }
+
+    /* Eduardo */
+    .turn--eduardo { border-color: var(--c-eduardo-border); }
+    .turn--eduardo .turn-header { background: var(--c-eduardo-bg); border-bottom-color: var(--c-eduardo-border); }
+    .turn--eduardo .speaker-badge { background: var(--c-eduardo); color: #fff; }
+
+    /* Matías */
+    .turn--matias { border-color: var(--c-matias-border); }
+    .turn--matias .turn-header { background: var(--c-matias-bg); border-bottom-color: var(--c-matias-border); }
+    .turn--matias .speaker-badge { background: var(--c-matias); color: #fff; }
+
+    /* Micaela */
+    .turn--micaela { border-color: var(--c-micaela-border); }
+    .turn--micaela .turn-header { background: var(--c-micaela-bg); border-bottom-color: var(--c-micaela-border); }
+    .turn--micaela .speaker-badge { background: var(--c-micaela); color: #fff; }
+
+    /* Euge */
+    .turn--euge { border-color: var(--c-euge-border); }
+    .turn--euge .turn-header { background: var(--c-euge-bg); border-bottom-color: var(--c-euge-border); }
+    .turn--euge .speaker-badge { background: var(--c-euge); color: #fff; }
+
+    /* ─── Separador de sección ─── */
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin: 2rem 0 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    /* ─── Credenciales ─── */
+    .creds-box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .creds-box__title {
+      width: 100%;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 0.25rem;
+    }
+
+    .cred-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+    }
+
+    .cred-item__label {
+      color: var(--text-3);
+      font-weight: 500;
+    }
+
+    .cred-item__value {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      background: var(--surface-2);
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--line);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .cred-item__sep {
+      color: var(--line-md);
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 600px) {
+      .site-header { padding: 1rem; }
+      .main { padding: 1.5rem 1rem 4rem; }
+      .turn-header { flex-wrap: wrap; }
+      .demo-pill { margin-left: 0; }
+    }
+
+    /* ─── Print ─── */
+    @media print {
+      .site-header { position: static; }
+      .turn { break-inside: avoid; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="site-header__brand">
+      <span class="site-header__logo">model.ar</span>
+      <span class="site-header__sep">/</span>
+      <span class="site-header__title">Script — Demo Santillana</span>
+    </div>
+    <span class="site-header__meta">Mayo 2026 · ITSolutions AR</span>
+  </header>
+
+  <main class="main">
+
+    <!-- Leyenda -->
+    <div class="legend">
+      <div class="legend__title">Integrantes</div>
+      <div class="legend__grid">
+        <div class="legend__item legend__item--betania">
+          <span class="legend__dot"></span>
+          <span class="legend__name">Betania</span>
+          <span class="legend__role">PM / Analista — conduce y hace la demo</span>
+        </div>
+        <div class="legend__item legend__item--eduardo">
+          <span class="legend__dot"></span>
+          <span class="legend__name">Eduardo</span>
+          <span class="legend__role">DevOps</span>
+        </div>
+        <div class="legend__item legend__item--matias">
+          <span class="legend__dot"></span>
+          <span class="legend__name">Matías</span>
+          <span class="legend__role">Dev / QA</span>
+        </div>
+        <div class="legend__item legend__item--micaela">
+          <span class="legend__dot"></span>
+          <span class="legend__name">Micaela</span>
+          <span class="legend__role">Dev / QA</span>
+        </div>
+        <div class="legend__item legend__item--euge">
+          <span class="legend__dot"></span>
+          <span class="legend__name">Euge</span>
+          <span class="legend__role">UX / UI</span>
+        </div>
+        <div class="legend__divider"></div>
+        <div class="legend__item legend__item--demo">
+          <span class="legend__dot"></span>
+          <span class="legend__name">Acción en pantalla</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Credenciales de demo -->
+    <div class="creds-box">
+      <div class="creds-box__title">Credenciales para la demo</div>
+      <div class="cred-item">
+        <span class="cred-item__label">ITSolutions (superadmin)</span>
+        <span class="cred-item__sep">·</span>
+        <span class="cred-item__value">admin@itsolutions.com</span>
+        <span class="cred-item__sep">/</span>
+        <span class="cred-item__value">demo1234</span>
+      </div>
+      <div class="cred-item">
+        <span class="cred-item__label">Santillana (cliente)</span>
+        <span class="cred-item__sep">·</span>
+        <span class="cred-item__value">admin@santillana.com</span>
+        <span class="cred-item__sep">/</span>
+        <span class="cred-item__value">demo1234</span>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════ -->
+    <div class="section-label">Apertura</div>
+
+    <div class="turn turn--betania">
+      <div class="turn-header">
+        <span class="speaker-badge">Betania</span>
+        <span class="speaker-role">PM / Analista Funcional</span>
+      </div>
+      <div class="turn-body">
+        <div class="dialogue">
+          <p>"Buenas tardes, gracias por el tiempo. Lo que van a ver hoy es el sistema funcionando — no una presentación, no un prototipo. Si en algún momento quieren que hagamos algo en particular, nos dicen y lo hacemos en vivo."</p>
+          <p>"Arrancamos por nuestro lado, para que vean qué soporte tienen desde ITSolutions. Después pasamos directo al panel de ustedes."</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════ -->
+    <div class="section-label">Panel ITSolutions — soporte y monitoreo</div>
+
+    <div class="turn turn--eduardo">
+      <div class="turn-header">
+        <span class="speaker-badge">Eduardo</span>
+        <span class="speaker-role">DevOps</span>
+        <span class="demo-pill">Betania en demo</span>
+      </div>
+      <div class="turn-body">
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Betania loguea con <strong>admin@itsolutions.com</strong> y navega a la página de Organizaciones.</span>
+        </div>
+        <div class="dialogue">
+          <p>"Esto es lo que vemos nosotros desde ITSolutions. Cada cliente tiene su tarjeta con el estado en tiempo real: cuántas experiencias tienen activas, las vistas de la semana, la tendencia, y el uptime del servicio."</p>
+        </div>
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Señalar la card de Santillana: uptime 99.8%, última actividad, campaña top de la semana.</span>
+        </div>
+        <div class="dialogue">
+          <p>"Santillana aparece acá con 99.8% de uptime y la última actividad hace dos minutos. Eso nos permite detectar cualquier problema antes de que ustedes lo noten. Si en algún momento necesitan incorporar un usuario nuevo para el equipo de contenido, agregar una línea editorial, o resolver un problema técnico — entramos desde acá sin que tengan que hacer nada de su lado."</p>
+        </div>
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Betania hace click en "Entrar" en la card de Santillana.</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════ -->
+    <div class="section-label">Panel Santillana — métricas</div>
+
+    <div class="turn turn--betania">
+      <div class="turn-header">
+        <span class="speaker-badge">Betania</span>
+        <span class="speaker-role">PM / Analista Funcional</span>
+      </div>
+      <div class="turn-body">
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Están en el Dashboard de Santillana. Mostrar los cuatro stat cards de la parte superior.</span>
+        </div>
+        <div class="dialogue">
+          <p>"Esto es lo que ve el equipo de Santillana cuando inicia sesión. Solo sus datos — ningún otro cliente ve esto. Matías, ¿les explicás qué representa cada número?"</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="turn turn--matias">
+      <div class="turn-header">
+        <span class="speaker-badge">Matías</span>
+        <span class="speaker-role">Dev / QA</span>
+        <span class="demo-pill">Betania en demo</span>
+      </div>
+      <div class="turn-body">
+        <div class="dialogue">
+          <p>"Estos cuatro números son los que definimos juntos desde el principio. Vistas es cuántas veces se abrió una experiencia. El que importa es el segundo: activaciones AR — cuántos alumnos pasaron del modelo 3D a verlo en el espacio real. La tasa de conversión AR de Santillana en los datos actuales ronda el 60%, o sea que de cada 10 alumnos que abren una experiencia, 6 activan la AR."</p>
+        </div>
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Betania navega a Métricas desde el sidebar.</span>
+        </div>
+        <div class="dialogue">
+          <p>"En métricas tienen más detalle. Lo que más me parece útil para el equipo editorial es esto."</p>
+        </div>
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Señalar el gráfico de distribución horaria (pico entre 9h y 11h) y luego el desglose de AR activaciones por materia.</span>
+        </div>
+        <div class="dialogue">
+          <p>"La distribución horaria de scans muestra que el pico es entre las 9 y las 11 de la mañana. Eso no es tarea — es uso en clase. El docente lo está integrando en la hora. Y abajo, el desglose por materia: Ciencias Naturales y Matemática lideran en activaciones. Ese dato le dice al equipo editorial dónde tiene más impacto poner el esfuerzo en la próxima edición, sin depender de encuestas."</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════ -->
+    <div class="section-label">Crear campaña y asignar a una Serie</div>
+
+    <div class="turn turn--betania">
+      <div class="turn-header">
+        <span class="speaker-badge">Betania</span>
+        <span class="speaker-role">PM / Analista Funcional</span>
+      </div>
+      <div class="turn-body">
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Navegar a Campañas → click en "+ Nueva campaña". Abrir el CampaignFormPage.</span>
+        </div>
+        <div class="dialogue">
+          <p>"Ahora les mostramos cómo se crea una experiencia nueva. Esto lo hace alguien del equipo de contenido de Santillana — no necesita saber nada de tecnología."</p>
+          <p>"Pone el título, la descripción que va a ver el alumno, elige la materia..."</p>
+        </div>
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Seleccionar "Ciencias Naturales" en el campo de materia.</span>
+        </div>
+        <div class="dialogue">
+          <p>"...y busca el modelo 3D desde acá. No hay que subir archivos ni tener un diseñador 3D. Busca directamente en la biblioteca, elige el modelo y lo previsualiza antes de guardarlo."</p>
+        </div>
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Buscar "atom" en el buscador de Sketchfab, seleccionar un modelo. Mostrar la previsualización con thumbnail.</span>
+        </div>
+        <div class="dialogue">
+          <p>"Le pone el link a donde quiere que vaya el alumno al tocar el botón — la página del libro digital, un video, un artículo. Y acá lo asigna a una Serie."</p>
+        </div>
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Señalar el campo de Serie en el formulario.</span>
+        </div>
+        <div class="dialogue">
+          <p>"Una Serie puede ser 'Ciencias Naturales 2° Secundaria' — agrupa todas las experiencias de ese libro. El sistema las filtra juntas automáticamente."</p>
+        </div>
+        <div class="demo-action">
+          <span class="demo-action__icon">🖥️</span>
+          <span class="demo-action__text">Guardar el formulario. Navegar automáticamente a CampaignQRPage. Mostrar el QR generado.</span>
+        </div>
+        <div class="dialogue">
+          <p>"El QR se genera solo. Se descarga y se imprime en el libro, la fotocopia, el aula virtual. Ese QR no cambia nunca. Si en la próxima edición actualizan el modelo 3D, lo cambian acá y el QR que ya está impreso sigue funcionando igual."</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════ -->
+    <div class="section-label">Flujo del usuario final — alumno, familia, directivo</div>
+
+    <div class="turn turn--micaela">
+      <div class="turn-header">
+        <span class="speaker-badge">Micaela</span>
+        <span class="speaker-role">Dev / QA</span>
+        <span class="demo-pill">Betania en demo</span>
+      </div>
+      <div class="turn-body">
+        <div class="demo-action">
+          <span class="demo-action__icon">📱</span>
+          <span class="demo-action__text">Betania abre <strong>/ar/:uid</strong> en el celular o muestra la vista mobile en el navegador. Apuntar la cámara al QR recién generado.</span>
+        </div>
+        <div class="dialogue">
+          <p>"Ahora el lado del alumno. Esto aplica también a un directivo revisando el material o a una familia que recibió la fotocopia en casa."</p>
+          <p>"Escanea el QR con la cámara del teléfono. No descarga nada, no crea una cuenta, no necesita saber qué es realidad aumentada. Se abre el navegador y aparece el modelo directamente."</p>
+          <p>"Puede rotarlo con los dedos, verlo desde cualquier ángulo. Si toca el botón de AR, el átomo aparece sobre su escritorio en el espacio físico. La descripción que cargó el equipo de Santillana está abajo, y el botón los lleva al recurso que eligieron."</p>
+          <p>"Funciona en Android y en iPhone, sin app instalada. En colegios donde los dispositivos tienen restricciones, o donde los alumnos tienen teléfonos de distinto modelo y sistema operativo, eso es lo que hace que funcione para todos."</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════ -->
+    <div class="section-label">Decisiones de diseño</div>
+
+    <div class="turn turn--euge">
+      <div class="turn-header">
+        <span class="speaker-badge">Euge</span>
+        <span class="speaker-role">UX / UI</span>
+      </div>
+      <div class="turn-body">
+        <div class="dialogue">
+          <p>"Una decisión que tomamos temprano es que el alumno no puede tener ningún paso extra entre el QR y el modelo. Sin pantallas de bienvenida, sin formularios, sin menús. El QR es el único punto de entrada y el contenido aparece de inmediato. Para el docente eso es clave: no puede estar explicando cómo usar una app mientras tiene 30 alumnos en el aula. Tiene que funcionar la primera vez, sin instrucciones. Eso fue deliberado y lo validamos en dispositivos reales."</p>
+          <p>"Si se fijan, el panel de administración y la experiencia del alumno son visualmente muy distintos — y eso también es una decisión de diseño. El panel está pensado para escritorio, con sidebar, tablas, densidad de información. El equipo de contenido trabaja sentado, con tiempo, tomando decisiones. El viewer del alumno es exactamente lo opuesto: pantalla completa, un solo modelo, un solo botón. Dos productos dentro del mismo sistema, cada uno diseñado para su contexto de uso."</p>
+          <p>"También adaptamos la terminología al cliente. Lo que en otra organización es una 'Colección', para Santillana es una 'Serie'. El sistema habla el idioma editorial de ustedes, no el nuestro. Eso lo configuramos por organización — si mañana trabajan con un museo, el mismo sistema les dice 'Sala' en lugar de 'Serie'."</p>
+          <p>"Y los badges de materia — Matemática, Ciencias Naturales, Historia — no son solo etiquetas. Son el criterio de filtro principal para que el equipo de contenido encuentre rápido lo que busca cuando tienen decenas de campañas cargadas. El color ayuda a escanear la tabla sin leer cada fila."</p>
+          <p>"Por último, el panel tiene modo oscuro. No es un detalle estético — alguien que trabaja horas frente a una pantalla cargando contenido lo agradece. Son decisiones pequeñas que hacen que el sistema no se abandone."</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════ -->
+    <div class="section-label">Cierre — estado actual y próximos pasos</div>
+
+    <div class="turn turn--eduardo">
+      <div class="turn-header">
+        <span class="speaker-badge">Eduardo</span>
+        <span class="speaker-role">DevOps</span>
+      </div>
+      <div class="turn-body">
+        <div class="dialogue">
+          <p>"Para cerrar, quiero ser transparente sobre dónde estamos. Lo que vieron hoy corre en producción — los QR funcionan, la AR se activa, las métricas se registran. Lo que estamos haciendo desde hace dos semanas es un piloto interno: nuestro equipo usó el sistema simulando ser Santillana para encontrar cualquier problema antes de que lo encuentren los docentes. Los datos que vieron son de ese período, no son inventados."</p>
+          <p>"Lo que todavía estamos conectando es la base de datos real — hoy los datos no persisten entre sesiones, lo cual está bien para esta instancia pero no para producción. Eso es lo primero que cerramos en el próximo sprint, junto con el registro de usuarios propios para que el equipo de contenido de Santillana pueda acceder sin pasar por nosotros."</p>
+          <p>"El paso que proponemos como siguiente hito es un piloto con un grupo pequeño de su lado: dos o tres docentes, un par de aulas, para tener datos reales antes del lanzamiento completo. Eso nos da retroalimentación concreta y a ustedes les da certeza antes de escalar."</p>
+          <p>"¿Hay algo de lo que vieron que quieran priorizar, o algo que les gustaría ver antes de ese piloto?"</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>
