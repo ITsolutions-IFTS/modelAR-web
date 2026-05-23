@@ -1,12 +1,12 @@
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { QRCodeSVG } from 'qrcode.react'
-import { useCampaigns } from '../context/CampaignsContext'
-import { SUBJECT_LABELS } from '../constants/subjects'
-import type { Subject } from '../constants/subjects'
-import { buildArQrUrl, LOCAL_BASE_URL, PROD_BASE_URL } from '../constants/urls'
-import { formatDate, formatNumber } from '../utils/format'
-import type { Campaign } from '../types'
-import './CampaignQRPage.css'
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
+import { useCampaigns } from '../context/CampaignsContext';
+import { SUBJECT_LABELS } from '../constants/subjects';
+import type { Subject } from '../constants/subjects';
+import { buildArQrUrl, LOCAL_BASE_URL, PROD_BASE_URL } from '../constants/urls';
+import { formatDate, formatNumber } from '../utils/format';
+import type { Campaign } from '../types';
+import './CampaignQRPage.css';
 
 const FALLBACK_CAMPAIGN: Campaign = {
   id: 'nueva',
@@ -20,28 +20,38 @@ const FALLBACK_CAMPAIGN: Campaign = {
   ctaClicks: 0,
   createdAt: new Date().toISOString(),
   qrValue: buildArQrUrl('fe85107a4491481f8b176f85df856365'),
-}
+  orgSlug: 'demo',
+};
 
 export function CampaignQRPage() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const stateUid = (location.state as { uid?: string } | null)?.uid
-  const { campaigns } = useCampaigns()
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const stateUid = (location.state as { uid?: string } | null)?.uid;
+  const { campaigns } = useCampaigns();
 
-  const baseCampaign = campaigns.find((c) => c.id === id) ?? FALLBACK_CAMPAIGN
+  const baseCampaign = campaigns.find((c) => c.id === id) ?? FALLBACK_CAMPAIGN;
 
   const campaign: Campaign =
     stateUid && id === 'nueva'
-      ? { ...baseCampaign, sketchfabUid: stateUid, qrValue: buildArQrUrl(stateUid) }
-      : baseCampaign
+      ? {
+          ...baseCampaign,
+          sketchfabUid: stateUid,
+          qrValue: buildArQrUrl(stateUid),
+        }
+      : baseCampaign;
 
-  const hasStats = campaign.views > 0 || campaign.arActivations > 0 || campaign.ctaClicks > 0
+  const hasStats =
+    campaign.views > 0 || campaign.arActivations > 0 || campaign.ctaClicks > 0;
 
   return (
     <div className="qrp-page">
       <div className="qrp-back-row">
-        <button type="button" className="qrp-btn qrp-btn-ghost" onClick={() => navigate('/admin/dashboard')}>
+        <button
+          type="button"
+          className="qrp-btn qrp-btn-ghost"
+          onClick={() => navigate('/admin/dashboard')}
+        >
           ← Volver al dashboard
         </button>
       </div>
@@ -52,14 +62,22 @@ export function CampaignQRPage() {
             <span className={`subject-badge badge-${campaign.subject}`}>
               {SUBJECT_LABELS[campaign.subject as Subject] ?? campaign.subject}
             </span>
-            <p className="qrp-created">Creada el {formatDate(campaign.createdAt)}</p>
+            <p className="qrp-created">
+              Creada el {formatDate(campaign.createdAt)}
+            </p>
           </div>
 
           <h1 className="qrp-title">{campaign.title}</h1>
           <p className="qrp-description">{campaign.description}</p>
 
           <div className="qrp-qr-wrapper">
-            <QRCodeSVG value={campaign.qrValue} size={240} level="H" includeMargin className="qrp-qr" />
+            <QRCodeSVG
+              value={campaign.qrValue}
+              size={240}
+              level="H"
+              includeMargin
+              className="qrp-qr"
+            />
           </div>
 
           <a
@@ -90,27 +108,36 @@ export function CampaignQRPage() {
             <h2 className="qrp-stats-title">Estadísticas de la campaña</h2>
             <div className="qrp-stats-grid">
               <div className="qrp-stat">
-                <span className="qrp-stat-value qrp-stat-blue">{formatNumber(campaign.views)}</span>
+                <span className="qrp-stat-value qrp-stat-blue">
+                  {formatNumber(campaign.views)}
+                </span>
                 <span className="qrp-stat-label">Vistas totales</span>
               </div>
               <div className="qrp-stat">
-                <span className="qrp-stat-value qrp-stat-green">{formatNumber(campaign.arActivations)}</span>
+                <span className="qrp-stat-value qrp-stat-green">
+                  {formatNumber(campaign.arActivations)}
+                </span>
                 <span className="qrp-stat-label">Activaciones AR</span>
               </div>
               <div className="qrp-stat">
-                <span className="qrp-stat-value qrp-stat-orange">{formatNumber(campaign.ctaClicks)}</span>
+                <span className="qrp-stat-value qrp-stat-orange">
+                  {formatNumber(campaign.ctaClicks)}
+                </span>
                 <span className="qrp-stat-label">Clicks al CTA</span>
               </div>
             </div>
             {campaign.views > 0 && (
               <p className="qrp-conversion">
                 Tasa de activación AR:{' '}
-                <strong>{((campaign.arActivations / campaign.views) * 100).toFixed(1)}%</strong>
+                <strong>
+                  {((campaign.arActivations / campaign.views) * 100).toFixed(1)}
+                  %
+                </strong>
               </p>
             )}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
