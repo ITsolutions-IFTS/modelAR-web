@@ -15,6 +15,18 @@ Proyecto creado desde cero en `itsolutions-next/`:
 - `tsconfig.app.json` con `strict: true`, paths `@/*` → `src/*`
 - `vite.config.ts` con alias `@` → `src/` + allowedHosts para tunnels HTTPS
 
+**Providers globales de estado** (montados en `App.tsx`, wrappean toda la app):
+
+- `AuthProvider` — sesión de usuario admin (login / logout / persistencia)
+- `ActiveOrgProvider` — organización activa del usuario logueado
+- `CampaignsProvider` — lista de campañas filtrada por org activa
+- `CollectionsProvider` — colecciones de la org activa
+
+**Guards de acceso:**
+
+- `<ProtectedRoute />` — redirige a `/admin/login` si no hay sesión activa
+- `<OrgGuard />` — valida que el usuario tenga org asignada antes de acceder al panel
+
 **Nota de v2:** El `.env` contiene `VITE_SKETCHFAB_API_KEY` directamente. En Stage 3 mover a variables de entorno en el servidor proxy.
 
 ---
@@ -37,24 +49,35 @@ Proyecto creado desde cero en `itsolutions-next/`:
 - Componentes: `.model-card`, `.catalog-grid`, `.sector-tabs`, `.sector-tab`, `.search-bar`, `.share-panel`
 - Badges: `.sector-badge--ecommerce`, `.sector-badge--turismo`, `.sector-badge--educacion`
 
-🔁 **v2 — Badges en cards:** El badge que se muestra en las tarjetas siempre usa `sector-badge--educacion` (color azul). Corregir para que use el color del sector activo o el sector inferido del modelo.
+🔁 **v2 — Badges en cards:** El badge no se renderiza en las tarjetas (`HomePage.tsx`). Las clases CSS ya existen (`.sector-badge--ecommerce/turismo/educacion`). Para implementar: cruzar el `uid` del modelo con la campaign del contexto, mapear `campaign.subject` → `ITSector` (`educacion` para materias académicas, `ecommerce` para `producto`, etc.) y renderizar `<span className={`sector-badge sector-badge--${sector}`}>`. El campo `sector` que expone la API (`ecommerce | turismo | educacion | inmobiliario | museo`) reemplazará este mapeo cuando se conecte el backend real.
 
-🔁 **v2 — Skeleton loading:** No hay placeholders mientras carga el grid. Agregar `.model-card--skeleton` con animación de shimmer para la primera carga y la paginación.
+🔁 **v2 — Skeleton loading:** No hay placeholders mientras carga el grid. Mientras `loading === true`, renderizar `N` cards con clase `model-card--skeleton` en lugar del grid vacío. Agregar a `styles.css`: `@keyframes shimmer` + reglas para `.model-card--skeleton` que animen `__thumb`, `__name`, `__meta` y `__action` con gradiente horizontal.
 
 ---
 
 ### ITS-C03 — Routing con HashRouter | ✅ Betania
 
 `src/App.tsx`:
+
 - `<HashRouter>` para compatibilidad con GitHub Pages / Netlify (sin servidor)
-- Rutas: `/` → HomePage, `/ar/:uid` → ARPage, `/scan` → ScanPage
+- **Rutas públicas:** `/` → LandingPage, `/catalogo` → HomePage, `/ar/:uid` → ARPage, `/scan` → ScanPage
+- **Rutas admin** (bajo `/admin/*`, protegidas por `<ProtectedRoute />`):
+  - `/admin/login` → LoginPage
+  - `/admin/dashboard` → DashboardPage
+  - `/admin/campanas` → CampaignsPage
+  - `/admin/campanas/:id/qr` → CampaignQRPage
+  - `/admin/colecciones` → CollectionsPage
+  - `/admin/metricas` → MetricsPage
 - Catch-all redirige a `/`
+
+**Visibilidad del AppHeader:** no se renderiza en `/` (LandingPage tiene su propio header) ni en rutas `/admin/*`.
 
 ---
 
 ### ITS-C04 — AppHeader | ✅ Betania
 
 `src/components/AppHeader.tsx`:
+
 - Header sticky con backdrop-filter blur
 - Logo "**IT**Solutions AR" con acento en `var(--accent)`
 - NavLinks: Catálogo + Escanear, con estado activo visual
@@ -72,7 +95,7 @@ Proyecto creado desde cero en `itsolutions-next/`:
 ### ITS-002 — Alcance | ⏳ Betania
 
 - [ ] Módulo 2: reemplazar descripción del catálogo hardcodeado ECO/EDU/TUR por:
-  > *"Catálogo dinámico conectado a Sketchfab API v3, con búsqueda por texto libre, filtro por sector (ecommerce, turismo, educación) y categoría, y paginación con cursor."*
+  > _"Catálogo dinámico conectado a Sketchfab API v3, con búsqueda por texto libre, filtro por sector (ecommerce, turismo, educación) y categoría, y paginación con cursor."_
 - [ ] Plataformas: agregar TypeScript 5.6, Sketchfab API v3, Figtree Variable; corregir Vite v8 → v6
 
 ---
@@ -86,14 +109,14 @@ Eduardo Torcello figura en el documento entregado. Sin acción pendiente.
 ### ITS-004 — Reconocimiento / Competidores | ⏳ Betania
 
 - [ ] Eliminar fila "Sketchfab AR" de la tabla de competidores
-- [ ] Agregar nota: *"Sketchfab fue considerado inicialmente como competidor. En la arquitectura final es utilizado como proveedor de assets 3D mediante su API v3."*
+- [ ] Agregar nota: _"Sketchfab fue considerado inicialmente como competidor. En la arquitectura final es utilizado como proveedor de assets 3D mediante su API v3."_
 
 ---
 
 ### ITS-005 — Objetivos SMART | ⏳ Betania
 
 - [ ] SMART #2: agregar evidencia de cumplimiento:
-  > *"Con Sketchfab, publicar una nueva experiencia requiere solo copiar un UID — no se modifica código ni se reempaqueta nada. El tiempo de publicación es menor a 2 minutos."*
+  > _"Con Sketchfab, publicar una nueva experiencia requiere solo copiar un UID — no se modifica código ni se reempaqueta nada. El tiempo de publicación es menor a 2 minutos."_
 
 ---
 

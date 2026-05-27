@@ -10,6 +10,8 @@
 
 ### ITS-S3-API-001 — Setup del proyecto Node + Express + Sequelize
 
+**Estado: ✅ Implementado** — 2026-05-24
+
 **Responsable:** Betania
 
 ```
@@ -50,6 +52,7 @@ Crear: /backend (en raíz del repo)
 ```
 
 **Dependencies:**
+
 ```json
 {
   "express": "^4.21.0",
@@ -67,6 +70,7 @@ Crear: /backend (en raíz del repo)
 ```
 
 **Setup Sequelize:**
+
 ```bash
 npm install
 npm install -D sequelize-cli
@@ -82,6 +86,7 @@ npx sequelize-cli init
 ```
 
 **Dev dependencies:**
+
 ```json
 {
   "@types/express": "^4.17.20",
@@ -92,23 +97,27 @@ npx sequelize-cli init
 ```
 
 **Checklist:**
-- [ ] Carpeta backend creada con estructura inicial
-- [ ] package.json con dependencias
-- [ ] .env.example con variables necesarias
-- [ ] Script `dev`: nodemon para desarrollo
-- [ ] Script `build`: tsc para TypeScript
-- [ ] TypeScript config (tsconfig.json)
-- [ ] Git ignorar node_modules, .env
+
+- [x] Carpeta backend creada con estructura inicial
+- [x] package.json con dependencias
+- [x] .env.example con variables necesarias
+- [x] Script `dev`: nodemon para desarrollo
+- [x] Script `build`: tsc para TypeScript
+- [x] TypeScript config (tsconfig.json)
+- [x] Git ignorar node_modules, .env
 
 ---
 
 ### ITS-S3-API-002 — Conexión a PostgreSQL + Sequelize Models
+
+**Estado: ✅ Implementado** — 2026-05-24
 
 **Responsable:** Betania
 
 **Decisión:** Usar Sequelize (ORM, más fácil de aprender que Knex)
 
 **Configuración inicial:**
+
 ```ts
 // src/config/database.ts
 import { Sequelize } from 'sequelize';
@@ -129,6 +138,7 @@ export default sequelize;
 ```
 
 **Model 1 — Client:**
+
 ```ts
 // src/models/Client.ts
 import { DataTypes, Model } from 'sequelize';
@@ -191,6 +201,7 @@ export default Client;
 ```
 
 **Model 2 — Campaign:**
+
 ```ts
 // src/models/Campaign.ts
 import { DataTypes, Model, ForeignKey } from 'sequelize';
@@ -263,6 +274,7 @@ export default Campaign;
 ```
 
 **Model 3 — AnalyticsEvent:**
+
 ```ts
 // src/models/AnalyticsEvent.ts
 import { DataTypes, Model, ForeignKey } from 'sequelize';
@@ -318,21 +330,25 @@ export default AnalyticsEvent;
 ```
 
 **Checklist:**
-- [ ] PostgreSQL corriendo localmente
-- [ ] .env con credenciales DB
-- [ ] Sequelize instalado
-- [ ] 3 models creados (Client, Campaign, AnalyticsEvent)
-- [ ] `npm run db:sync` o migrations ejecutadas
-- [ ] Tablas creadas en DB
-- [ ] Relaciones definidas
+
+- [x] PostgreSQL corriendo localmente
+- [x] .env con credenciales DB
+- [x] Sequelize instalado
+- [x] 3 models creados (Client, Campaign, AnalyticsEvent)
+- [x] `npm run db:sync` o migrations ejecutadas
+- [x] Tablas creadas en DB
+- [x] Relaciones definidas
 
 ---
 
 ### ITS-S3-API-003 — Autenticación JWT
 
+**Estado: ✅ Implementado** — 2026-05-24
+
 **Responsable:** Betania
 
 **Endpoints:**
+
 ```
 POST /api/auth/register
   Body: { email, password, name }
@@ -361,12 +377,13 @@ GET /api/auth/me
 ```
 
 **Middleware de auth:**
+
 ```ts
 // middleware/auth.ts
 export function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'No token' });
-  
+
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.clientId = payload.clientId; // Inyectar en req para usar después
@@ -378,6 +395,7 @@ export function authMiddleware(req, res, next) {
 ```
 
 **Seguridad:**
+
 - [ ] Passwords hasheados con bcrypt (10 rounds)
 - [ ] JWT token con expiry (ej. 24 horas)
 - [ ] Refresh token opcional (Stage 4)
@@ -386,27 +404,31 @@ export function authMiddleware(req, res, next) {
 - [ ] CORS configurado (solo itsolutions.com)
 
 **Checklist:**
-- [ ] POST /auth/register funciona
-- [ ] POST /auth/login funciona
-- [ ] JWT generado y verificado
-- [ ] Middleware auth protege endpoints privados
-- [ ] POST /auth/logout (solo limpia frontend)
-- [ ] GET /auth/me devuelve cliente autenticado
-- [ ] Errores manejan casos edge (email ya existe, etc)
+
+- [x] POST /auth/register funciona
+- [x] POST /auth/login funciona
+- [x] JWT generado y verificado
+- [x] Middleware auth protege endpoints privados
+- [x] POST /auth/logout (solo limpia frontend)
+- [x] GET /auth/me devuelve cliente autenticado
+- [x] Errores manejan casos edge (email ya existe, etc)
 
 ---
 
 ### ITS-S3-API-004 — Endpoints CRUD de Campaigns (sin lógica de Sketchfab)
 
+**Estado: ✅ Implementado** — 2026-05-24
+
 **Responsable:** Sin asignar
 
 **Endpoints:**
+
 ```
 GET /api/campaigns
   Auth: Requerida
   Response: [ { id, title, sector, sketchfab_uid, qr_code, created_at } ]
   Nota: Solo campañas del cliente autenticado
-  
+
 POST /api/campaigns
   Auth: Requerida
   Body: { title, description, sector, sketchfab_uid, cta_url }
@@ -416,13 +438,13 @@ POST /api/campaigns
     - sector es válido
     - sketchfab_uid no vacío
     - cta_url es URL válida
-    
+
 GET /api/campaigns/:id
   Auth: Requerida
   Response: { id, title, description, sector, sketchfab_uid, cta_url, qr_code, created_at }
   Validaciones:
     - La campaña pertenece al cliente autenticado
-    
+
 PATCH /api/campaigns/:id
   Auth: Requerida
   Body: { title?, description?, sector?, cta_url? }
@@ -440,6 +462,7 @@ DELETE /api/campaigns/:id
 ```
 
 **Estructura de controller (ejemplo):**
+
 ```ts
 // controllers/campaignsController.ts
 export async function getCampaigns(req, res) {
@@ -455,16 +478,19 @@ export async function getCampaigns(req, res) {
 ```
 
 **Checklist:**
-- [ ] GET /campaigns devuelve solo mis campañas
-- [ ] POST /campaigns crea nueva
-- [ ] GET /campaigns/:id valida pertenencia
-- [ ] PATCH /campaigns/:id edita
-- [ ] DELETE /campaigns/:id elimina
-- [ ] Error handling: 401 si no auth, 403 si no es mi campaña, 400 si dato inválido
+
+- [x] GET /campaigns devuelve solo mis campañas
+- [x] POST /campaigns crea nueva
+- [x] GET /campaigns/:id valida pertenencia
+- [x] PATCH /campaigns/:id edita
+- [x] DELETE /campaigns/:id elimina
+- [x] Error handling: 401 si no auth, 403 si no es mi campaña, 400 si dato inválido
 
 ---
 
 ### ITS-S3-API-005 — Generación de QR automático
+
+**Estado: ✅ Implementado** — 2026-05-24
 
 **Responsable:** Sin asignar
 
@@ -481,13 +507,14 @@ export async function generateQRCode(campaignId: string) {
 ```
 
 **Integración en POST /campaigns:**
+
 ```ts
 export async function createCampaign(req, res) {
   const { title, description, sector, sketchfab_uid, cta_url } = req.body;
-  
+
   // 1. Validar datos
   if (!title || !sector) return res.status(400).json({ error: 'Invalid data' });
-  
+
   // 2. Insertar en DB
   const [campaign] = await db('campaigns')
     .insert({
@@ -499,21 +526,22 @@ export async function createCampaign(req, res) {
       cta_url,
     })
     .returning('*');
-  
+
   // 3. Generar QR
   const qrCode = await generateQRCode(campaign.id);
-  
+
   // 4. Actualizar campaign con QR
   await db('campaigns').where('id', campaign.id).update({ qr_code: qrCode });
-  
+
   res.json({ ...campaign, qr_code: qrCode });
 }
 ```
 
 **Checklist:**
-- [ ] Librería qrcode instalada
-- [ ] QR generado automáticamente al crear campaña
-- [ ] QR apunta a: itsolutions.com/experience/{id}
+
+- [x] Librería qrcode instalada
+- [x] QR generado automáticamente al crear campaña
+- [x] QR apunta a: itsolutions.com/experience/{id}
 - [ ] QR puede descargarse (endpoint para descargar imagen)
 - [ ] QR funciona al escanear (test manual)
 
@@ -531,21 +559,26 @@ export async function createCampaign(req, res) {
 ## Setup
 
 ### Requisitos
+
 - Node.js 18+
 - PostgreSQL 12+
 - npm 9+
 
 ### Instalación
+
 \`\`\`bash
 cd backend
 npm install
 cp .env.example .env
+
 # Editar .env con credenciales DB
+
 npm run migrate:latest
 npm run dev
 \`\`\`
 
 ### Variables de entorno
+
 \`\`\`
 DB_HOST=localhost
 DB_USER=postgres
@@ -558,12 +591,14 @@ NODE_ENV=development
 ## Endpoints
 
 ### Auth
+
 - POST /api/auth/register
 - POST /api/auth/login
 - POST /api/auth/logout
 - GET /api/auth/me
 
 ### Campaigns
+
 - GET /api/campaigns (auth requerida)
 - POST /api/campaigns (auth requerida)
 - GET /api/campaigns/:id (auth requerida)
@@ -571,19 +606,21 @@ NODE_ENV=development
 - DELETE /api/campaigns/:id (auth requerida)
 
 ### Analytics (Sprint 6)
+
 - GET /api/campaigns/:id/analytics
 - POST /api/events
 
 ## Desarrollo
 
 \`\`\`bash
-npm run dev          # Inicia servidor con hot-reload
-npm run migrate:latest  # Ejecuta migrations
-npm run build        # Compila TypeScript
+npm run dev # Inicia servidor con hot-reload
+npm run migrate:latest # Ejecuta migrations
+npm run build # Compila TypeScript
 \`\`\`
 ```
 
 **Checklist:**
+
 - [ ] README creado y completo
 - [ ] Instrucciones de setup claras
 - [ ] Variables de entorno documentadas
@@ -594,6 +631,7 @@ npm run build        # Compila TypeScript
 ## Checklist de Sprint 5
 
 ### Código
+
 - [ ] Proyecto Node + Express configurado
 - [ ] PostgreSQL conectado
 - [ ] 3 tablas creadas (clients, campaigns, analytics_events)
@@ -605,6 +643,7 @@ npm run build        # Compila TypeScript
 - [ ] Helmet headers
 
 ### Testing local
+
 - [ ] Registrar cliente: POST /auth/register
 - [ ] Login: POST /auth/login
 - [ ] Crear campaña: POST /campaigns (con token)
@@ -615,11 +654,13 @@ npm run build        # Compila TypeScript
 - [ ] Verificar datos en DB
 
 ### Documentación
+
 - [ ] README backend
 - [ ] .env.example completado
 - [ ] Comentarios en código clave
 
 ### Deploy (opcional, puede ser Sprint 8)
+
 - [ ] Dockerfile creado
 - [ ] Testear en Railway/Render
 - [ ] Variables de entorno en producción

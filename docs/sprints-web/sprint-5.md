@@ -8,7 +8,7 @@
 
 ## Código
 
-### ITS-S3-WEB-001 — Estructura de carpetas admin panel
+### ITS-S3-WEB-001 — Estructura de carpetas admin panel | ✅ Betania
 
 **Responsable:** Betania
 
@@ -45,6 +45,7 @@ src/
 ```
 
 **Rutas:**
+
 ```ts
 // App.tsx
 const routes = [
@@ -53,7 +54,7 @@ const routes = [
   { path: '/ar/:uid', element: <ARPage /> },
   { path: '/experience/:campaignId', element: <ARPage /> }, // NEW: campaign public
   { path: '/scan', element: <ScanPage /> },
-  
+
   // Admin (requiere auth)
   { path: '/admin/login', element: <LoginPage /> },
   {
@@ -70,14 +71,15 @@ const routes = [
 ```
 
 **Checklist:**
-- [ ] Carpeta admin/ creada
-- [ ] Componentes admin inicializados (vacíos)
-- [ ] Rutas configuradas
-- [ ] Router actualizado
+
+- [x] Carpeta admin/ creada
+- [x] Componentes admin inicializados
+- [x] Rutas configuradas
+- [x] Router actualizado
 
 ---
 
-### ITS-S3-WEB-002 — Estado de autenticación (Context API)
+### ITS-S3-WEB-002 — Estado de autenticación (Context API) | ✅ Betania
 
 **Responsable:** Betania
 
@@ -96,7 +98,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   error: string | null;
-  
+
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
@@ -206,6 +208,7 @@ export function useAuth() {
 ```
 
 **Integración en main.tsx:**
+
 ```tsx
 // main.tsx
 import { AuthProvider } from './context/AuthContext';
@@ -220,6 +223,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 ```
 
 **Uso en componentes:**
+
 ```tsx
 // pages/admin/LoginPage.tsx
 import { useAuth } from '@/context/AuthContext';
@@ -237,6 +241,7 @@ export function AdminHeader() {
 ```
 
 **Checklist:**
+
 - [ ] AuthContext creado
 - [ ] AuthProvider envuelve <App />
 - [ ] useAuth hook funciona
@@ -283,7 +288,7 @@ export function LoginPage() {
     <div className="login-page">
       <div className="login-container">
         <h1>ITSolutions AR — Admin</h1>
-        
+
         {/* Tabs */}
         <div className="login-tabs">
           <button
@@ -312,7 +317,7 @@ export function LoginPage() {
               className="form-input"
             />
           )}
-          
+
           <input
             type="email"
             placeholder="Email"
@@ -321,7 +326,7 @@ export function LoginPage() {
             required
             className="form-input"
           />
-          
+
           <input
             type="password"
             placeholder="Contraseña"
@@ -330,9 +335,9 @@ export function LoginPage() {
             required
             className="form-input"
           />
-          
+
           {error && <div className="error-message">{error}</div>}
-          
+
           <button
             type="submit"
             disabled={isLoading}
@@ -348,6 +353,7 @@ export function LoginPage() {
 ```
 
 **Estilos (agregar a styles.css):**
+
 ```css
 .login-page {
   display: flex;
@@ -423,6 +429,7 @@ export function LoginPage() {
 ```
 
 **Checklist:**
+
 - [ ] LoginPage renderiza correctamente
 - [ ] Tabs login/register funcionan
 - [ ] Form valida email y password
@@ -512,6 +519,7 @@ export function AdminHeader() {
 ```
 
 **Estilos:**
+
 ```css
 .admin-layout {
   display: flex;
@@ -582,6 +590,7 @@ export function AdminHeader() {
 ```
 
 **Checklist:**
+
 - [ ] AdminLayout protege rutas (requiere token)
 - [ ] AdminHeader renderiza
 - [ ] Navbar con enlaces funcionan
@@ -709,6 +718,7 @@ export function CampaignTable({ campaigns }: CampaignTableProps) {
 ```
 
 **Estilos:**
+
 ```css
 .dashboard-page {
   display: flex;
@@ -758,11 +768,58 @@ export function CampaignTable({ campaigns }: CampaignTableProps) {
 ```
 
 **Checklist:**
+
 - [ ] Dashboard page renderiza
 - [ ] GET /campaigns funciona
 - [ ] Tabla muestra campañas
 - [ ] Botón "+ Nueva campaña" funciona
 - [ ] Error handling si falla fetch
+
+---
+
+### ITS-S3-WEB-009 — Migración del backoffice demo a integración real con la API | ✅ Betania
+
+**Rama:** `feature/ITS-S3-WEB-009-integracion-con-api`
+
+Reemplaza todo el estado hardcodeado del backoffice demo por llamadas reales a la API. Sin este ticket, los tickets WEB-006/007/008 no tienen valor en producción.
+
+**Archivos modificados:**
+
+- `src/services/api.ts` _(nuevo)_ — capa de fetch centralizada: lee `VITE_API_BASE_URL`, agrega `Authorization: Bearer` cuando hay token, expone `apiLogin`, `apiMe`, `apiLogout`, `apiGetCampaigns`, `apiCreateCampaign`, `apiUpdateCampaign`, `apiDeleteCampaign`
+- `src/admin/constants/storageKeys.ts` — agrega `TOKEN: 'modelar_token'`, elimina la clave `CAMPAIGNS` (ya no se persiste en localStorage)
+- `src/admin/types.ts` — `Sector` pasa de valores de materia escolar a `'ecommerce' | 'turismo' | 'educacion' | 'inmobiliario' | 'museo'` (alineado con la API); `Campaign` hace opcionales `views`, `arActivations`, `ctaClicks`; `AdminUser` reemplaza `org: string` por `orgSlug: string`
+- `src/admin/context/AuthContext.tsx` — elimina credenciales hardcodeadas; `login` llama a `apiLogin` y guarda el JWT; `logout` llama a `apiLogout`; al montar intenta `apiMe` para restaurar sesión desde el token guardado
+- `src/admin/context/CampaignsContext.tsx` — elimina `localStorage` y `mockCampaigns`; todas las operaciones (`add`, `update`, `delete`) son `async` y llaman a la API; agrega `loading`, `error`, `refetch`
+- `src/admin/context/CollectionsContext.tsx` — elimina `MOCK_COLLECTIONS`; arranca con `[]` (las colecciones se cargarán desde la API en un ticket posterior)
+- `src/admin/context/ActiveOrgContext.tsx` — usa `user.orgSlug` del JWT en lugar de derivar el slug del nombre
+- `src/services/sketchfab.ts` — separa rutas proxy/directo: proxy usa `${API_BASE}/api/sketchfab/search?keyword=...`; directo usa `https://api.sketchfab.com/v3/search?type=models&q=...`
+- `src/admin/constants/urls.ts` — `buildArQrUrl` pasa a ser dinámico: construye la URL desde `window.location.origin + pathname` en lugar de constantes hardcodeadas de entorno
+- `src/admin/pages/LoginPage.tsx` — `handleSubmit` es `async`; agrega estado `loading` en el botón; elimina el bloque de credenciales demo
+- `src/admin/components/AdminLayout.tsx` — usa `user.orgSlug` en lugar de `user.org?.toLowerCase().replace(/\s+/g, '-')`
+- `src/admin/pages/CampaignFormPage.tsx` — campos `subject` → `sector`; `handleSubmit` es `async`; usa las nuevas firmas de `addCampaign`/`updateCampaign`
+- `src/admin/pages/CampaignsPage.tsx`, `DashboardPage.tsx`, `MetricsPage.tsx`, `CampaignQRPage.tsx` — reemplazan `SubjectBadge`/`SUBJECT_LABELS`/`Subject` por `SECTOR_LABELS`/`Sector`; stats con `?? 0` para campos opcionales; sort de campañas por `views` corregido para `number | undefined`
+- `src/admin/utils/campaignStats.ts` — todos los `reduce` usan `?? 0`
+
+**Archivos ahora muertos (no eliminados, sin importadores):**
+
+- `src/admin/constants/subjects.ts`
+- `src/admin/components/SubjectBadge.tsx`
+- `src/admin/data/mockCampaigns.ts`
+- `src/admin/data/mockCollections.ts`
+
+**Checklist:**
+
+- [x] `api.ts` centraliza autenticación y base URL
+- [x] `AuthContext` llama a la API real (login / logout / restore session)
+- [x] `CampaignsContext` sin localStorage ni mocks
+- [x] `CollectionsContext` sin mocks
+- [x] `ActiveOrgContext` usa `orgSlug` del JWT
+- [x] Tipo `Sector` alineado con la API
+- [x] `buildArQrUrl` dinámico
+- [x] TypeScript limpio (`tsc --noEmit` sin errores)
+- [ ] Testing e2e con backend corriendo localmente
+- [ ] Verificar flujo: login → dashboard → crear campaña → ver QR
+- [ ] Eliminar archivos muertos una vez confirmado que no se necesitan
 
 ---
 
@@ -780,31 +837,31 @@ export function CampaignTable({ campaigns }: CampaignTableProps) {
 \`\`\`
 src/
 ├── pages/
-│   ├── Públicas (Stage 2)
-│   │   ├── HomePage
-│   │   ├── ARPage
-│   │   ├── ScanPage
-│   │   └── NotFoundPage
-│   └── Admin (Stage 3)
-│       ├── LoginPage
-│       ├── DashboardPage
-│       ├── CampaignFormPage
-│       └── AnalyticsPage
+│ ├── Públicas (Stage 2)
+│ │ ├── HomePage
+│ │ ├── ARPage
+│ │ ├── ScanPage
+│ │ └── NotFoundPage
+│ └── Admin (Stage 3)
+│ ├── LoginPage
+│ ├── DashboardPage
+│ ├── CampaignFormPage
+│ └── AnalyticsPage
 ├── components/
-│   ├── Públicos
-│   └── Admin/
-│       ├── AdminHeader
-│       ├── CampaignTable
-│       ├── CampaignForm
-│       └── AnalyticsCard
+│ ├── Públicos
+│ └── Admin/
+│ ├── AdminHeader
+│ ├── CampaignTable
+│ ├── CampaignForm
+│ └── AnalyticsCard
 ├── store/
-│   └── authStore.ts (Zustand)
+│ └── authStore.ts (Zustand)
 ├── services/
-│   ├── sketchfab.ts (existente)
-│   └── api.ts (nuevo)
+│ ├── sketchfab.ts (existente)
+│ └── api.ts (nuevo)
 └── types/
-    ├── sketchfab.ts (existente)
-    └── api.ts (nuevo)
+├── sketchfab.ts (existente)
+└── api.ts (nuevo)
 \`\`\`
 
 ## State management
@@ -815,8 +872,8 @@ Usamos **Zustand** para autenticación (simple y ligero).
 import { useAuthStore } from '@/store/authStore';
 
 function MyComponent() {
-  const { client, token, login, logout } = useAuthStore();
-  // ...
+const { client, token, login, logout } = useAuthStore();
+// ...
 }
 \`\`\`
 
@@ -827,12 +884,13 @@ AdminLayout valida que el usuario tenga token. Si no, redirige a login.
 ## Variables de entorno
 
 \`\`\`
-VITE_API_BASE=http://localhost:5000/api     (dev)
-VITE_API_BASE=https://api.itsolutions.com   (prod)
+VITE_API_BASE=http://localhost:5000/api (dev)
+VITE_API_BASE=https://api.itsolutions.com (prod)
 \`\`\`
 ```
 
 **Checklist:**
+
 - [ ] Documento creado
 - [ ] Estructura explicada
 - [ ] Ejemplos de uso
@@ -842,6 +900,7 @@ VITE_API_BASE=https://api.itsolutions.com   (prod)
 ## Checklist de Sprint 5 Web
 
 ### Código
+
 - [ ] Estructura de carpetas creada
 - [ ] Rutas configuradas
 - [ ] AuthContext creado (Context API + useAuth hook)
@@ -853,6 +912,7 @@ VITE_API_BASE=https://api.itsolutions.com   (prod)
 - [ ] CampaignTable renderiza datos
 
 ### Testing local
+
 - [ ] Ir a /admin/login
 - [ ] Registrarse con email + password
 - [ ] Login funciona, redirige a /admin/dashboard
@@ -863,11 +923,13 @@ VITE_API_BASE=https://api.itsolutions.com   (prod)
 - [ ] useAuth() hook es accesible desde cualquier componente
 
 ### Integración con API
+
 - [ ] VITE_API_BASE apunta a backend corriendo localmente
 - [ ] Autorización: Header `Authorization: Bearer {token}`
 - [ ] Manejo de errores (401 si token inválido, etc.)
 
 ### Documentación
+
 - [ ] README frontend actualizado
 - [ ] ARQUITECTURA-FRONTEND.md creado
 - [ ] Comentarios en AuthContext explicando el flujo
