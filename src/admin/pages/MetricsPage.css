@@ -411,3 +411,10 @@
   color: var(--sm-fg-3);
   white-space: nowrap;
 }
+
+.mtr-chart-empty {
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--sm-fg-3);
+  font-size: 0.85rem;
+}

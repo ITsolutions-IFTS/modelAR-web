@@ -1,9 +1,8 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { useCampaigns } from '../context/CampaignsContext';
-import { SUBJECT_LABELS } from '../constants/subjects';
-import type { Subject } from '../constants/subjects';
-import { buildArQrUrl, LOCAL_BASE_URL, PROD_BASE_URL } from '../constants/urls';
+import { SECTOR_LABELS } from '../types';
+import { buildArQrUrl } from '../constants/urls';
 import { formatDate, formatNumber } from '../utils/format';
 import type { Campaign } from '../types';
 import './CampaignQRPage.css';
@@ -12,7 +11,7 @@ const FALLBACK_CAMPAIGN: Campaign = {
   id: 'nueva',
   title: 'Geometría 5° grado — Poliedros',
   description: 'Escaneá el QR y explorá figuras 3D en tu living.',
-  subject: 'matematica',
+  sector: 'educacion',
   sketchfabUid: 'fe85107a4491481f8b176f85df856365',
   ctaUrl: 'https://santillana.com.ar/libro/matematica-5',
   views: 0,
@@ -59,8 +58,8 @@ export function CampaignQRPage() {
       <div className="qrp-content">
         <div className="qrp-card qrp-card--main">
           <div className="qrp-campaign-meta">
-            <span className={`subject-badge badge-${campaign.subject}`}>
-              {SUBJECT_LABELS[campaign.subject as Subject] ?? campaign.subject}
+            <span className={`sector-badge sector-badge--${campaign.sector}`}>
+              {SECTOR_LABELS[campaign.sector] ?? campaign.sector}
             </span>
             <p className="qrp-created">
               Creada el {formatDate(campaign.createdAt)}
@@ -86,7 +85,7 @@ export function CampaignQRPage() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            {campaign.qrValue.replace(LOCAL_BASE_URL, PROD_BASE_URL)}
+            {campaign.qrValue}
           </a>
 
           <div className="qrp-actions">

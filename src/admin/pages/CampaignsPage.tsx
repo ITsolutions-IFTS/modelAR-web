@@ -8,7 +8,7 @@ import {
 } from '@phosphor-icons/react';
 import { useCampaigns } from '../context/CampaignsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
-import { SubjectBadge } from '../components/SubjectBadge';
+import { SECTOR_LABELS } from '../types';
 import { formatNumber } from '../utils/format';
 import type { Campaign } from '../types';
 import './CampaignsPage.css';
@@ -120,7 +120,11 @@ export function CampaignsPage() {
                   <tr key={campaign.id}>
                     <td className="cell-title">{campaign.title}</td>
                     <td>
-                      <SubjectBadge subject={campaign.subject} />
+                      <span
+                        className={`sector-badge sector-badge--${campaign.sector}`}
+                      >
+                        {SECTOR_LABELS[campaign.sector]}
+                      </span>
                     </td>
                     <td className="cell-collection">
                       {col ? (
@@ -129,12 +133,14 @@ export function CampaignsPage() {
                         <span className="camps-col-empty">—</span>
                       )}
                     </td>
-                    <td className="cell-num">{formatNumber(campaign.views)}</td>
                     <td className="cell-num">
-                      {formatNumber(campaign.arActivations)}
+                      {formatNumber(campaign.views ?? 0)}
                     </td>
                     <td className="cell-num">
-                      {formatNumber(campaign.ctaClicks)}
+                      {formatNumber(campaign.arActivations ?? 0)}
+                    </td>
+                    <td className="cell-num">
+                      {formatNumber(campaign.ctaClicks ?? 0)}
                     </td>
                     <td className="cell-actions">
                       <button

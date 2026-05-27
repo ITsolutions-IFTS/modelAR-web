@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrgResources } from '../hooks/useOrgResources';
-import { SubjectBadge } from '../components/SubjectBadge';
+import { SECTOR_LABELS } from '../types';
 import { aggregateCampaignStats } from '../utils/campaignStats';
 import { formatNumber, formatPercent, formatDate } from '../utils/format';
 import type { Campaign } from '../types';
@@ -25,7 +25,7 @@ export function DashboardPage() {
   const { orgCampaigns, activeOrg } = useOrgResources();
 
   const sortedCampaigns = useMemo(
-    () => [...orgCampaigns].sort((a, b) => b.views - a.views),
+    () => [...orgCampaigns].sort((a, b) => (b.views ?? 0) - (a.views ?? 0)),
     [orgCampaigns]
   );
 
@@ -97,18 +97,26 @@ export function DashboardPage() {
             <tbody>
               {sortedCampaigns.map((c: Campaign) => {
                 const rate =
-                  c.views > 0 ? (c.arActivations / c.views) * 100 : 0;
+                  (c.views ?? 0) > 0
+                    ? ((c.arActivations ?? 0) / (c.views ?? 1)) * 100
+                    : 0;
                 return (
                   <tr key={c.id}>
                     <td className="cell-title">{c.title}</td>
                     <td>
-                      <SubjectBadge subject={c.subject} />
+                      <span
+                        className={`sector-badge sector-badge--${c.sector}`}
+                      >
+                        {SECTOR_LABELS[c.sector]}
+                      </span>
                     </td>
-                    <td className="cell-num">{formatNumber(c.views)}</td>
+                    <td className="cell-num">{formatNumber(c.views ?? 0)}</td>
                     <td className="cell-num">
-                      {formatNumber(c.arActivations)}
+                      {formatNumber(c.arActivations ?? 0)}
                     </td>
-                    <td className="cell-num">{formatNumber(c.ctaClicks)}</td>
+                    <td className="cell-num">
+                      {formatNumber(c.ctaClicks ?? 0)}
+                    </td>
                     <td className="cell-conv">
                       <ConvBar rate={rate} />
                     </td>

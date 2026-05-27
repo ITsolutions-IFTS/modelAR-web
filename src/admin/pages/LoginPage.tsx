@@ -12,15 +12,21 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-    const ok = login(email, password);
-    if (ok) {
-      navigate('/admin/dashboard', { replace: true });
-    } else {
-      setError('Credenciales incorrectas. Revisá el email y la contraseña.');
+    setLoading(true);
+    try {
+      const ok = await login(email, password);
+      if (ok) {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        setError('Credenciales incorrectas. Revisá el email y la contraseña.');
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -40,7 +46,7 @@ export function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@itsolutions.com"
+              placeholder="tu@email.com"
               required
               autoComplete="username"
             />
@@ -61,29 +67,10 @@ export function LoginPage() {
 
           {error && <div className="login-error">{error}</div>}
 
-          <button type="submit" className="login-submit-btn">
-            Ingresar
+          <button type="submit" className="login-submit-btn" disabled={loading}>
+            {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>
-
-        <div className="login-demo-hint">
-          <p>Credenciales de demo</p>
-          <code>
-            admin@itsolutions.com / demo1234
-            <br />
-            (Superadmin — todas las orgs)
-            <br />
-            <br />
-            admin@santillana.com / demo1234
-            <br />
-            (Cliente — Santillana)
-            <br />
-            <br />
-            admin@vegadesarrollos.com / demo1234
-            <br />
-            (Cliente — Vega Desarrollos)
-          </code>
-        </div>
       </div>
     </div>
   );

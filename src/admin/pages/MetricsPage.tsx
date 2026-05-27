@@ -1,50 +1,10 @@
 import { useMemo } from 'react';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { aggregateCampaignStats } from '../utils/campaignStats';
-import { SUBJECT_LABELS } from '../constants/subjects';
-import type { Subject } from '../constants/subjects';
+import { SECTOR_LABELS } from '../types';
+import type { Sector } from '../types';
 import { formatNumber } from '../utils/format';
 import './MetricsPage.css';
-
-const WEEKLY_DATA = [
-  { week: 'Sem 1', views: 380, ar: 175 },
-  { week: 'Sem 2', views: 540, ar: 330 },
-  { week: 'Sem 3', views: 680, ar: 295 },
-  { week: 'Sem 4', views: 590, ar: 400 },
-  { week: 'Sem 5', views: 830, ar: 355 },
-  { week: 'Sem 6', views: 760, ar: 510 },
-  { week: 'Sem 7', views: 910, ar: 445 },
-  { week: 'Sem 8', views: 980, ar: 640 },
-];
-
-const HOURLY_DATA = [
-  { h: '6h', v: 12 },
-  { h: '7h', v: 38 },
-  { h: '8h', v: 95 },
-  { h: '9h', v: 184 },
-  { h: '10h', v: 210 },
-  { h: '11h', v: 196 },
-  { h: '12h', v: 142 },
-  { h: '13h', v: 88 },
-  { h: '14h', v: 120 },
-  { h: '15h', v: 168 },
-  { h: '16h', v: 178 },
-  { h: '17h', v: 145 },
-  { h: '18h', v: 96 },
-  { h: '19h', v: 62 },
-  { h: '20h', v: 34 },
-  { h: '21h', v: 18 },
-  { h: '22h', v: 8 },
-];
-
-const DEVICE_DATA = [
-  { label: 'Android', pct: 54, color: 'mtr-device--android' },
-  { label: 'iOS', pct: 32, color: 'mtr-device--ios' },
-  { label: 'Web (desktop)', pct: 14, color: 'mtr-device--web' },
-];
-
-const maxHourly = Math.max(...HOURLY_DATA.map((x) => x.v));
-const maxWeekly = Math.max(...WEEKLY_DATA.map((d) => d.views));
 
 export function MetricsPage() {
   const { org, orgCampaigns, activeOrg } = useOrgResources();
@@ -55,15 +15,15 @@ export function MetricsPage() {
   );
 
   const subjectTotals = useMemo(() => {
-    const map: Partial<Record<Subject, number>> = {};
+    const map: Partial<Record<Sector, number>> = {};
     orgCampaigns.forEach((c) => {
-      map[c.subject] = (map[c.subject] ?? 0) + c.arActivations;
+      map[c.sector] = (map[c.sector] ?? 0) + (c.arActivations ?? 0);
     });
     const max = Math.max(...(Object.values(map).filter(Boolean) as number[]));
     return Object.entries(map)
-      .map(([subject, value]) => ({
-        subject: subject as Subject,
-        label: SUBJECT_LABELS[subject as Subject] ?? subject,
+      .map(([sector, value]) => ({
+        subject: sector as Sector,
+        label: SECTOR_LABELS[sector as Sector] ?? sector,
         value: value ?? 0,
         pct: max > 0 ? Math.round(((value ?? 0) / max) * 100) : 0,
       }))
@@ -73,8 +33,11 @@ export function MetricsPage() {
   const topCampaigns = useMemo(
     () =>
       [...orgCampaigns]
-        .filter((c) => c.views > 0)
-        .map((c) => ({ ...c, rate: (c.arActivations / c.views) * 100 }))
+        .filter((c) => (c.views ?? 0) > 0)
+        .map((c) => ({
+          ...c,
+          rate: ((c.arActivations ?? 0) / (c.views ?? 1)) * 100,
+        }))
         .sort((a, b) => b.rate - a.rate)
         .slice(0, 4),
     [orgCampaigns]
@@ -121,37 +84,7 @@ export function MetricsPage() {
       <div className="mtr-grid">
         <div className="mtr-card mtr-card--wide">
           <h2 className="mtr-card-title">Vistas por semana</h2>
-          <div className="mtr-bar-chart">
-            <div className="mtr-bars">
-              {WEEKLY_DATA.map((d) => (
-                <div key={d.week} className="mtr-bar-col">
-                  <div className="mtr-bar-wrap">
-                    <div
-                      className="mtr-bar mtr-bar--ar"
-                      style={{
-                        height: `${Math.round((d.ar / maxWeekly) * 100)}%`,
-                      }}
-                      title={`AR: ${d.ar}`}
-                    />
-                    <div
-                      className="mtr-bar mtr-bar--views"
-                      style={{
-                        height: `${Math.round((d.views / maxWeekly) * 100)}%`,
-                      }}
-                      title={`Vistas: ${d.views}`}
-                    />
-                  </div>
-                  <span className="mtr-bar-label">{d.week}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mtr-chart-legend">
-              <span className="mtr-legend-item mtr-legend--views">Vistas</span>
-              <span className="mtr-legend-item mtr-legend--ar">
-                Activaciones AR
-              </span>
-            </div>
-          </div>
+          <div className="mtr-chart-empty">Sin datos disponibles aún.</div>
         </div>
 
         <div className="mtr-card">
@@ -183,7 +116,7 @@ export function MetricsPage() {
           <div className="mtr-subject-list">
             {subjectTotals.map((s) => (
               <div key={s.subject} className="mtr-subject-row">
-                <span className={`subject-badge badge-${s.subject}`}>
+                <span className={`sector-badge sector-badge--${s.subject}`}>
                   {s.label}
                 </span>
                 <div className="mtr-subject-bar-wrap">
@@ -256,45 +189,16 @@ export function MetricsPage() {
             Optimizá la experiencia según el dispositivo más frecuente de tus
             usuarios.
           </p>
-          <div className="mtr-devices">
-            {DEVICE_DATA.map((d) => (
-              <div key={d.label} className="mtr-device-row">
-                <span className="mtr-device-label">{d.label}</span>
-                <div className="mtr-device-bar-wrap">
-                  <div
-                    className={`mtr-device-bar ${d.color}`}
-                    style={{ width: `${d.pct}%` }}
-                  />
-                </div>
-                <span className="mtr-device-pct">{d.pct}%</span>
-              </div>
-            ))}
-          </div>
+          <div className="mtr-chart-empty">Sin datos disponibles aún.</div>
         </div>
 
         <div className="mtr-card mtr-card--wide">
           <h2 className="mtr-card-title">Horarios pico de escaneo</h2>
           <p className="mtr-card-desc">
             Programá notificaciones y activaciones en los horarios donde tus
-            usuarios están más activos. Los picos coinciden con el horario
-            escolar (9h–11h) y la tarde (15h–17h).
+            usuarios están más activos.
           </p>
-          <div className="mtr-hourly">
-            {HOURLY_DATA.map((d) => (
-              <div key={d.h} className="mtr-hourly-col">
-                <div className="mtr-hourly-bar-wrap">
-                  <div
-                    className="mtr-hourly-bar"
-                    style={{
-                      height: `${Math.round((d.v / maxHourly) * 100)}%`,
-                    }}
-                    title={`${d.v} scans`}
-                  />
-                </div>
-                <span className="mtr-hourly-label">{d.h}</span>
-              </div>
-            ))}
-          </div>
+          <div className="mtr-chart-empty">Sin datos disponibles aún.</div>
         </div>
       </div>
     </div>
