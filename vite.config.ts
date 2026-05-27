@@ -1,8 +1,6 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
-
-const SKETCHFAB_API_KEY = process.env.SKETCHFAB_API_KEY;
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,20 +11,18 @@ export default defineConfig({
     },
   },
   server: {
+    port: 5174,
     allowedHosts: ['localhost', '.ngrok-free.app', '.ngrok.io', '.loca.lt'],
     proxy: {
-      '/api/sketchfab': {
-        target: 'https://api.sketchfab.com/v3',
+      '/api': {
+        target: 'http://localhost:5000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/sketchfab/, ''),
-        configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq) => {
-            if (SKETCHFAB_API_KEY) {
-              proxyReq.setHeader('Authorization', `Token ${SKETCHFAB_API_KEY}`);
-            }
-          });
-        },
       },
     },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.ts'],
   },
 });
