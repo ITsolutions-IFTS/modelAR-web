@@ -3,64 +3,104 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   useMemo,
 } from 'react';
 import type { ReactNode } from 'react';
-import { mockCampaigns } from '../data/mockCampaigns';
-import type { Campaign } from '../types';
-import { STORAGE_KEYS } from '../constants/storageKeys';
-import { safeGetJson, safeSetJson } from '../utils/storage';
+import type {
+  Campaign,
+  CreateCampaignInput,
+  UpdateCampaignInput,
+} from '../types';
+import {
+  apiGetCampaigns,
+  apiCreateCampaign,
+  apiUpdateCampaign,
+  apiDeleteCampaign,
+} from '@/services/api';
+import { useAuth } from './AuthContext';
 
 interface CampaignsContextValue {
   campaigns: Campaign[];
-  addCampaign: (c: Campaign) => void;
-  updateCampaign: (c: Campaign) => void;
-  deleteCampaign: (id: string) => void;
+  loading: boolean;
+  error: string | null;
+  addCampaign: (data: CreateCampaignInput) => Promise<Campaign>;
+  updateCampaign: (id: string, data: UpdateCampaignInput) => Promise<Campaign>;
+  deleteCampaign: (id: string) => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 const CampaignsContext = createContext<CampaignsContextValue | null>(null);
 
-function loadCampaigns(): Campaign[] {
-  return (
-    safeGetJson<Campaign[]>(localStorage, STORAGE_KEYS.CAMPAIGNS) ??
-    mockCampaigns
-  );
-}
-
-function saveCampaigns(campaigns: Campaign[]) {
-  safeSetJson(localStorage, STORAGE_KEYS.CAMPAIGNS, campaigns);
-}
-
 export function CampaignsProvider({ children }: { children: ReactNode }) {
-  const [campaigns, setCampaigns] = useState<Campaign[]>(loadCampaigns);
+  const { user } = useAuth();
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const addCampaign = useCallback((c: Campaign) => {
-    setCampaigns((prev) => {
-      const next = [c, ...prev];
-      saveCampaigns(next);
-      return next;
-    });
+  const fetchCampaigns = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiGetCampaigns();
+      setCampaigns(data);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const updateCampaign = useCallback((c: Campaign) => {
-    setCampaigns((prev) => {
-      const next = prev.map((x) => (x.id === c.id ? c : x));
-      saveCampaigns(next);
-      return next;
-    });
-  }, []);
+  useEffect(() => {
+    if (user) {
+      fetchCampaigns();
+    } else {
+      setCampaigns([]);
+    }
+  }, [user, fetchCampaigns]);
 
-  const deleteCampaign = useCallback((id: string) => {
-    setCampaigns((prev) => {
-      const next = prev.filter((x) => x.id !== id);
-      saveCampaigns(next);
-      return next;
-    });
+  const addCampaign = useCallback(
+    async (data: CreateCampaignInput): Promise<Campaign> => {
+      const created = await apiCreateCampaign(data);
+      setCampaigns((prev) => [created, ...prev]);
+      return created;
+    },
+    []
+  );
+
+  const updateCampaign = useCallback(
+    async (id: string, data: UpdateCampaignInput): Promise<Campaign> => {
+      const updated = await apiUpdateCampaign(id, data);
+      setCampaigns((prev) => prev.map((c) => (c.id === id ? updated : c)));
+      return updated;
+    },
+    []
+  );
+
+  const deleteCampaign = useCallback(async (id: string): Promise<void> => {
+    await apiDeleteCampaign(id);
+    setCampaigns((prev) => prev.filter((c) => c.id !== id));
   }, []);
 
   const value = useMemo(
-    () => ({ campaigns, addCampaign, updateCampaign, deleteCampaign }),
-    [campaigns, addCampaign, updateCampaign, deleteCampaign]
+    () => ({
+      campaigns,
+      loading,
+      error,
+      addCampaign,
+      updateCampaign,
+      deleteCampaign,
+      refetch: fetchCampaigns,
+    }),
+    [
+      campaigns,
+      loading,
+      error,
+      addCampaign,
+      updateCampaign,
+      deleteCampaign,
+      fetchCampaigns,
+    ]
   );
 
   return (
