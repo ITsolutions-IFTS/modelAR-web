@@ -252,9 +252,13 @@ export function AdminHeader() {
 
 ---
 
-### ITS-S3-WEB-003 — LoginPage
+### ITS-S3-WEB-003 — LoginPage | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-05-26
 
 **Responsable:** Betania
+
+> **Nota de implementación:** La versión final no tiene tab "Registrarse" (el registro de clientes lo gestiona el superadmin). Agrega estado `loading` en el botón y manejo async con `try/finally`. Estilos y estructura propios de `LoginPage.css`.
 
 ```ts
 // pages/admin/LoginPage.tsx
@@ -430,20 +434,22 @@ export function LoginPage() {
 
 **Checklist:**
 
-- [ ] LoginPage renderiza correctamente
-- [ ] Tabs login/register funcionan
-- [ ] Form valida email y password
-- [ ] Login llama a authStore.login()
-- [ ] Registro llama a authStore.register()
-- [ ] Error se muestra al usuario
-- [ ] Spinner mientras está loading
-- [ ] Redirige a /admin/dashboard después de login
+- [x] LoginPage renderiza correctamente
+- [x] Form valida email y password
+- [x] Login llama a `apiLogin` → guarda JWT en sessionStorage
+- [x] Error se muestra al usuario (`'Credenciales incorrectas...'`)
+- [x] Botón deshabilitado y texto "Ingresando..." durante loading
+- [x] Redirige a /admin/dashboard después de login exitoso
 
 ---
 
-### ITS-S3-WEB-004 — AdminLayout y AdminHeader
+### ITS-S3-WEB-004 — AdminLayout y AdminHeader | ✅ Betania
 
-**Responsable:** Sin asignar
+**Estado: ✅ Implementado** — 2026-05-26
+
+**Responsable:** Betania
+
+> **Nota de implementación:** La navegación está integrada directamente en `AdminLayout` como sidebar (no como `AdminHeader` separado). Incluye buscador de orgs para superadmin, `CollectionsSidebar` por org activa, toggle dark mode y botón de logout. Rutas protegidas con redirect a `/admin/login` si no hay sesión.
 
 ```ts
 // pages/admin/AdminLayout.tsx
@@ -591,16 +597,22 @@ export function AdminHeader() {
 
 **Checklist:**
 
-- [ ] AdminLayout protege rutas (requiere token)
-- [ ] AdminHeader renderiza
-- [ ] Navbar con enlaces funcionan
-- [ ] Logout funciona
+- [x] AdminLayout protege rutas (requiere sesión activa)
+- [x] Sidebar con navegación renderiza correctamente
+- [x] Org search funciona para superadmin
+- [x] CollectionsSidebar muestra colecciones de la org activa
+- [x] Logout funciona (llama `apiLogout` + limpia sesión)
+- [x] Toggle dark mode persiste en localStorage
 
 ---
 
-### ITS-S3-WEB-005 — DashboardPage (versión básica)
+### ITS-S3-WEB-005 — DashboardPage (versión básica) | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-05-26
 
 **Responsable:** Betania
+
+> **Nota de implementación:** Muestra tarjetas de métricas agregadas (views, AR, CTA) + tabla de campañas ordenada por views descendente. Campos opcionales (`views`, `arActivations`, `ctaClicks`) con `?? 0` para evitar NaN. Datos reales desde `CampaignsContext` (API).
 
 ```ts
 // pages/admin/DashboardPage.tsx
@@ -769,11 +781,12 @@ export function CampaignTable({ campaigns }: CampaignTableProps) {
 
 **Checklist:**
 
-- [ ] Dashboard page renderiza
-- [ ] GET /campaigns funciona
-- [ ] Tabla muestra campañas
-- [ ] Botón "+ Nueva campaña" funciona
-- [ ] Error handling si falla fetch
+- [x] Dashboard page renderiza
+- [x] Campañas cargadas desde `CampaignsContext` (API real)
+- [x] Tabla muestra campañas ordenadas por vistas
+- [x] Tarjetas de métricas agregadas (views, AR, CTA)
+- [x] Botón "+ Nueva campaña" navega a `/admin/campanas/nueva`
+- [x] Empty state cuando no hay campañas
 
 ---
 
@@ -817,9 +830,9 @@ Reemplaza todo el estado hardcodeado del backoffice demo por llamadas reales a l
 - [x] Tipo `Sector` alineado con la API
 - [x] `buildArQrUrl` dinámico
 - [x] TypeScript limpio (`tsc --noEmit` sin errores)
-- [ ] Testing e2e con backend corriendo localmente
-- [ ] Verificar flujo: login → dashboard → crear campaña → ver QR
-- [ ] Eliminar archivos muertos una vez confirmado que no se necesitan
+- [x] Testing e2e con backend corriendo localmente
+- [x] Verificar flujo: login → dashboard → crear campaña → ver QR
+- [x] Eliminar archivos muertos (SubjectBadge, subjects.ts, mockCampaigns, mockCollections)
 
 ---
 
@@ -901,32 +914,32 @@ VITE_API_BASE=https://api.itsolutions.com (prod)
 
 ### Código
 
-- [ ] Estructura de carpetas creada
-- [ ] Rutas configuradas
-- [ ] AuthContext creado (Context API + useAuth hook)
-- [ ] AuthProvider envuelve <App />
-- [ ] LoginPage funcional (login + register)
-- [ ] AdminLayout protege rutas
-- [ ] AdminHeader navega correctamente
-- [ ] DashboardPage carga campañas
-- [ ] CampaignTable renderiza datos
+- [x] Estructura de carpetas admin/ creada
+- [x] Rutas configuradas (HashRouter)
+- [x] AuthContext creado (Context API + useAuth hook)
+- [x] AuthProvider envuelve `<App />`
+- [x] LoginPage funcional (solo login, register lo gestiona superadmin)
+- [x] AdminLayout protege rutas (redirect a /admin/login)
+- [x] Sidebar con navegación y dark mode funciona
+- [x] DashboardPage carga campañas desde API
+- [x] Tabla de campañas renderiza datos reales
 
 ### Testing local
 
-- [ ] Ir a /admin/login
-- [ ] Registrarse con email + password
-- [ ] Login funciona, redirige a /admin/dashboard
-- [ ] Token se guarda en localStorage
-- [ ] Cerrar navegador, abrir de nuevo → sesión restaurada
-- [ ] Logout funciona
-- [ ] GET /campaigns trae datos del backend
-- [ ] useAuth() hook es accesible desde cualquier componente
+- [x] Ir a /admin/login
+- [x] Login funciona, redirige a /admin/dashboard
+- [x] Token se guarda en sessionStorage (no localStorage, decisión de seguridad)
+- [x] Recargar página → sesión restaurada via `apiMe`
+- [x] 401 desde cualquier endpoint → logout automático (UNAUTHORIZED_EVENT)
+- [x] Logout funciona
+- [x] GET /api/campaigns trae datos del backend
+- [x] useAuth() hook es accesible desde cualquier componente
 
 ### Integración con API
 
-- [ ] VITE_API_BASE apunta a backend corriendo localmente
-- [ ] Autorización: Header `Authorization: Bearer {token}`
-- [ ] Manejo de errores (401 si token inválido, etc.)
+- [x] `VITE_API_BASE_URL=http://localhost:5000` en `.env`
+- [x] Autorización: Header `Authorization: Bearer {token}`
+- [x] Manejo de errores (401 auto-logout, timeout 10s con AbortController)
 
 ### Documentación
 

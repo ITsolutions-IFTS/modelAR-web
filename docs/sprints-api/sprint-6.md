@@ -575,6 +575,60 @@ export async function getSketchfabModel(uid: string) {
 
 ---
 
+### ITS-S3-API-010 — Endpoint CRUD de Collections | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-05-26
+
+**Responsable:** Betania
+
+Concepto genérico de agrupación por org (Serie para Santillana, Categoría para Garbarino, Sala para Museo MAR, Proyecto para Vega).
+
+**Endpoints:**
+
+```
+GET    /api/collections          Auth: Requerida — lista colecciones de la org del cliente
+POST   /api/collections          Auth: Requerida — crea colección  { name, description? }
+PATCH  /api/collections/:id      Auth: Requerida — edita { name?, description? }
+DELETE /api/collections/:id      Auth: Requerida — elimina
+```
+
+**Migration:** `20260526000004-create-collections.js` — tabla `collections` con `id`, `org_slug`, `name`, `description`.  
+**Migration:** `20260526000005-alter-campaigns-cta-url-nullable.js` — hace `cta_url` nullable en `campaigns`.
+
+**Checklist:**
+
+- [x] GET /api/collections devuelve solo colecciones de la org del cliente
+- [x] POST /api/collections crea con UUID
+- [x] PATCH /api/collections/:id valida orgSlug (no puede editar colecciones de otra org)
+- [x] DELETE /api/collections/:id valida orgSlug
+- [x] `cta_url` en campaigns es ahora opcional (nullable)
+- [x] Migrations ejecutadas en DB
+
+---
+
+### ITS-S3-API-011 — Suite de tests unitarios (jest) | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-05-26
+
+**Responsable:** Betania
+
+13 tests con jest + ts-jest. `uuid@14` (ESM) mapeado a mock CJS local.
+
+| Archivo                            | Tests | Qué cubre                                                                             |
+| ---------------------------------- | ----- | ------------------------------------------------------------------------------------- |
+| `create-campaign.use-case.test.ts` | 5     | qrValue como URL, UUID asignado, ctaUrl opcional, clientId/orgSlug propagados al repo |
+| `collections.use-cases.test.ts`    | 8     | create/list/update/delete con mocks de repositorio, aislamiento por orgSlug           |
+
+**Checklist:**
+
+- [x] jest + ts-jest + supertest instalados
+- [x] `jest.config.js` con `preset: ts-jest`, `testEnvironment: node`
+- [x] Mock local de `uuid` para compatibilidad ESM/CJS
+- [x] Script `pnpm test` configurado
+- [x] 13/13 tests pasan
+
+---
+
 ## Informe
 
 ### ITS-S3-API-DOC-002 — OpenAPI spec
@@ -715,12 +769,15 @@ securitySchemes:
 
 ## Checklist de Sprint 6 API
 
-- [x] GET /campaigns/:id/analytics funciona
+- [x] GET /api/campaigns/:id/analytics funciona
 - [x] Calcula stats y breakdown
-- [x] POST /events funciona (public)
-- [ ] GET /sketchfab/search funciona
-- [ ] GET /sketchfab/models/:uid funciona
-- [ ] API key no expuesta
+- [x] POST /api/events funciona (público, sin auth)
+- [x] GET /api/sketchfab/search funciona (proxy, API key no expuesta)
+- [x] GET /api/sketchfab/models/:uid funciona
+- [x] API key de Sketchfab no expuesta al cliente
+- [x] GET/POST/PATCH/DELETE /api/collections — CRUD completo con isolación por org
+- [x] cta_url nullable en campaigns
+- [x] 13 tests unitarios (jest) — use-cases de campaigns y collections
 - [ ] OpenAPI spec actualizada
 
 ---
