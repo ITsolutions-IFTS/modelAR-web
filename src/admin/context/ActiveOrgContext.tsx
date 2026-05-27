@@ -16,27 +16,10 @@ interface ActiveOrgContextValue {
 
 const ActiveOrgContext = createContext<ActiveOrgContextValue | null>(null);
 
-function nameToSlug(name: string) {
-  return name.toLowerCase().replace(/ /g, '-');
-}
-
 function initActiveOrg(): ActiveOrg | null {
-  const stored = safeGetJson<ActiveOrg>(
-    sessionStorage,
-    STORAGE_KEYS.ACTIVE_ORG
+  return (
+    safeGetJson<ActiveOrg>(sessionStorage, STORAGE_KEYS.ACTIVE_ORG) ?? null
   );
-  if (stored) return stored;
-
-  const user = safeGetJson<{ role: string; org: string }>(
-    sessionStorage,
-    STORAGE_KEYS.SESSION
-  );
-  if (user?.role === 'client' && user?.org) {
-    const org: ActiveOrg = { slug: nameToSlug(user.org), name: user.org };
-    safeSetJson(sessionStorage, STORAGE_KEYS.ACTIVE_ORG, org);
-    return org;
-  }
-  return null;
 }
 
 export function ActiveOrgProvider({ children }: { children: ReactNode }) {
@@ -50,11 +33,11 @@ export function ActiveOrgProvider({ children }: { children: ReactNode }) {
       setActiveOrgState(null);
       sessionStorage.removeItem(STORAGE_KEYS.ACTIVE_ORG);
     } else if (user.role === 'client' && !activeOrg) {
-      const org: ActiveOrg = { slug: nameToSlug(user.org), name: user.org };
+      const org: ActiveOrg = { slug: user.orgSlug, name: user.name };
       setActiveOrgState(org);
       safeSetJson(sessionStorage, STORAGE_KEYS.ACTIVE_ORG, org);
     }
-  }, [user]); // activeOrg omitted intentionally — only react to user changes
+  }, [user]); // activeOrg omitted intentionally
 
   function setActiveOrg(org: ActiveOrg | null) {
     setActiveOrgState(org);
