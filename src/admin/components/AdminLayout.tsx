@@ -14,7 +14,6 @@ import {
   SquaresFourIcon,
   ChartLineUpIcon,
   MegaphoneIcon,
-  GearIcon,
   MoonIcon,
   SunIcon,
   SignOutIcon,
@@ -37,10 +36,7 @@ function OrgSearch() {
   const visibleOrgs = useMemo(() => {
     const base =
       user?.role === 'client'
-        ? ORGS.filter(
-            (o) =>
-              o.slug === (user.org?.toLowerCase().replace(/\s+/g, '-') ?? '')
-          )
+        ? ORGS.filter((o) => o.slug === (user.orgSlug ?? ''))
         : ORGS;
     if (!query.trim()) return base;
     const q = query.toLowerCase();
@@ -127,8 +123,6 @@ function CollectionsSidebar() {
     [collections, activeOrg]
   );
 
-  if (orgCollections.length === 0) return null;
-
   return (
     <div className="admin-collections-section">
       <button
@@ -139,21 +133,23 @@ function CollectionsSidebar() {
         <BooksIcon className="admin-nav-icon" weight="regular" size={18} />
         {org?.collectionLabelPlural ?? 'Colecciones'}
       </button>
-      <ul className="admin-collections-list">
-        {orgCollections.map((col) => (
-          <li key={col.id}>
-            <NavLink
-              to={`/admin/campanas?col=${col.id}`}
-              className={() =>
-                `admin-collection-link${activeColId === col.id ? ' active' : ''}`
-              }
-            >
-              <span className="admin-collection-dot" />
-              {col.name}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
+      {orgCollections.length > 0 && (
+        <ul className="admin-collections-list">
+          {orgCollections.map((col) => (
+            <li key={col.id}>
+              <NavLink
+                to={`/admin/campanas?col=${col.id}`}
+                className={() =>
+                  `admin-collection-link${activeColId === col.id ? ' active' : ''}`
+                }
+              >
+                <span className="admin-collection-dot" />
+                {col.name}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -248,24 +244,6 @@ export function AdminLayout() {
               </NavLink>
 
               <CollectionsSidebar />
-
-              {isSuperadmin && (
-                <NavLink
-                  to="/admin/colecciones"
-                  className={({ isActive }) =>
-                    `admin-nav-link admin-nav-link--sub${isActive ? ' active' : ''}`
-                  }
-                >
-                  <GearIcon
-                    className="admin-nav-icon"
-                    weight="regular"
-                    size={18}
-                  />
-                  Gestionar{' '}
-                  {ORGS.find((o) => o.slug === activeOrg.slug)
-                    ?.collectionLabelPlural ?? 'Colecciones'}
-                </NavLink>
-              )}
             </>
           )}
         </nav>
