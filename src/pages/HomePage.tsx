@@ -79,10 +79,7 @@ export const HomePage = () => {
                   </p>
                   <p className="model-card__meta">@{model.user.username}</p>
                   <div className="model-card__action">
-                    <span
-                      className="btn btn-primary"
-                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
-                    >
+                    <span className="btn btn-primary model-card__button">
                       Ver en AR
                     </span>
                   </div>

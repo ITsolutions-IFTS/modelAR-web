@@ -4,6 +4,7 @@ import { aggregateCampaignStats } from '../utils/campaignStats';
 import { SECTOR_LABELS } from '../types';
 import type { Sector } from '../types';
 import { formatNumber } from '../utils/format';
+import { DynamicBar } from '../components/DynamicBar';
 import './MetricsPage.css';
 
 export function MetricsPage() {
@@ -96,10 +97,7 @@ export function MetricsPage() {
                 <div className="mtr-top-info">
                   <span className="mtr-top-name">{c.title}</span>
                   <div className="mtr-top-bar-wrap">
-                    <div
-                      className="mtr-top-bar"
-                      style={{ width: `${c.rate.toFixed(0)}%` }}
-                    />
+                    <DynamicBar className="mtr-top-bar" percent={c.rate} />
                   </div>
                 </div>
                 <span className="mtr-top-rate">{c.rate.toFixed(1)}%</span>
@@ -120,10 +118,7 @@ export function MetricsPage() {
                   {s.label}
                 </span>
                 <div className="mtr-subject-bar-wrap">
-                  <div
-                    className="mtr-subject-bar"
-                    style={{ width: `${s.pct}%` }}
-                  />
+                  <DynamicBar className="mtr-subject-bar" percent={s.pct} />
                 </div>
                 <span className="mtr-subject-value">
                   {formatNumber(s.value)}
@@ -169,9 +164,9 @@ export function MetricsPage() {
               <div key={step.label} className="mtr-funnel-row">
                 <span className="mtr-funnel-label">{step.label}</span>
                 <div className="mtr-funnel-bar-wrap">
-                  <div
+                  <DynamicBar
                     className={`mtr-funnel-bar ${step.color}`}
-                    style={{ width: `${step.pct}%` }}
+                    percent={step.pct}
                   />
                 </div>
                 <span className="mtr-funnel-val">

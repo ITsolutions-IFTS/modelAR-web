@@ -408,6 +408,11 @@ code, pre {
   margin-top: 0.6rem;
 }
 
+.model-card__button {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}
+
 /* ---- Catalog grid --------------------------------------------------------- */
 .catalog-grid {
   display: grid;
@@ -542,6 +547,10 @@ code, pre {
   color: #f87171;
 }
 
+.state-full-height {
+  height: calc(100dvh - var(--header-h));
+}
+
 /* ---- Share panel ---------------------------------------------------------- */
 .share-panel {
   display: flex;
@@ -562,6 +571,62 @@ code, pre {
   color: var(--text-3);
   text-align: center;
   letter-spacing: 0.01em;
+}
+
+/* ---- AR panel ------------------------------------------------------------- */
+.ar-panel__error-message,
+.ar-panel__back,
+.ar-panel__status,
+.ar-panel__description {
+  margin-bottom: 1rem;
+}
+
+.ar-panel__title {
+  margin-bottom: 0.3rem;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.ar-panel__meta,
+.ar-panel__status,
+.ar-panel__share-title {
+  color: var(--text-3);
+  font-size: 0.775rem;
+  letter-spacing: 0.01em;
+}
+
+.ar-panel__meta {
+  margin-bottom: 0.75rem;
+}
+
+.ar-panel__license {
+  opacity: 0.6;
+}
+
+.ar-panel__status-value {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.ar-panel__description {
+  color: var(--text-2);
+  font-size: 0.825rem;
+  line-height: 1.65;
+}
+
+.ar-panel__share {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.ar-panel__share-title {
+  margin-bottom: 0.75rem;
+}
+
+.ar-panel__copy {
+  font-size: 0.8rem;
 }
 
 /* ---- Scan page ------------------------------------------------------------ */
@@ -586,4 +651,58 @@ code, pre {
   height: 1px;
   background: var(--line);
   margin-block: 1rem;
+}
+
+/* ---- App header ----------------------------------------------------------- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.app-header__logo {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.app-header__logo-accent {
+  color: var(--accent);
+}
+
+.app-header__nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.app-header__link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.875rem;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 0.825rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: var(--text-2);
+  background: transparent;
+  transition: all var(--duration-fast);
+}
+
+.app-header__link--active {
+  color: var(--accent);
+  background: color-mix(in oklch, var(--accent) 15%, transparent);
+  border-color: color-mix(in oklch, var(--accent) 40%, transparent);
 }

@@ -4,6 +4,7 @@ import { useActiveOrg } from '../context/ActiveOrgContext';
 import { useAuth } from '../context/AuthContext';
 import { ORGS } from '../constants/orgs';
 import type { Org } from '../constants/orgs';
+import { DynamicBar } from '../components/DynamicBar';
 import './OrganizationsPage.css';
 
 interface OrgObservability {
@@ -55,10 +56,11 @@ function Sparkline({ data }: { data: number[] }) {
   return (
     <div className="org-spark">
       {data.map((v, i) => (
-        <div
+        <DynamicBar
           key={i}
           className="org-spark-bar"
-          style={{ height: `${Math.round((v / max) * 100)}%` }}
+          percent={max > 0 ? (v / max) * 100 : 0}
+          axis="height"
         />
       ))}
     </div>
@@ -190,7 +192,7 @@ export function OrganizationsPage() {
               key={org.slug}
               org={org}
               campaignCount={orgCampaigns.length}
-              totalViews={orgCampaigns.reduce((a, c) => a + c.views, 0)}
+              totalViews={orgCampaigns.reduce((a, c) => a + (c.views ?? 0), 0)}
               isSuperadmin={isSuperadmin}
             />
           );

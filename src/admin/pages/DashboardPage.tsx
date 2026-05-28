@@ -5,16 +5,14 @@ import { SECTOR_LABELS } from '../types';
 import { aggregateCampaignStats } from '../utils/campaignStats';
 import { formatNumber, formatPercent, formatDate } from '../utils/format';
 import type { Campaign } from '../types';
+import { DynamicBar } from '../components/DynamicBar';
 import '../admin-theme.css';
 import './DashboardPage.css';
 
 function ConvBar({ rate }: { rate: number }) {
   return (
     <div className="dash-conv-wrap">
-      <div
-        className="dash-conv-bar"
-        style={{ width: `${Math.min(rate, 100).toFixed(0)}%` }}
-      />
+      <DynamicBar className="dash-conv-bar" percent={rate} />
       <span className="dash-conv-label">{rate.toFixed(1)}%</span>
     </div>
   );
