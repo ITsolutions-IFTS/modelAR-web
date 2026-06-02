@@ -18,8 +18,10 @@ import {
 } from './admin/context/ActiveOrgContext';
 import { CampaignsProvider } from './admin/context/CampaignsContext';
 import { CollectionsProvider } from './admin/context/CollectionsContext';
+import { OrganizationsProvider } from './admin/context/OrganizationsContext';
 import { ProtectedRoute } from './admin/components/ProtectedRoute';
 import { AdminLayout } from './admin/components/AdminLayout';
+import { ConfirmProvider } from './components/ConfirmDialog';
 import { LoginPage } from './admin/pages/LoginPage';
 import { DashboardPage } from './admin/pages/DashboardPage';
 import { CampaignsPage } from './admin/pages/CampaignsPage';
@@ -92,15 +94,19 @@ function AppShell() {
 export default function App() {
   return (
     <HashRouter>
-      <AuthProvider>
-        <ActiveOrgProvider>
-          <CampaignsProvider>
-            <CollectionsProvider>
-              <AppShell />
-            </CollectionsProvider>
-          </CampaignsProvider>
-        </ActiveOrgProvider>
-      </AuthProvider>
+      <ConfirmProvider>
+        <AuthProvider>
+          <OrganizationsProvider>
+            <ActiveOrgProvider>
+              <CampaignsProvider>
+                <CollectionsProvider>
+                  <AppShell />
+                </CollectionsProvider>
+              </CampaignsProvider>
+            </ActiveOrgProvider>
+          </OrganizationsProvider>
+        </AuthProvider>
+      </ConfirmProvider>
     </HashRouter>
   );
 }

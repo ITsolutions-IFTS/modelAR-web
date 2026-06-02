@@ -4,22 +4,22 @@ import { useCollections } from '../context/CollectionsContext';
 import { useCampaigns } from '../context/CampaignsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm } from '@/components/ConfirmDialog';
 import type { Collection } from '../types';
 import './CollectionsPage.css';
 
+interface CollectionFormData {
+  name: string;
+  description?: string;
+}
+
 interface CollectionFormProps {
-  orgSlug: string;
   initial?: Collection;
-  onSave: (c: Collection) => void;
+  onSave: (data: CollectionFormData) => void;
   onCancel: () => void;
 }
 
-function CollectionForm({
-  orgSlug,
-  initial,
-  onSave,
-  onCancel,
-}: CollectionFormProps) {
+function CollectionForm({ initial, onSave, onCancel }: CollectionFormProps) {
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [nameErr, setNameErr] = useState('');
@@ -31,8 +31,6 @@ function CollectionForm({
       return;
     }
     onSave({
-      id: initial?.id ?? `col-${Date.now()}`,
-      orgSlug,
       name: name.trim(),
       description: description.trim() || undefined,
     });
@@ -89,6 +87,7 @@ export function CollectionsPage() {
   const { campaigns } = useCampaigns();
   const { org, orgCollections, activeOrg } = useOrgResources();
   const { user } = useAuth();
+  const confirm = useConfirm();
   const isSuperadmin = user?.role === 'superadmin';
 
   const [adding, setAdding] = useState(false);
@@ -124,9 +123,8 @@ export function CollectionsPage() {
         <div className="colp-form-wrap">
           <h2 className="colp-form-title">Nueva {label}</h2>
           <CollectionForm
-            orgSlug={activeOrg?.slug ?? ''}
-            onSave={(c) => {
-              addCollection(c);
+            onSave={(data) => {
+              addCollection(data);
               setAdding(false);
             }}
             onCancel={() => setAdding(false)}
@@ -140,14 +138,6 @@ export function CollectionsPage() {
             No hay {labelPlural.toLowerCase()} configuradas para esta
             organización.
           </p>
-          {isSuperadmin && (
-            <button
-              className="col-btn col-btn--primary"
-              onClick={() => setAdding(true)}
-            >
-              <PlusIcon weight="bold" size={14} /> Nueva {label}
-            </button>
-          )}
         </div>
       ) : (
         <div className="colp-list">
@@ -155,10 +145,9 @@ export function CollectionsPage() {
             <div key={col.id} className="colp-item">
               {editingId === col.id ? (
                 <CollectionForm
-                  orgSlug={activeOrg?.slug ?? ''}
                   initial={col}
-                  onSave={(c) => {
-                    updateCollection(c);
+                  onSave={(data) => {
+                    updateCollection(col.id, data);
                     setEditingId(null);
                   }}
                   onCancel={() => setEditingId(null)}
@@ -190,7 +179,19 @@ export function CollectionsPage() {
                       </button>
                       <button
                         className="col-btn col-btn--danger"
-                        onClick={() => deleteCollection(col.id)}
+                        onClick={async () => {
+                          const linked = campaignCount(col.id);
+                          const ok = await confirm({
+                            title: `Eliminar ${label.toLowerCase()}`,
+                            message:
+                              linked > 0
+                                ? `"${col.name}" tiene ${linked} campaña${linked === 1 ? '' : 's'} asociada${linked === 1 ? '' : 's'}. Las campañas quedaran sin coleccion. ¿Continuar?`
+                                : `Vas a eliminar "${col.name}". Esta accion no se puede deshacer.`,
+                            confirmLabel: 'Eliminar',
+                            variant: 'danger',
+                          });
+                          if (ok) await deleteCollection(col.id);
+                        }}
                       >
                         <TrashIcon weight="regular" size={14} /> Eliminar
                       </button>

@@ -10,6 +10,7 @@ import { useCampaigns } from '../context/CampaignsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { SECTOR_LABELS } from '../types';
 import { formatNumber } from '../utils/format';
+import { useConfirm } from '@/components/ConfirmDialog';
 import type { Campaign } from '../types';
 import './CampaignsPage.css';
 
@@ -20,6 +21,7 @@ export function CampaignsPage() {
 
   const { deleteCampaign } = useCampaigns();
   const { org, orgCampaigns, orgCollections, activeOrg } = useOrgResources();
+  const confirm = useConfirm();
 
   const visibleCampaigns = useMemo(
     () =>
@@ -163,9 +165,14 @@ export function CampaignsPage() {
                       </button>
                       <button
                         className="btn-delete"
-                        onClick={() => {
-                          if (confirm(`¿Eliminar "${campaign.title}"?`))
-                            deleteCampaign(campaign.id);
+                        onClick={async () => {
+                          const ok = await confirm({
+                            title: 'Eliminar campaña',
+                            message: `Vas a eliminar "${campaign.title}". Esta accion no se puede deshacer.`,
+                            confirmLabel: 'Eliminar',
+                            variant: 'danger',
+                          });
+                          if (ok) await deleteCampaign(campaign.id);
                         }}
                       >
                         <TrashIcon weight="regular" size={15} /> Eliminar
