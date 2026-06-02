@@ -122,13 +122,38 @@ Eduardo Torcello figura en el documento entregado. Sin acción pendiente.
 
 ### ITS-006 — Stack tecnológico (tabla sección 9) | ⏳ Betania
 
-- [ ] Catálogo: `Array en tgz` → `Sketchfab API v3 (src/services/sketchfab.ts)`
+> **Actualizado para Stage 4:** la tabla del documento debe reflejar la separación en 3 servicios (web + gateway + core) introducida en Sprint 6, no la versión monolítica anterior.
+
+**Tabla final a incluir en la sección 9 del documento APA:**
+
+| Capa                         | Tecnología                              | Versión     | Rol                                                                      |
+| ---------------------------- | --------------------------------------- | ----------- | ------------------------------------------------------------------------ |
+| **Frontend** (`modelar-web`) | React + TypeScript                      | 19 + 5.6    | UI, routing, contexts, AR viewer y QR scanner                            |
+|                              | Vite                                    | 6           | Dev server y build                                                       |
+|                              | Figtree Variable                        | —           | Tipografía                                                               |
+|                              | `three` + `@google/model-viewer`        | 0.182 + 4.2 | Renderizado 3D y AR (WebXR + fallback iOS QuickLook)                     |
+|                              | `@zxing/browser`                        | 0.1         | Escaneo de QR                                                            |
+|                              | Vitest + jsdom                          | 4.1         | Tests unitarios                                                          |
+| **Gateway** (`modelar-api`)  | Express + TypeScript                    | 4.21 + 5.6  | Proxy HTTP sin estado al core, forward de headers de auth y tracing      |
+|                              | helmet, cors, dotenv                    | —           | Hardening básico y configuración por env                                 |
+| **Core** (`modelar-core`)    | NestJS + TypeScript                     | 11 + 5.7    | Lógica de negocio, autenticación, rate limiting, exception filter global |
+|                              | Sequelize + sequelize-typescript        | 6.37 + 2.1  | ORM con soft delete (paranoid) y migrations                              |
+|                              | PostgreSQL                              | 16          | Base de datos                                                            |
+|                              | Redis                                   | 7           | Cache de Sketchfab + storage de rate limiter                             |
+|                              | `@nestjs/jwt` + `bcryptjs`              | 11 + 2.4    | JWT access/refresh con rotación atómica                                  |
+|                              | `class-validator` + `class-transformer` | 0.14 + 0.5  | Validación de DTOs en la capa de presentation                            |
+|                              | Jest + ts-jest                          | 30 + 29     | Tests unitarios (112 tests, cobertura 93%/85%/91%/94%)                   |
+| **Infraestructura**          | Docker Compose                          | —           | Levanta Postgres (5433) y Redis (6380) en dev                            |
+|                              | Sketchfab API v3                        | —           | Catálogo de modelos 3D (10M+ assets sin storage propio)                  |
+
+**Items a corregir en el documento APA:**
+
+- [ ] Catálogo: `Array en tgz` → `Sketchfab API v3 (consumido por modelar-core con cache Redis)`
 - [ ] Storage GLB: `public/models/` → `Sketchfab CDN (sin archivos locales)`
 - [ ] Stage 2 propuesta catálogo: ~~poly.pizza~~ → descartado, reemplazado por Sketchfab
-- [ ] Librerías locales: `@mbetania/*` → `src/lib/ar-viewer/` y `src/lib/qr-scanner/`
-- [ ] Tipado: agregar TypeScript 5.6
-- [ ] Fuente: agregar Figtree Variable
-- [ ] Vite: `v8` → `v6`
+- [ ] Sacar cualquier referencia a `@mbetania/*` y "librerías locales": no existen. La única dependencia externa de negocio es `modelar-core`
+- [ ] Aclarar la separación en 3 capas (no es un monolito): web (Vite) + gateway (Express) + core (NestJS, API externa)
+- [ ] Mencionar que `modelar-core` es repo privado del owner; `modelar-api` y `modelar-web` son los públicos
 
 ---
 
