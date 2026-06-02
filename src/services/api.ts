@@ -4,14 +4,18 @@ import type {
   Campaign,
   Collection,
   CreateCampaignInput,
+  Organization,
   UpdateCampaignInput,
 } from '@/admin/types';
+import type { Sector } from '@/admin/types';
 
 const API_BASE =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
 const TIMEOUT_MS = 10_000;
 
 export const UNAUTHORIZED_EVENT = 'modelar:unauthorized';
+
+// ── Token storage ──────────────────────────────────────────────────────────
 
 function getToken(): string | null {
   return sessionStorage.getItem(STORAGE_KEYS.TOKEN);
@@ -24,6 +28,53 @@ export function setToken(token: string): void {
 export function clearToken(): void {
   sessionStorage.removeItem(STORAGE_KEYS.TOKEN);
 }
+
+export function getRefreshToken(): string | null {
+  return sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+}
+
+export function setRefreshToken(token: string): void {
+  sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, token);
+}
+
+export function clearRefreshToken(): void {
+  sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+}
+
+// ── Response shapes ────────────────────────────────────────────────────────
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+interface ErrorBody {
+  error?:
+    | string
+    | {
+        code?: string;
+        message?: string | string[];
+        statusCode?: number;
+      };
+}
+
+function extractErrorMessage(body: ErrorBody, status: number): string {
+  const err = body.error;
+  if (typeof err === 'string') return err;
+  if (err && typeof err === 'object') {
+    const msg = err.message;
+    if (Array.isArray(msg)) return msg.join(' · ');
+    if (typeof msg === 'string') return msg;
+  }
+  return `Error ${status}`;
+}
+
+// ── Core fetch ─────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
@@ -45,23 +96,37 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     clearTimeout(timer);
   }
 
+  // 401: only treat as session expiry when we actually sent a token.
+  // For unauthenticated calls (login with wrong password) it's a regular error.
   if (res.status === 401) {
-    clearToken();
-    window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
-    throw new Error('Sesión expirada. Por favor iniciá sesión nuevamente.');
+    const body = (await res.json().catch(() => ({}))) as ErrorBody;
+    if (token) {
+      clearToken();
+      clearRefreshToken();
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+      throw new Error('Sesión expirada. Por favor iniciá sesión nuevamente.');
+    }
+    throw new Error(extractErrorMessage(body, 401));
   }
 
   if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(body.error ?? `Error ${res.status}`);
+    const body = (await res.json().catch(() => ({}))) as ErrorBody;
+    throw new Error(extractErrorMessage(body, res.status));
   }
+
+  // 204 No Content (DELETE) or empty body
+  if (res.status === 204) return undefined as T;
 
   return res.json() as Promise<T>;
 }
 
-// ── Auth ────────────────────────────────────────────────────────────────────
+// ── Auth ───────────────────────────────────────────────────────────────────
 
-export type LoginResponse = { token: string; client: AdminUser };
+export type LoginResponse = {
+  accessToken: string;
+  refreshToken: string;
+  client: AdminUser;
+};
 
 export const apiLogin = (email: string, password: string) =>
   apiFetch<LoginResponse>('/api/auth/login', {
@@ -69,14 +134,18 @@ export const apiLogin = (email: string, password: string) =>
     body: JSON.stringify({ email, password }),
   });
 
-export const apiMe = () => apiFetch<{ client: AdminUser }>('/api/auth/me');
+export const apiMe = () => apiFetch<AdminUser>('/api/auth/me');
 
-export const apiLogout = () =>
-  apiFetch<{ success: boolean }>('/api/auth/logout', { method: 'POST' });
+export const apiLogout = (refreshToken: string) =>
+  apiFetch<{ success: boolean }>('/api/auth/logout', {
+    method: 'POST',
+    body: JSON.stringify({ refreshToken }),
+  });
 
-// ── Campaigns ───────────────────────────────────────────────────────────────
+// ── Campaigns ──────────────────────────────────────────────────────────────
 
-export const apiGetCampaigns = () => apiFetch<Campaign[]>('/api/campaigns');
+export const apiGetCampaigns = () =>
+  apiFetch<PaginatedResponse<Campaign>>('/api/campaigns');
 
 export const apiGetCampaign = (id: string) =>
   apiFetch<Campaign>(`/api/campaigns/${id}`);
@@ -94,12 +163,12 @@ export const apiUpdateCampaign = (id: string, data: UpdateCampaignInput) =>
   });
 
 export const apiDeleteCampaign = (id: string) =>
-  apiFetch<{ success: boolean }>(`/api/campaigns/${id}`, { method: 'DELETE' });
+  apiFetch<void>(`/api/campaigns/${id}`, { method: 'DELETE' });
 
-// ── Collections ─────────────────────────────────────────────────────────────
+// ── Collections ────────────────────────────────────────────────────────────
 
 export const apiGetCollections = () =>
-  apiFetch<Collection[]>('/api/collections');
+  apiFetch<PaginatedResponse<Collection>>('/api/collections');
 
 export const apiCreateCollection = (data: {
   name: string;
@@ -120,6 +189,35 @@ export const apiUpdateCollection = (
   });
 
 export const apiDeleteCollection = (id: string) =>
-  apiFetch<{ success: boolean }>(`/api/collections/${id}`, {
-    method: 'DELETE',
+  apiFetch<void>(`/api/collections/${id}`, { method: 'DELETE' });
+
+// ── Organizations ──────────────────────────────────────────────────────────
+
+export const apiGetOrganizations = () =>
+  apiFetch<PaginatedResponse<Organization>>('/api/organizations');
+
+export const apiGetOrganization = (slug: string) =>
+  apiFetch<Organization>(`/api/organizations/${slug}`);
+
+export const apiCreateOrganization = (data: {
+  slug: string;
+  name: string;
+  description?: string;
+  sector: Sector;
+}) =>
+  apiFetch<Organization>('/api/organizations', {
+    method: 'POST',
+    body: JSON.stringify(data),
   });
+
+export const apiUpdateOrganization = (
+  slug: string,
+  data: { name?: string; description?: string | null; sector?: Sector }
+) =>
+  apiFetch<Organization>(`/api/organizations/${slug}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+
+export const apiDeleteOrganization = (slug: string) =>
+  apiFetch<void>(`/api/organizations/${slug}`, { method: 'DELETE' });

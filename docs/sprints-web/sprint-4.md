@@ -11,27 +11,30 @@
 
 ---
 
-### ITS-REF01 — AppHeader: extraer inline styles a CSS | 🔁 v2 — Betania
+### ITS-REF01 — AppHeader: extraer inline styles a CSS | 🔁 v2 — Micaela
 
 `src/components/AppHeader.tsx` usa inline styles para todo.
 
 **Acción:**
+
 - [ ] Agregar en `styles.css`: `.app-header`, `.app-header__logo`, `.app-header__logo-accent`, `.app-header__nav`, `.app-header__link`
 - [ ] Manejar estado activo con clase CSS en lugar de función inline de `style`
 - [ ] El componente resultante debe tener cero inline styles
 
 ---
 
-### ITS-REF02 — HomePage: skeleton grid + badge de sector | 🔁 v2 — Betania
+### ITS-REF02 — HomePage: skeleton grid + badge de sector | 🔁 v2 — Eugenia
 
 Dos mejoras independientes en `src/pages/HomePage.tsx` y `src/styles.css`.
 
 **Skeleton loading:**
+
 - [ ] Agregar clase `.model-card--skeleton` con animación `@keyframes shimmer` (gradiente que se mueve de izquierda a derecha)
 - [ ] Mientras `loading === true`, renderizar 12 tarjetas skeleton en lugar de texto
 - [ ] Las tarjetas skeleton deben tener las mismas dimensiones que las tarjetas reales (sin layout shift al cargar)
 
 **Badge de sector:**
+
 - [ ] En el render de cada tarjeta, derivar el sector activo desde el tab actual (`tab !== 'all'`)
 - [ ] Mostrar `<span className={`sector-badge sector-badge--${tab}`}>` cuando hay filtro activo
 - [ ] Reemplazar la lógica actual que siempre usa `sector-badge--educacion`
@@ -43,23 +46,25 @@ Dos mejoras independientes en `src/pages/HomePage.tsx` y `src/styles.css`.
 `src/pages/ARPage.tsx` usa inline styles en el panel lateral.
 
 **CSS:**
+
 - [ ] Extraer a `styles.css`: `.ar-panel__title`, `.ar-panel__meta`, `.ar-panel__status`, `.ar-panel__description`
 - [ ] `.ar-panel__share` para la sección del QR
 
 **Status labels:**
+
 - [ ] Agregar en `src/lib/ar-viewer/types.ts`:
   ```ts
   export const AR_STATUS_LABELS: Record<ARTrackingStatus, string> = {
-    idle:              'Iniciando...',
-    initializing:      'Preparando AR...',
-    'loading-model':   'Cargando modelo...',
-    'model-ready':     'Modelo listo',
+    idle: 'Iniciando...',
+    initializing: 'Preparando AR...',
+    'loading-model': 'Cargando modelo...',
+    'model-ready': 'Modelo listo',
     'searching-surface': 'Buscando superficie...',
-    'surface-detected':  'Tocá para colocar',
-    'model-placed':    'Modelo colocado',
-    'session-ended':   'Sesión finalizada',
-    error:             'Error en AR',
-  }
+    'surface-detected': 'Tocá para colocar',
+    'model-placed': 'Modelo colocado',
+    'session-ended': 'Sesión finalizada',
+    error: 'Error en AR',
+  };
   ```
 - [ ] Usar `AR_STATUS_LABELS[trackingStatus]` en lugar del string crudo
 
@@ -70,6 +75,7 @@ Dos mejoras independientes en `src/pages/HomePage.tsx` y `src/styles.css`.
 `src/pages/ScanPage.tsx` no muestra errores al usuario.
 
 **Acción:**
+
 - [ ] Agregar estado `cameraError: string | null` en `ScanPage`
 - [ ] `onError` → setear `cameraError` con mensaje legible
 - [ ] Si `cameraError` contiene "Permission" o "NotAllowed", mostrar:
@@ -83,10 +89,12 @@ Dos mejoras independientes en `src/pages/HomePage.tsx` y `src/styles.css`.
 AR WebXR requiere HTTPS y dispositivo físico compatible.
 
 **Setup:**
+
 - [ ] Levantar tunnel HTTPS: `npx cloudflared tunnel --url http://localhost:5173` o `npx localtunnel --port 5173`
 - [ ] El dominio del tunnel ya está en `vite.config.ts` (`allowedHosts`)
 
 **Casos a probar:**
+
 - [ ] Android Chrome — flujo completo: buscar modelo → ver en 3D → activar AR → colocar en superficie
 - [ ] Android Chrome — pinch para escalar el modelo colocado
 - [ ] Android Chrome — QR scanner → navegar a ARPage → AR
@@ -96,7 +104,9 @@ AR WebXR requiere HTTPS y dispositivo físico compatible.
 
 ---
 
-### ITS-QA02 — Verificar cleanup de Three.js al navegar | 🧪 Betania
+### ITS-QA02 — Verificar cleanup de Three.js al navegar | 📦 Backlog — Betania
+
+> **Movido a backlog (2026-06-02):** verificación de performance/memoria, no bloqueante para la entrega final académica. Se retoma post-entrega si aparecen reportes de degradación en uso prolongado.
 
 Probar que no haya memory leaks al navegar entre páginas.
 
@@ -112,6 +122,7 @@ Probar que no haya memory leaks al navegar entre páginas.
 Hacer **después** de que Eduardo, Micaela y Eugenia terminen sus correcciones (Figuras 2, 3, 6, 7, 8 y Figma).
 
 **Checklist de correcciones (Betania):**
+
 - [ ] Módulo 2 — catálogo dinámico Sketchfab (ITS-002)
 - [ ] Plataformas: TypeScript 5.6, Vite 6, Sketchfab API, Figtree (ITS-002)
 - [ ] Competencia: sacar Sketchfab como competidor (ITS-004)
@@ -129,14 +140,15 @@ Hacer **después** de que Eduardo, Micaela y Eugenia terminen sus correcciones (
 - [ ] CV de Eduardo adjuntado al documento
 
 **Bibliografía final correcta:**
-1. Sommerville, I. (2011). *Ingeniería de software* (9.ª ed.). Pearson Educación.
-2. Three.js Authors. (2024). *Three.js documentation*. https://threejs.org/docs/
-3. Google. (2024). *Model Viewer documentation*. https://modelviewer.dev/docs/
-4. Pressman, R. S., & Maxim, B. R. (2021). *Ingeniería del software: un enfoque práctico* (8.ª ed.). McGraw-Hill.
-5. W3C. (2023). *WebXR Device API specification*. https://www.w3.org/TR/webxr/
-6. Sketchfab. (2024). *Sketchfab API v3 documentation*. https://docs.sketchfab.com/data-api/v3/
-7. Vite. (2024). *Vite guide*. https://vitejs.dev/guide/
-8. GitHub. (2024). *GitHub Pages documentation*. https://docs.github.com/pages
+
+1. Sommerville, I. (2011). _Ingeniería de software_ (9.ª ed.). Pearson Educación.
+2. Three.js Authors. (2024). _Three.js documentation_. https://threejs.org/docs/
+3. Google. (2024). _Model Viewer documentation_. https://modelviewer.dev/docs/
+4. Pressman, R. S., & Maxim, B. R. (2021). _Ingeniería del software: un enfoque práctico_ (8.ª ed.). McGraw-Hill.
+5. W3C. (2023). _WebXR Device API specification_. https://www.w3.org/TR/webxr/
+6. Sketchfab. (2024). _Sketchfab API v3 documentation_. https://docs.sketchfab.com/data-api/v3/
+7. Vite. (2024). _Vite guide_. https://vitejs.dev/guide/
+8. GitHub. (2024). _GitHub Pages documentation_. https://docs.github.com/pages
 
 ---
 

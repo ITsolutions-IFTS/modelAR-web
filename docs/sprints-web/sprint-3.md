@@ -23,8 +23,9 @@
 🔁 **v2 — Skeleton grid:** La primera carga y cada `loadMore()` muestran solo texto "Cargando modelos...". Reemplazar por un grid de `.model-card--skeleton` con animación shimmer (mismas dimensiones que tarjetas reales, evita layout shift).
 
 🔁 **v2 — Badge de sector en tarjetas:** El badge que se muestra en las tarjetas usa siempre `sector-badge--educacion` (azul), solo para modelos con animaciones. El badge debería:
-  - Mostrar el sector activo del tab si está filtrado (ecommerce/turismo/educación)
-  - Usar el color correspondiente al sector (`--sector-ecommerce`, etc.)
+
+- Mostrar el sector activo del tab si está filtrado (ecommerce/turismo/educación)
+- Usar el color correspondiente al sector (`--sector-ecommerce`, etc.)
 
 🔁 **v2 — Estado vacío ilustrado:** El estado sin resultados muestra solo texto. Agregar un ícono/ilustración y texto descriptivo ("No encontramos modelos. Probá con otra búsqueda.").
 
@@ -46,20 +47,21 @@
 - Estado de tracking mostrado como string crudo (ej: `searching-surface`)
 
 🔁 **v2 — Inline styles en panel:** El panel lateral usa casi exclusivamente inline styles. Extraer a clases CSS:
-  `.ar-panel__title`, `.ar-panel__meta`, `.ar-panel__status`, `.ar-panel__description`, `.ar-panel__share`
+`.ar-panel__title`, `.ar-panel__meta`, `.ar-panel__status`, `.ar-panel__description`, `.ar-panel__share`
 
 🔁 **v2 — Estado AR legible:** El `trackingStatus` se muestra en crudo. Usar un mapa de etiquetas:
-  ```
-  idle              → "Iniciando..."
-  initializing      → "Preparando AR..."
-  loading-model     → "Cargando modelo..."
-  model-ready       → "Modelo listo"
-  searching-surface → "Buscando superficie..."
-  surface-detected  → "Superficie detectada — tocá para colocar"
-  model-placed      → "Modelo colocado"
-  session-ended     → "Sesión finalizada"
-  error             → "Error"
-  ```
+
+```
+idle              → "Iniciando..."
+initializing      → "Preparando AR..."
+loading-model     → "Cargando modelo..."
+model-ready       → "Modelo listo"
+searching-surface → "Buscando superficie..."
+surface-detected  → "Superficie detectada — tocá para colocar"
+model-placed      → "Modelo colocado"
+session-ended     → "Sesión finalizada"
+error             → "Error"
+```
 
 🔁 **v2 — Loading skeleton ARPage:** El estado `phase === 'loading'` muestra texto plano. Agregar un placeholder que simule el layout del panel (skeleton del nombre, usuario, etc.).
 
@@ -76,9 +78,10 @@
 🔁 **v2 — Error visible al usuario:** Los errores de cámara (permiso denegado, dispositivo sin cámara) van a `console.warn` pero no se muestran en pantalla. Agregar estado de error en `ScanPage` con mensaje explicativo y, si es permiso denegado, instrucciones para habilitarlo en el browser.
 
 🔁 **v2 — UI mínima:** La página tiene `<h1>` y un párrafo. Agregar:
-  - Indicador de estado del scanner (buscando / código detectado)
-  - Botón para detener/reiniciar el scanner
-  - Historial local de los últimos UID escaneados (localStorage, máx. 5)
+
+- Indicador de estado del scanner (buscando / código detectado)
+- Botón para detener/reiniciar el scanner
+- Historial local de los últimos UID escaneados (localStorage, máx. 5)
 
 ---
 
@@ -86,39 +89,49 @@
 
 ### ITS-019 — Sección 5: Fases de desarrollo | ⏳ Betania
 
-- [ ] Corregir descripción de Fase 3:
-  > *"El motor AR (`src/lib/ar-viewer/`) y el escáner QR (`src/lib/qr-scanner/`) están implementados como módulos inline en el repositorio. El catálogo es dinámico: `src/services/sketchfab.ts` conecta con Sketchfab API v3 para obtener modelos en tiempo real."*
+> **Actualizado para Stage 4:** Fase 3 ya no describe un monolito; el desarrollo se separó en 3 servicios durante Sprint 6.
 
-Estado real de las fases:
+- [ ] Reescribir descripción de Fase 3:
+  > _"El sistema se implementa en tres servicios desplegados de forma independiente: `modelar-web` (Vite + React, frontend de admin + experiencia AR pública), `modelar-api` (Express, gateway HTTP fino sin estado) y `modelar-core` (NestJS, API externa con la lógica de negocio en clean architecture de 4 capas, Postgres y Redis). El frontend implementa la visualización 3D/AR (Three.js + model-viewer) y el escaneo de QR (ZXing) como parte de su propio código. El catálogo de modelos lo provee `modelar-core` consultando Sketchfab API v3 con cache Redis."_
 
-| Fase | Estado |
-|---|---|
-| 1. Análisis y requerimientos | ✅ Completado |
-| 2. Diseño del sistema | ✅ Diagramas completos (correcciones pendientes en 2, 6, 7) |
-| 3. Desarrollo e implementación | ✅ `itsolutions-next` con TypeScript, Sketchfab, libs inline |
-| 4. Pruebas y QA | 🧪 Pendiente — probar en Android Chrome + iOS Safari |
-| 5. Capacitación | ⏳ Propuesto — Stage 3 |
-| 6. Manual y soporte | ⏳ Propuesto — Stage 3 |
-| 7. Mantenimiento | ⏳ Propuesto — Stage 3 |
+Estado real de las fases (Stage 4):
+
+| Fase                           | Estado                                                                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 1. Análisis y requerimientos   | ✅ Completado                                                                                                                        |
+| 2. Diseño del sistema          | ✅ Diagramas completos (pendiente actualizarlos con `modelar-core` como nodo separado — ver ITS-023)                                 |
+| 3. Desarrollo e implementación | ✅ Tres repos funcionando end-to-end: `modelar-web`, `modelar-api`, `modelar-core`                                                   |
+| 4. Pruebas y QA                | 🧪 Tests unitarios verdes (web: 23/23 · core: 112/112). Pendiente: pruebas de integración documentadas y testing en dispositivo real |
+| 5. Capacitación                | ⏳ Manual de Usuario en preparación (Stage 4)                                                                                        |
+| 6. Manual y soporte            | ⏳ Manual Técnico en preparación (Stage 4)                                                                                           |
+| 7. Mantenimiento               | ⏳ Deploy en Railway/Render del core como servicio público; gateway y frontend levantables localmente apuntando al deploy            |
 
 ---
 
 ### ITS-020 — Sección 6: Propuesta ejecutiva | ⏳ Betania
 
-- [ ] Reemplazar *"librerías locales"* por *"módulos inline en `src/lib/`"*
-- [ ] Agregar en el diferencial: *"La integración con Sketchfab API provee acceso a más de 10 millones de modelos 3D sin costo de almacenamiento ni procesamiento."*
+> **Actualizado para Stage 4:** el diferencial ahora incluye la arquitectura desacoplada, no solo Sketchfab.
+
+- [ ] Sacar del texto la mención a _"librerías locales"_ — el concepto ya no aplica. La única dependencia externa de negocio del frontend es `modelar-core` (vía el gateway).
+- [ ] Agregar al diferencial:
+  - _"Integración con Sketchfab API v3 provee acceso a más de 10 millones de modelos 3D sin costo de almacenamiento ni procesamiento."_
+  - _"Arquitectura desacoplada en tres servicios: el frontend y el gateway son repos públicos que cualquier integrador puede levantar localmente, mientras la lógica de negocio (modelar-core) corre como API externa configurable por env (`CORE_URL`). Esto habilita ampliar canales de uso (mobile, dashboards externos, integraciones B2B) sin tocar el core."_
+  - _"Tests automatizados (135 tests en total) y soft delete en todas las entidades del dominio."_
 
 ---
 
 ### ITS-023 — QA cruzado de coherencia entre diagramas | ⏳ Micaela
 
-Ejecutar **después** de que Eduardo termine Figuras 2, 6 y 7:
+> **Actualizado para Stage 4:** los diagramas tienen que reflejar la separación en tres servicios.
 
-- [ ] Figura 2 incluye `SketchfabService` y `SketchfabModel`
-- [ ] Figura 3 muestra llamada a Sketchfab API, no catálogo local
-- [ ] Figura 5 — estados coinciden con código en `src/lib/ar-viewer/ThreeARSurface.tsx`
-- [ ] Figura 6 muestra `src/lib/ar-viewer`, `src/lib/qr-scanner` y `src/services/sketchfab.ts`
-- [ ] Figura 7 incluye nodos Sketchfab API + Sketchfab CDN
+Ejecutar **después** de que Eduardo actualice las figuras 2, 3, 6 y 7 con `modelar-core` como nodo separado:
+
+- [ ] Figura 2 (componentes) incluye los tres servicios: `modelar-web`, `modelar-api` (gateway), `modelar-core` (clean architecture con sus 4 capas), Postgres y Redis
+- [ ] Figura 3 (interacción) muestra el flujo `web → gateway → core → DB`, no una llamada directa
+- [ ] Figura 5 (estados AR) — siguen coincidiendo con `src/lib/ar-viewer/ThreeARSurface.tsx` (no cambió)
+- [ ] Figura 6 (estructura de carpetas) muestra los tres repos por separado, no como subcarpetas del mismo proyecto
+- [ ] Figura 7 (despliegue) incluye Sketchfab API + CDN + Postgres + Redis + el core en su nodo de hosting
 - [ ] Figura 8 — pie de figura corregido
 - [ ] No quedan referencias a `@mbetania/*`, `poly.pizza` ni `/public/models/` en ningún diagrama
 - [ ] Los actores de Figura 1 están referenciados en Figura 3
+- [ ] Las flechas que cruzan el límite gateway↔core están etiquetadas como `HTTP/JSON` (no como llamadas in-process)

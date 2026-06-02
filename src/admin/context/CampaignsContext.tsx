@@ -42,7 +42,7 @@ export function CampaignsProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiGetCampaigns();
+      const { data } = await apiGetCampaigns();
       setCampaigns(data);
     } catch (err) {
       setError((err as Error).message);

@@ -1,9 +1,12 @@
+import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PlusIcon } from '@phosphor-icons/react';
 import { useCampaigns } from '../context/CampaignsContext';
 import { useActiveOrg } from '../context/ActiveOrgContext';
 import { useAuth } from '../context/AuthContext';
-import { ORGS } from '../constants/orgs';
-import type { Org } from '../constants/orgs';
+import { useOrganizations } from '../context/OrganizationsContext';
+import { enrichOrg, type EnrichedOrg } from '../hooks/useOrgResources';
+import { SECTORS, type Sector } from '../types';
 import { DynamicBar } from '../components/DynamicBar';
 import './OrganizationsPage.css';
 
@@ -68,7 +71,7 @@ function Sparkline({ data }: { data: number[] }) {
 }
 
 interface OrgCardProps {
-  org: Org;
+  org: EnrichedOrg;
   campaignCount: number;
   totalViews: number;
   isSuperadmin: boolean;
@@ -173,24 +176,180 @@ function OrgCard({
   );
 }
 
+interface NewOrgFormProps {
+  onCancel: () => void;
+  onSubmit: (data: {
+    slug: string;
+    name: string;
+    description?: string;
+    sector: Sector;
+  }) => Promise<void>;
+}
+
+function NewOrgForm({ onCancel, onSubmit }: NewOrgFormProps) {
+  const [slug, setSlug] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [sector, setSector] = useState<Sector | ''>('');
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const slugLooksValid = /^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!sector) {
+      setFormError('Seleccioná un sector.');
+      return;
+    }
+    if (!slugLooksValid) {
+      setFormError('El slug debe ser kebab-case: solo a-z, 0-9 y guiones.');
+      return;
+    }
+    setFormError('');
+    setSubmitting(true);
+    try {
+      await onSubmit({
+        slug: slug.trim(),
+        name: name.trim(),
+        description: description.trim() || undefined,
+        sector: sector as Sector,
+      });
+    } catch (err) {
+      setFormError((err as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form className="orgs-form" onSubmit={handleSubmit} noValidate>
+      <h2 className="orgs-form-title">Nueva organización</h2>
+      <div className="orgs-form-grid">
+        <label className="orgs-form-field">
+          <span>Slug</span>
+          <input
+            type="text"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value.toLowerCase())}
+            placeholder="ej: museo-bernal"
+            required
+            autoFocus
+          />
+          <small>Identificador único en URLs — minúsculas y guiones.</small>
+        </label>
+        <label className="orgs-form-field">
+          <span>Nombre</span>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="ej: Museo Bernal"
+            required
+          />
+        </label>
+        <label className="orgs-form-field orgs-form-field--full">
+          <span>
+            Descripción <small>(opcional)</small>
+          </span>
+          <input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="ej: Museo de arte contemporáneo"
+          />
+        </label>
+        <label className="orgs-form-field">
+          <span>Sector</span>
+          <select
+            value={sector}
+            onChange={(e) => setSector(e.target.value as Sector | '')}
+            required
+          >
+            {SECTORS.map((s) => (
+              <option key={s.value || 'placeholder'} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {formError && <p className="orgs-form-error">{formError}</p>}
+      <div className="orgs-form-actions">
+        <button
+          type="button"
+          className="org-btn org-btn--ghost"
+          onClick={onCancel}
+          disabled={submitting}
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          className="org-btn org-btn--primary"
+          disabled={submitting}
+        >
+          {submitting ? 'Creando…' : 'Crear organización'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export function OrganizationsPage() {
   const { campaigns } = useCampaigns();
+  const { organizations, loading, error, addOrganization } = useOrganizations();
   const { user } = useAuth();
   const isSuperadmin = user?.role === 'superadmin';
+  const [adding, setAdding] = useState(false);
 
   return (
     <div className="orgs-page">
       <div className="orgs-header">
-        <h1>Organizaciones</h1>
-        <p>Clientes activos y pendientes en la plataforma modelAR.</p>
+        <div>
+          <h1>Organizaciones</h1>
+          <p>Clientes activos y pendientes en la plataforma modelAR.</p>
+        </div>
+        {isSuperadmin && !adding && (
+          <button
+            className="org-btn org-btn--primary"
+            onClick={() => setAdding(true)}
+          >
+            <PlusIcon weight="bold" size={14} /> Nueva organización
+          </button>
+        )}
       </div>
+
+      {adding && (
+        <NewOrgForm
+          onCancel={() => setAdding(false)}
+          onSubmit={async (data) => {
+            await addOrganization(data);
+            setAdding(false);
+          }}
+        />
+      )}
+
+      {loading && organizations.length === 0 && (
+        <p className="orgs-empty">Cargando organizaciones…</p>
+      )}
+      {error && (
+        <p className="orgs-empty orgs-empty--error">
+          No pudimos cargar las organizaciones: {error}
+        </p>
+      )}
+      {!loading && !error && organizations.length === 0 && !adding && (
+        <p className="orgs-empty">Todavía no hay organizaciones registradas.</p>
+      )}
+
       <div className="orgs-grid">
-        {ORGS.map((org) => {
+        {organizations.map((org) => {
+          const enriched = enrichOrg(org);
           const orgCampaigns = campaigns.filter((c) => c.orgSlug === org.slug);
           return (
             <OrgCard
               key={org.slug}
-              org={org}
+              org={enriched}
               campaignCount={orgCampaigns.length}
               totalViews={orgCampaigns.reduce((a, c) => a + (c.views ?? 0), 0)}
               isSuperadmin={isSuperadmin}

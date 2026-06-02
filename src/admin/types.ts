@@ -22,6 +22,14 @@ export const SECTORS: { value: Sector | ''; label: string }[] = [
   { value: 'museo', label: 'Museo' },
 ];
 
+export interface Organization {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  sector: Sector;
+}
+
 export interface Collection {
   id: string;
   orgSlug: string;

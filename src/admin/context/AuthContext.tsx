@@ -9,6 +9,9 @@ import {
   apiMe,
   setToken,
   clearToken,
+  setRefreshToken,
+  getRefreshToken,
+  clearRefreshToken,
   UNAUTHORIZED_EVENT,
 } from '@/services/api';
 export type { UserRole } from '../types';
@@ -21,6 +24,12 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function clearSession(): void {
+  clearToken();
+  clearRefreshToken();
+  sessionStorage.removeItem(STORAGE_KEYS.SESSION);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(() =>
     safeGetJson<AdminUser>(sessionStorage, STORAGE_KEYS.SESSION)
@@ -30,17 +39,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = sessionStorage.getItem(STORAGE_KEYS.TOKEN);
     if (token && !user) {
       apiMe()
-        .then(({ client }) => {
+        .then((client) => {
           setUser(client);
           safeSetJson(sessionStorage, STORAGE_KEYS.SESSION, client);
         })
         .catch(() => {
-          clearToken();
-          sessionStorage.removeItem(STORAGE_KEYS.SESSION);
+          clearSession();
+          setUser(null);
         });
     }
 
-    // Logout automático cuando cualquier llamada recibe 401
+    // Logout automático cuando cualquier llamada autenticada recibe 401.
     function handleUnauthorized() {
       setUser(null);
       sessionStorage.removeItem(STORAGE_KEYS.SESSION);
@@ -52,8 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(email: string, password: string): Promise<boolean> {
     try {
-      const { token, client } = await apiLogin(email, password);
-      setToken(token);
+      const { accessToken, refreshToken, client } = await apiLogin(
+        email,
+        password
+      );
+      setToken(accessToken);
+      setRefreshToken(refreshToken);
       setUser(client);
       safeSetJson(sessionStorage, STORAGE_KEYS.SESSION, client);
       return true;
@@ -63,14 +76,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function logout(): Promise<void> {
+    const refreshToken = getRefreshToken();
     try {
-      await apiLogout();
+      if (refreshToken) await apiLogout(refreshToken);
     } catch {
-      // best-effort
+      // best-effort: continuamos limpiando sesión local aunque el server falle
     } finally {
-      clearToken();
+      clearSession();
       setUser(null);
-      sessionStorage.removeItem(STORAGE_KEYS.SESSION);
     }
   }
 

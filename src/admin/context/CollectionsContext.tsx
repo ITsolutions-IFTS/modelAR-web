@@ -45,7 +45,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiGetCollections();
+      const { data } = await apiGetCollections();
       setCollections(data);
     } catch (err) {
       setError((err as Error).message);
