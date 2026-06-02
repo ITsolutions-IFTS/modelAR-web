@@ -1,0 +1,86 @@
+@import '../admin-theme.css';
+
+/* ── DashboardPage ── */
+.dashboard-page {
+  /* base layout via .admin-page */
+}
+
+.dashboard-header {
+  margin-bottom: 32px;
+}
+
+/* Stats row */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+/* Table section */
+.dashboard-table-section {
+  margin-top: 36px;
+}
+
+.dashboard-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.dashboard-table-header h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--sm-fg);
+  margin: 0;
+}
+
+.dashboard-btn-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sm-fg-2);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+  font-family: inherit;
+}
+
+.dashboard-btn-new:hover {
+  border-color: var(--sm-accent);
+  color: var(--sm-accent-deep);
+  background-color: var(--sm-accent-soft);
+}
+
+/* Conversion bar */
+.dashboard-table th.col-conv { min-width: 140px; }
+.cell-conv { min-width: 140px; }
+
+.dash-conv-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-conv-bar {
+  height: 6px;
+  width: var(--bar-width, 0%);
+  background: var(--sm-accent);
+  border-radius: 999px;
+  min-width: 2px;
+  max-width: 80px;
+  flex-shrink: 0;
+}
+
+.dash-conv-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--sm-accent-deep);
+  white-space: nowrap;
+}

@@ -1,0 +1,257 @@
+/* Tokens de samantha-web aplicados al admin de modelAR */
+.admin-root {
+  /* Superficies */
+  --sm-bg:        oklch(0.985 0.003 80);
+  --sm-bg-elev:   oklch(1 0 0);
+  --sm-bg-soft:   oklch(0.965 0.005 80);
+
+  /* Texto */
+  --sm-fg:        oklch(0.16 0.005 60);
+  --sm-fg-2:      oklch(0.42 0.008 70);
+  --sm-fg-3:      oklch(0.58 0.008 70);
+
+  /* Bordes */
+  --sm-line:      oklch(0.90 0.006 70);
+  --sm-line-soft: oklch(0.94 0.004 70);
+
+  /* Acento — violeta */
+  --sm-accent:      oklch(0.58 0.22 290);
+  --sm-accent-soft: oklch(0.93 0.06 290);
+  --sm-accent-deep: oklch(0.36 0.18 290);
+
+  /* Semánticos */
+  --sm-ok:     oklch(0.55 0.13 155);
+  --sm-warn:   oklch(0.62 0.14 70);
+  --sm-danger: oklch(0.55 0.20 25);
+  --sm-info:   oklch(0.55 0.12 235);
+
+  /* Sombra */
+  --sm-shadow: 0 1px 0 rgba(255,255,255,.6) inset,
+               0 1px 2px rgba(20,15,5,.04),
+               0 8px 24px -12px rgba(20,15,5,.08);
+
+  /* Radios */
+  --sm-r-sm: 6px;
+  --sm-r-md: 8px;
+  --sm-r-lg: 14px;
+  --sm-r-xl: 16px;
+
+  /* Fuente */
+  font-family: 'Figtree Variable', system-ui, sans-serif;
+  background: var(--sm-bg);
+  color: var(--sm-fg);
+}
+
+/* Dark mode del admin */
+.admin-root.dark {
+  --sm-bg:        oklch(0.12 0.005 270);
+  --sm-bg-elev:   oklch(0.16 0.005 270);
+  --sm-bg-soft:   oklch(0.14 0.005 270);
+
+  --sm-fg:        oklch(0.93 0.003 280);
+  --sm-fg-2:      oklch(0.70 0.008 280);
+  --sm-fg-3:      oklch(0.52 0.008 280);
+
+  --sm-line:      oklch(0.24 0.008 270);
+  --sm-line-soft: oklch(0.20 0.006 270);
+
+  --sm-accent:      oklch(0.72 0.24 290);
+  --sm-accent-soft: oklch(0.22 0.08 290);
+  --sm-accent-deep: oklch(0.85 0.18 290);
+
+  --sm-shadow: 0 1px 0 rgba(255,255,255,.04) inset,
+               0 1px 2px rgba(0,0,0,.3),
+               0 8px 24px -12px rgba(0,0,0,.6);
+
+  color-scheme: dark;
+  background: var(--sm-bg);
+  color: var(--sm-fg);
+}
+
+/* ── Shared page layout ── */
+.admin-page {
+  padding: 32px 36px;
+  max-width: 1100px;
+}
+
+.admin-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+
+.admin-page-header-text h1 {
+  margin: 0 0 4px;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--sm-fg);
+  letter-spacing: -0.02em;
+}
+
+.admin-page-header-text p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--sm-fg-2);
+}
+
+/* Primary action button */
+.admin-btn-primary {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background-color: var(--sm-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--sm-r-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  font-family: inherit;
+}
+
+.admin-btn-primary:hover {
+  background-color: var(--sm-accent-deep);
+}
+
+/* ── Shared stat/KPI card ── */
+.stat-card {
+  background: var(--sm-bg-elev);
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-lg);
+  padding: 24px 28px;
+  box-shadow: var(--sm-shadow);
+}
+
+.stat-card-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sm-fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.stat-card-value {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--sm-fg);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.stat-card-value.stat-blue   { color: var(--sm-info); }
+.stat-card-value.stat-green  { color: var(--sm-ok); }
+.stat-card-value.stat-orange { color: var(--sm-warn); }
+.stat-card-value.stat-purple { color: var(--sm-accent); }
+
+/* ── Shared table wrapper ── */
+.admin-table-wrapper {
+  background: var(--sm-bg-elev);
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-lg);
+  overflow: hidden;
+  box-shadow: var(--sm-shadow);
+}
+
+/* ── Shared table cell types ── */
+.cell-title {
+  font-weight: 600;
+  color: var(--sm-fg);
+}
+
+.cell-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--sm-fg-2);
+}
+
+.cell-actions { white-space: nowrap; }
+
+.cell-date {
+  font-size: 0.8rem;
+  color: var(--sm-fg-3);
+  white-space: nowrap;
+}
+
+/* ── Shared table action buttons ── */
+.btn-qr,
+.btn-edit,
+.btn-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background-color: var(--sm-bg-soft);
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--sm-fg-2);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  font-family: inherit;
+}
+
+.btn-edit,
+.btn-delete { margin-left: 6px; }
+
+.btn-qr:hover    { background-color: var(--sm-accent);  border-color: var(--sm-accent);  color: #fff; }
+.btn-edit:hover  { background-color: var(--sm-warn);    border-color: var(--sm-warn);    color: #fff; }
+.btn-delete:hover{ background-color: var(--sm-danger);  border-color: var(--sm-danger);  color: #fff; }
+
+/* ── Shared table base ── */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-table thead {
+  background-color: var(--sm-bg-soft);
+  border-bottom: 1px solid var(--sm-line);
+}
+
+.admin-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--sm-fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.admin-table th.col-num { text-align: right; }
+
+.admin-table td {
+  padding: 14px 16px;
+  color: var(--sm-fg);
+  border-bottom: 1px solid var(--sm-line-soft);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td { border-bottom: none; }
+.admin-table tbody tr:hover td      { background-color: var(--sm-bg-soft); }
+
+/* Subject badges — shared across admin pages */
+.subject-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-matematica { background-color: oklch(0.94 0.04 235); color: oklch(0.35 0.12 235); }
+.badge-ciencias   { background-color: oklch(0.93 0.04 165); color: oklch(0.36 0.118 165); }
+.badge-historia   { background-color: oklch(0.94 0.04 55);  color: oklch(0.40 0.14 55); }
+.badge-lengua     { background-color: oklch(0.94 0.04 300); color: oklch(0.38 0.14 300); }
+.badge-producto   { background-color: oklch(0.94 0.04 25);  color: oklch(0.40 0.14 25); }
+.badge-espacio    { background-color: oklch(0.93 0.04 155); color: oklch(0.36 0.14 155); }

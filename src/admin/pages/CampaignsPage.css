@@ -1,0 +1,107 @@
+@import '../admin-theme.css';
+
+/* ── CampaignsPage ── */
+.camps-page {
+  /* base layout via .admin-page */
+}
+
+.camps-header {
+  margin-bottom: 28px;
+}
+
+/* Filter tabs */
+.camps-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.camps-filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--sm-line);
+  background: var(--sm-bg-elev);
+  color: var(--sm-fg-2);
+  font-family: inherit;
+  transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.camps-filter-tab:hover {
+  background: var(--sm-bg-soft);
+  color: var(--sm-fg);
+}
+
+.camps-filter-tab.active {
+  background: var(--sm-accent-soft);
+  border-color: oklch(0.75 0.10 165);
+  color: var(--sm-accent-deep);
+  font-weight: 600;
+}
+
+.camps-filter-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--sm-line);
+  border-radius: 999px;
+  padding: 1px 6px;
+  color: var(--sm-fg-3);
+}
+
+.camps-filter-tab.active .camps-filter-count {
+  background: oklch(0.80 0.10 165);
+  color: var(--sm-accent-deep);
+}
+
+.camps-filter-label {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--sm-fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Collection badge in table */
+.cell-collection { white-space: nowrap; }
+
+.camps-col-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--sm-bg-soft);
+  color: var(--sm-fg-2);
+  border: 1px solid var(--sm-line);
+}
+
+.camps-col-empty {
+  color: var(--sm-fg-3);
+}
+
+.camps-empty {
+  padding: 48px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.camps-empty p {
+  color: var(--sm-fg-3);
+  font-size: 0.9rem;
+}
+
+/* Override btn-new only where needed (accent, not ghost) */
+.camps-btn-new {
+  /* handled by .admin-btn-primary */
+}

@@ -1,0 +1,238 @@
+@import '../admin-theme.css';
+
+.colp-page {
+  padding: 32px 40px;
+  max-width: 760px;
+}
+
+.colp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.colp-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--sm-fg);
+  margin: 0 0 4px;
+}
+
+.colp-header p {
+  font-size: 0.875rem;
+  color: var(--sm-fg-3);
+  margin: 0;
+}
+
+/* Form */
+.colp-form-wrap {
+  background: var(--sm-bg-elev);
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-lg);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--sm-shadow);
+}
+
+.colp-form-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--sm-fg);
+  margin: 0 0 16px;
+}
+
+.col-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.col-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.col-form-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sm-fg-2);
+}
+
+.col-form-optional {
+  font-weight: 400;
+  color: var(--sm-fg-3);
+}
+
+.col-form-field input {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  background: var(--sm-bg-soft);
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-md);
+  color: var(--sm-fg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.col-form-field input:focus {
+  border-color: var(--sm-accent);
+  background: var(--sm-bg-elev);
+}
+
+.col-form-field--error input {
+  border-color: var(--sm-danger);
+}
+
+.col-form-error {
+  font-size: 0.75rem;
+  color: var(--sm-danger);
+}
+
+.col-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+/* List */
+.colp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.colp-item {
+  background: var(--sm-bg-elev);
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-lg);
+  padding: 16px 20px;
+  box-shadow: var(--sm-shadow);
+}
+
+.colp-item-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.colp-item-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sm-accent);
+  flex-shrink: 0;
+}
+
+.colp-item-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.colp-item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--sm-fg);
+}
+
+.colp-item-desc {
+  font-size: 0.78rem;
+  color: var(--sm-fg-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.colp-item-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sm-fg-3);
+  background: var(--sm-bg-soft);
+  border: 1px solid var(--sm-line);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.colp-item-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sm-line-soft);
+}
+
+/* Empty */
+.colp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--sm-fg-3);
+  font-size: 0.875rem;
+}
+
+/* Buttons */
+.col-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: var(--sm-r-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.col-btn--primary {
+  background: var(--sm-accent);
+  color: #fff;
+  border-color: var(--sm-accent);
+}
+.col-btn--primary:hover {
+  background: var(--sm-accent-deep);
+  border-color: var(--sm-accent-deep);
+}
+
+.col-btn--secondary {
+  background: var(--sm-bg-soft);
+  color: var(--sm-fg-2);
+  border-color: var(--sm-line);
+}
+.col-btn--secondary:hover {
+  background: var(--sm-line);
+  color: var(--sm-fg);
+}
+
+.col-btn--ghost {
+  background: transparent;
+  color: var(--sm-fg-2);
+  border-color: var(--sm-line);
+}
+.col-btn--ghost:hover {
+  background: var(--sm-bg-soft);
+  color: var(--sm-fg);
+}
+
+.col-btn--danger {
+  background: transparent;
+  color: var(--sm-danger);
+  border-color: oklch(0.88 0.06 25);
+}
+.col-btn--danger:hover {
+  background: oklch(0.96 0.03 25);
+}

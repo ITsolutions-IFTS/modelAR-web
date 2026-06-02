@@ -10,6 +10,8 @@
 
 ### ITS-S3-API-006 — Endpoints de Analytics
 
+**Estado: ✅ Implementado** — 2026-05-24
+
 **Responsable:** Sin asignar
 
 **Endpoints:**
@@ -69,22 +71,29 @@ export async function getCampaignAnalytics(req, res) {
     // 3. Calcular estadísticas
     const stats = {
       views: events.length,
-      ar_activations: events.filter(e => e.event_type === 'ar_activation').length,
-      cta_clicks: events.filter(e => e.event_type === 'cta_click').length,
+      ar_activations: events.filter((e) => e.event_type === 'ar_activation')
+        .length,
+      cta_clicks: events.filter((e) => e.event_type === 'cta_click').length,
     };
 
     const breakdown = {
-      views: { 
-        count: stats.views, 
-        pct: 100 
+      views: {
+        count: stats.views,
+        pct: 100,
       },
-      ar_activations: { 
-        count: stats.ar_activations, 
-        pct: stats.views > 0 ? (stats.ar_activations / stats.views * 100).toFixed(1) : 0
+      ar_activations: {
+        count: stats.ar_activations,
+        pct:
+          stats.views > 0
+            ? ((stats.ar_activations / stats.views) * 100).toFixed(1)
+            : 0,
       },
       cta_clicks: {
         count: stats.cta_clicks,
-        pct: stats.ar_activations > 0 ? (stats.cta_clicks / stats.ar_activations * 100).toFixed(1) : 0
+        pct:
+          stats.ar_activations > 0
+            ? ((stats.cta_clicks / stats.ar_activations) * 100).toFixed(1)
+            : 0,
       },
     };
 
@@ -108,8 +117,8 @@ export async function getCampaignAnalytics(req, res) {
 
 function groupByDate(events: any[]) {
   const grouped: Record<string, any> = {};
-  
-  events.forEach(event => {
+
+  events.forEach((event) => {
     const date = new Date(event.timestamp).toISOString().split('T')[0];
     if (!grouped[date]) {
       grouped[date] = { views: 0, ar: 0, clicks: 0 };
@@ -127,15 +136,18 @@ function groupByDate(events: any[]) {
 ```
 
 **Checklist:**
-- [ ] GET /campaigns/:id/analytics funciona
-- [ ] Calcula vistas, AR activations, clicks
-- [ ] Breakdown en porcentaje
-- [ ] Timeline por día (opcional)
-- [ ] Validación: solo datos del cliente autenticado
+
+- [x] GET /campaigns/:id/analytics funciona
+- [x] Calcula vistas, AR activations, clicks
+- [x] Breakdown en porcentaje
+- [x] Timeline por día (opcional)
+- [x] Validación: solo datos del cliente autenticado
 
 ---
 
 ### ITS-S3-API-007 — Endpoint para registrar eventos (POST /events)
+
+**Estado: ✅ Implementado** — 2026-05-24
 
 **Responsable:** Sin asignar
 
@@ -202,6 +214,7 @@ POST /api/events
 ```
 
 **Implementación backend:**
+
 ```ts
 // controllers/eventsController.ts
 import { Request, Response } from 'express';
@@ -213,16 +226,16 @@ export async function trackEvent(req: Request, res: Response) {
 
     // Validación 1: campos requeridos
     if (!campaign_id || !event_type) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: campaign_id, event_type' 
+      return res.status(400).json({
+        error: 'Missing required fields: campaign_id, event_type',
       });
     }
 
     // Validación 2: event_type válido
     const validTypes = ['view', 'ar_activation', 'cta_click'];
     if (!validTypes.includes(event_type)) {
-      return res.status(400).json({ 
-        error: `Invalid event_type. Must be one of: ${validTypes.join(', ')}`
+      return res.status(400).json({
+        error: `Invalid event_type. Must be one of: ${validTypes.join(', ')}`,
       });
     }
 
@@ -240,14 +253,14 @@ export async function trackEvent(req: Request, res: Response) {
       user_agent: req.headers['user-agent'], // (opcional) para detectar mobile/desktop
     });
 
-    res.json({ 
+    res.json({
       success: true,
       event: {
         id: event.id,
         campaign_id: event.campaign_id,
         event_type: event.event_type,
         timestamp: event.timestamp,
-      }
+      },
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -301,20 +314,19 @@ export function ARPage() {
   return (
     <div>
       {/* Modelo 3D */}
-      <div onTouchStart={handleARActivation}>
-        {/* ... */}
-      </div>
-      
+      <div onTouchStart={handleARActivation}>{/* ... */}</div>
+
       {/* Botón CTA */}
-      <button onClick={() => handleCTAClick(ctaUrl)}>
-        Ver en tienda
-      </button>
+      <button onClick={() => handleCTAClick(ctaUrl)}>Ver en tienda</button>
     </div>
   );
 }
 
 // Función auxiliar para registrar eventos
-async function trackEvent(campaignId: string, eventType: 'view' | 'ar_activation' | 'cta_click') {
+async function trackEvent(
+  campaignId: string,
+  eventType: 'view' | 'ar_activation' | 'cta_click'
+) {
   try {
     const res = await fetch(`${import.meta.env.VITE_API_BASE}/events`, {
       method: 'POST',
@@ -353,28 +365,30 @@ export function AnalyticsPage() {
   useEffect(() => {
     // Obtener analytics de esta campaña
     fetch(`${API_BASE}/campaigns/${campaignId}/analytics`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => res.json())
-      .then(data => setAnalytics(data));
+      .then((res) => res.json())
+      .then((data) => setAnalytics(data));
   }, [campaignId]);
 
   return (
     <div className="analytics-page">
       <h2>{analytics?.campaign.title}</h2>
-      
+
       <div className="stats">
         <div className="stat">
           <p className="stat__label">Vistas</p>
           <p className="stat__value">{analytics?.stats.views}</p>
         </div>
-        
+
         <div className="stat">
           <p className="stat__label">AR Activaciones</p>
           <p className="stat__value">{analytics?.stats.ar_activations}</p>
-          <p className="stat__pct">{analytics?.breakdown.ar_activations.pct}%</p>
+          <p className="stat__pct">
+            {analytics?.breakdown.ar_activations.pct}%
+          </p>
         </div>
-        
+
         <div className="stat">
           <p className="stat__label">Conversiones (CTA clicks)</p>
           <p className="stat__value">{analytics?.stats.cta_clicks}</p>
@@ -384,9 +398,12 @@ export function AnalyticsPage() {
 
       <div className="timeline">
         <h3>Actividad por día</h3>
-        {analytics?.timeline.map(day => (
+        {analytics?.timeline.map((day) => (
           <div key={day.date}>
-            <p>{day.date}: {day.views} vistas, {day.ar} AR, {day.clicks} conversiones</p>
+            <p>
+              {day.date}: {day.views} vistas, {day.ar} AR, {day.clicks}{' '}
+              conversiones
+            </p>
           </div>
         ))}
       </div>
@@ -400,6 +417,7 @@ export function AnalyticsPage() {
 ## ✅ CHECKLIST DE EVENTOS
 
 **Para que funcione bien:**
+
 - [ ] POST /events sin auth funciona
 - [ ] Valida campaign_id existe
 - [ ] Valida event_type es válido
@@ -411,18 +429,22 @@ export function AnalyticsPage() {
 - [ ] El gerente ve las métricas en dashboard
 
 **Checklist:**
-- [ ] POST /events funciona
-- [ ] Registra eventos sin autenticación
-- [ ] Valida campaign_id existe
-- [ ] Valida event_type válido
+
+- [x] POST /events funciona
+- [x] Registra eventos sin autenticación
+- [x] Valida campaign_id existe
+- [x] Valida event_type válido
 
 ---
 
 ### ITS-S3-API-008 — Proxy de Sketchfab desde backend
 
+**Estado: ✅ Implementado** — 2026-05-24
+
 **Responsable:** Betania
 
 **Motivos:**
+
 - Evitar exponer API key de Sketchfab en frontend
 - Caching opcional
 - Control de rate limiting
@@ -446,32 +468,36 @@ import fetch from 'node-fetch';
 const SKETCHFAB_API = 'https://api.sketchfab.com/v3';
 const API_KEY = process.env.SKETCHFAB_API_KEY;
 
-export async function searchModels(keyword?: string, categories?: string[], cursor?: string) {
+export async function searchModels(
+  keyword?: string,
+  categories?: string[],
+  cursor?: string
+) {
   const params = new URLSearchParams();
-  
+
   if (keyword) params.append('q', keyword);
   if (categories?.length) params.append('categories', categories.join(','));
   if (cursor) params.append('cursor', cursor);
   params.append('count', '24');
 
   const url = `${SKETCHFAB_API}/models?${params}`;
-  
+
   const res = await fetch(url, {
-    headers: { 'Authorization': `Token ${API_KEY}` },
+    headers: { Authorization: `Token ${API_KEY}` },
   });
 
   if (!res.ok) throw new Error(`Sketchfab API error: ${res.status}`);
-  
+
   return res.json();
 }
 
 export async function getModel(uid: string) {
   const res = await fetch(`${SKETCHFAB_API}/models/${uid}`, {
-    headers: { 'Authorization': `Token ${API_KEY}` },
+    headers: { Authorization: `Token ${API_KEY}` },
   });
 
   if (!res.ok) throw new Error(`Sketchfab API error: ${res.status}`);
-  
+
   return res.json();
 }
 ```
@@ -484,7 +510,7 @@ router.get('/sketchfab/search', async (req, res) => {
   try {
     // Opcional: mapear sector a categorías Sketchfab
     const categories = sector
-      ? SECTOR_META[sector as string].categories.map(c => c.slug)
+      ? SECTOR_META[sector as string].categories.map((c) => c.slug)
       : undefined;
 
     const result = await searchModels(
@@ -512,11 +538,16 @@ router.get('/sketchfab/models/:uid', async (req, res) => {
 ```
 
 **En frontend (actualizar):**
+
 ```ts
 // services/api.ts (NEW)
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-export async function searchSketchfabModels(keyword?: string, sector?: string, cursor?: string) {
+export async function searchSketchfabModels(
+  keyword?: string,
+  sector?: string,
+  cursor?: string
+) {
   const params = new URLSearchParams();
   if (keyword) params.append('keyword', keyword);
   if (sector) params.append('sector', sector);
@@ -535,11 +566,66 @@ export async function getSketchfabModel(uid: string) {
 ```
 
 **Checklist:**
-- [ ] GET /sketchfab/search funciona
-- [ ] GET /sketchfab/models/:uid funciona
-- [ ] API key no está expuesta en frontend
+
+- [x] GET /sketchfab/search funciona
+- [x] GET /sketchfab/models/:uid funciona
+- [x] API key no está expuesta en frontend
 - [ ] Rate limiting considerado (opcional)
-- [ ] Frontend consumelibía desde API, no directo a Sketchfab
+- [x] Frontend consumelibía desde API, no directo a Sketchfab
+
+---
+
+### ITS-S3-API-010 — Endpoint CRUD de Collections | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-05-26
+
+**Responsable:** Betania
+
+Concepto genérico de agrupación por org (Serie para Santillana, Categoría para Garbarino, Sala para Museo MAR, Proyecto para Vega).
+
+**Endpoints:**
+
+```
+GET    /api/collections          Auth: Requerida — lista colecciones de la org del cliente
+POST   /api/collections          Auth: Requerida — crea colección  { name, description? }
+PATCH  /api/collections/:id      Auth: Requerida — edita { name?, description? }
+DELETE /api/collections/:id      Auth: Requerida — elimina
+```
+
+**Migration:** `20260526000004-create-collections.js` — tabla `collections` con `id`, `org_slug`, `name`, `description`.  
+**Migration:** `20260526000005-alter-campaigns-cta-url-nullable.js` — hace `cta_url` nullable en `campaigns`.
+
+**Checklist:**
+
+- [x] GET /api/collections devuelve solo colecciones de la org del cliente
+- [x] POST /api/collections crea con UUID
+- [x] PATCH /api/collections/:id valida orgSlug (no puede editar colecciones de otra org)
+- [x] DELETE /api/collections/:id valida orgSlug
+- [x] `cta_url` en campaigns es ahora opcional (nullable)
+- [x] Migrations ejecutadas en DB
+
+---
+
+### ITS-S3-API-011 — Suite de tests unitarios (jest) | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-05-26
+
+**Responsable:** Betania
+
+13 tests con jest + ts-jest. `uuid@14` (ESM) mapeado a mock CJS local.
+
+| Archivo                            | Tests | Qué cubre                                                                             |
+| ---------------------------------- | ----- | ------------------------------------------------------------------------------------- |
+| `create-campaign.use-case.test.ts` | 5     | qrValue como URL, UUID asignado, ctaUrl opcional, clientId/orgSlug propagados al repo |
+| `collections.use-cases.test.ts`    | 8     | create/list/update/delete con mocks de repositorio, aislamiento por orgSlug           |
+
+**Checklist:**
+
+- [x] jest + ts-jest + supertest instalados
+- [x] `jest.config.js` con `preset: ts-jest`, `testEnvironment: node`
+- [x] Mock local de `uuid` para compatibilidad ESM/CJS
+- [x] Script `pnpm test` configurado
+- [x] 13/13 tests pasan
 
 ---
 
@@ -674,6 +760,7 @@ securitySchemes:
 ```
 
 **Checklist:**
+
 - [ ] OpenAPI spec creado
 - [ ] Todos los endpoints documentados
 - [ ] Ejemplos de request/response
@@ -682,12 +769,15 @@ securitySchemes:
 
 ## Checklist de Sprint 6 API
 
-- [ ] GET /campaigns/:id/analytics funciona
-- [ ] Calcula stats y breakdown
-- [ ] POST /events funciona (public)
-- [ ] GET /sketchfab/search funciona
-- [ ] GET /sketchfab/models/:uid funciona
-- [ ] API key no expuesta
+- [x] GET /api/campaigns/:id/analytics funciona
+- [x] Calcula stats y breakdown
+- [x] POST /api/events funciona (público, sin auth)
+- [x] GET /api/sketchfab/search funciona (proxy, API key no expuesta)
+- [x] GET /api/sketchfab/models/:uid funciona
+- [x] API key de Sketchfab no expuesta al cliente
+- [x] GET/POST/PATCH/DELETE /api/collections — CRUD completo con isolación por org
+- [x] cta_url nullable en campaigns
+- [x] 13 tests unitarios (jest) — use-cases de campaigns y collections
 - [ ] OpenAPI spec actualizada
 
 ---

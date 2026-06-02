@@ -8,9 +8,13 @@
 
 ## Código
 
-### ITS-S3-WEB-006 — CampaignForm component
+### ITS-S3-WEB-006 — CampaignForm component | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-05-26
 
 **Responsable:** Betania
+
+> **Nota de implementación:** Implementado en `CampaignFormPage.tsx` (form y lógica unificados en la misma página, sin componente separado). Incluye selector de sector bloqueado por org, selector de colección existente con creación inline, búsqueda de modelos Sketchfab con grid de resultados y vista previa. Soporta modo crear y editar. `ctaUrl` es opcional.
 
 ```ts
 // components/admin/CampaignForm.tsx
@@ -216,6 +220,7 @@ export function CampaignForm() {
 ```
 
 **Estilos:**
+
 ```css
 .campaign-form {
   max-width: 600px;
@@ -285,18 +290,25 @@ export function CampaignForm() {
 ```
 
 **Checklist:**
-- [ ] CampaignForm renderiza
-- [ ] POST /campaigns funciona
-- [ ] PATCH /campaigns/:id funciona
-- [ ] Validaciones básicas (campos requeridos)
-- [ ] Mensajes de error al usuario
-- [ ] Redirige a dashboard después de guardar
+
+- [x] CampaignFormPage renderiza en modo crear y editar
+- [x] POST /api/campaigns funciona (desde `addCampaign` en CampaignsContext)
+- [x] PATCH /api/campaigns/:id funciona (desde `updateCampaign`)
+- [x] Validaciones: título, descripción, sector y modelo obligatorios
+- [x] Error de submit mostrado al usuario
+- [x] Redirige a `/admin/campanas/:id/qr` tras crear, a listado tras editar
+- [x] Sector fijo por org (badge bloqueado); selector libre si org no tiene sector
+- [x] Colección opcional: selector existentes + crear nueva inline
 
 ---
 
-### ITS-S3-WEB-007 — SketchfabModelSelector component
+### ITS-S3-WEB-007 — SketchfabModelSelector component | ✅ Betania
 
-**Responsable:** Sin asignar
+**Estado: ✅ Implementado** — 2026-05-26
+
+**Responsable:** Betania
+
+> **Nota de implementación:** Integrado directamente en `CampaignFormPage` (no es un componente separado). Input de búsqueda con botón explícito (no debounce), grid de 12 resultados con thumbnails, checkmark visual en el seleccionado, vista previa lateral con nombre, autor, licencia y botón de copiar UID.
 
 ```ts
 // components/admin/SketchfabModelSelector.tsx
@@ -436,6 +448,7 @@ export function SketchfabModelSelector({ value, onChange, sector }: Props) {
 ```
 
 **Estilos:**
+
 ```css
 .sketchfab-selector {
   display: flex;
@@ -524,16 +537,19 @@ export function SketchfabModelSelector({ value, onChange, sector }: Props) {
 ```
 
 **Checklist:**
-- [ ] Input de búsqueda funciona
-- [ ] Búsqueda con debounce (400ms)
-- [ ] Resultados se muestran
-- [ ] Seleccionar modelo actualiza el form
-- [ ] Modelo seleccionado muestra preview
-- [ ] Botón "Cambiar" permite seleccionar otro
+
+- [x] Input de búsqueda con botón "Buscar" funciona
+- [x] Resultados se muestran en grid (hasta 12 modelos)
+- [x] Seleccionar modelo actualiza el formulario (uid)
+- [x] Modelo seleccionado muestra preview con thumbnail, autor y licencia
+- [x] Buscar de nuevo reemplaza la selección
+- [x] Error de búsqueda mostrado al usuario
 
 ---
 
-### ITS-S3-WEB-008 — CampaignFormPage (routing)
+### ITS-S3-WEB-008 — CampaignFormPage (routing) | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-05-26
 
 **Responsable:** Betania
 
@@ -551,8 +567,35 @@ export function CampaignFormPage() {
 ```
 
 **Checklist:**
-- [ ] Página se renderiza
-- [ ] Rutas `/admin/campaigns/new` y `/admin/campaigns/:id/edit` funcionan
+
+- [x] Página se renderiza
+- [x] Ruta `/admin/campanas/nueva` funciona (crear)
+- [x] Ruta `/admin/campanas/:id/editar` funciona (editar, pre-carga datos via `location.state`)
+- [x] Ruta `/admin/campanas/:id/qr` muestra QR generado con `qrValue` de la API
+
+---
+
+### ITS-S3-WEB-010 — Suite de tests unitarios (vitest) | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-05-26
+
+**Responsable:** Betania
+
+Configuración de vitest con jsdom. 20 tests en 4 archivos:
+
+| Archivo                      | Tests | Qué cubre                                                                            |
+| ---------------------------- | ----- | ------------------------------------------------------------------------------------ |
+| `parseScanToModelId.test.ts` | 7     | Extracción de UID desde hash route, path, query param, ID directo, strings inválidos |
+| `campaignStats.test.ts`      | 3     | Suma de métricas, campos undefined como 0, lista vacía                               |
+| `storage.test.ts`            | 5     | `safeGetJson`/`safeSetJson` con FakeStorage                                          |
+| `api.test.ts`                | 5     | Token storage, 401 auto-logout event, error body, header Authorization               |
+
+**Checklist:**
+
+- [x] vitest + @testing-library/react + jsdom instalados
+- [x] `vite.config.ts` con `test.environment: 'jsdom'` y setupFiles
+- [x] Script `pnpm test` configurado
+- [x] 20/20 tests pasan
 
 ---
 
@@ -568,10 +611,12 @@ export function CampaignFormPage() {
 ## Crear una campaña
 
 ### Paso 1: Ir a dashboard
+
 1. Login en admin.itsolutions.com
 2. Click en "+ Nueva campaña"
 
 ### Paso 2: Completar formulario
+
 - **Título:** Nombre descriptivo (ej. "Sillón Windsor - Promo 30%")
 - **Descripción:** Texto corto que ve el usuario final (ej. "Ver en tu living...")
 - **Sector:** Elegir entre Ecommerce, Turismo, Educación
@@ -579,13 +624,16 @@ export function CampaignFormPage() {
 - **URL destino:** Link a tu tienda/página (ej. muebleria.com/producto/sillon)
 
 ### Paso 3: Guardar
+
 Click en "Crear" o "Actualizar"
 
 Sistema genera automáticamente:
+
 - QR único
 - Link compartible: itsolutions.com/experience/ABC123
 
 ### Paso 4: Usar el QR
+
 - Descargá el QR
 - Ponelo en tu catálogo (impreso o digital)
 - Clientes finales lo escanean para ver en AR
@@ -616,6 +664,7 @@ Sistema genera automáticamente:
 ```
 
 **Checklist:**
+
 - [ ] Guía creada
 - [ ] Pasos claros
 - [ ] Screenshots útiles (opcional)
@@ -625,25 +674,29 @@ Sistema genera automáticamente:
 ## Checklist de Sprint 6 Web
 
 ### Código
-- [ ] CampaignForm renderiza
-- [ ] POST /campaigns funciona (crear)
-- [ ] PATCH /campaigns/:id funciona (editar)
-- [ ] SketchfabModelSelector busca modelos
-- [ ] Modelo seleccionado muestra preview
-- [ ] Validaciones en form
-- [ ] Error handling
-- [ ] CampaignFormPage routing
+
+- [x] CampaignFormPage renderiza (crear y editar)
+- [x] POST /api/campaigns funciona
+- [x] PATCH /api/campaigns/:id funciona
+- [x] Búsqueda Sketchfab integrada con grid de resultados
+- [x] Modelo seleccionado muestra preview con autor y licencia
+- [x] Validaciones en form (título, sector, modelo obligatorios)
+- [x] Error handling en submit y búsqueda
+- [x] Routing correcto para crear/editar/qr
+- [x] Tests unitarios (20 tests, vitest)
 
 ### Testing
-- [ ] Crear campaña → QR generado
-- [ ] Editar campaña → datos cargan
-- [ ] Buscar modelo → resultados aparecen
-- [ ] Seleccionar modelo → preview muestra
-- [ ] Form valida campos requeridos
+
+- [x] Crear campaña → QR generado (URL correcta `/#/ar/{uid}`)
+- [x] Editar campaña → datos pre-cargados
+- [x] Buscar modelo → resultados aparecen
+- [x] Seleccionar modelo → preview muestra
+- [x] Form valida campos requeridos
 
 ### Integración API
-- [ ] POST /campaigns desde frontend funciona
-- [ ] GET /sketchfab/search desde frontend funciona
-- [ ] Token se envía en headers
+
+- [x] POST /api/campaigns desde frontend funciona
+- [x] GET /api/sketchfab/search desde frontend funciona (via proxy)
+- [x] Token se envía en headers (Bearer JWT)
 
 ---

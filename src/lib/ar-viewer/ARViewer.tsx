@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import '@google/model-viewer';
 import type { ARViewerProps, ARTrackingStatus } from './types';
-import './model-viewer';
 import { ThreeARSurface } from './ThreeARSurface';
 import './styles.css';
 
@@ -16,7 +15,6 @@ export const ARViewer = ({
   targetHeight = 0.4,
   onStatusChange,
   onModelLoad,
-  style,
   children,
 }: ARViewerProps) => {
   const [isWebXRSupported, setIsWebXRSupported] = useState(false);
@@ -120,7 +118,7 @@ export const ARViewer = ({
           shadow-softness="0.8"
           environment-image="neutral"
           exposure="1"
-          style={style ?? { width: '100%', height: '100%', background: '#111' }}
+          className="ar-viewer__model"
         >
           <button slot="ar-button" className="btn btn-primary ar-btn">
             Ver en tu espacio

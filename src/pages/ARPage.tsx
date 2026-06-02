@@ -30,7 +30,6 @@ export const ARPage = () => {
     setModel(null);
     setDownloadUrl(null);
 
-    // Pedir metadatos y URL de descarga en paralelo
     Promise.all([getModel(uid), getDownloadUrl(uid)])
       .then(([meta, dlUrl]) => {
         setModel(meta);
@@ -47,22 +46,14 @@ export const ARPage = () => {
 
   if (phase === 'loading') {
     return (
-      <div
-        className="state-loading"
-        style={{ height: 'calc(100dvh - var(--header-h))' }}
-      >
-        Cargando modelo...
-      </div>
+      <div className="state-loading state-full-height">Cargando modelo...</div>
     );
   }
 
   if (phase === 'error' || !model || !downloadUrl) {
     return (
-      <div
-        className="state-error"
-        style={{ height: 'calc(100dvh - var(--header-h))' }}
-      >
-        <p style={{ marginBottom: '1rem' }}>
+      <div className="state-error state-full-height">
+        <p className="ar-panel__error-message">
           {errorMsg ?? 'No se pudo cargar el modelo'}
         </p>
         <button className="btn btn-ghost" onClick={() => navigate(-1)}>
@@ -74,9 +65,8 @@ export const ARPage = () => {
 
   return (
     <div className="ar-layout">
-      {/* Viewer — ocupa todo el espacio disponible via flex */}
       <section className="ar-layout__viewer">
-        <div className="ar-viewer-wrap" style={{ height: '100%' }}>
+        <div className="ar-viewer-wrap">
           <ARViewer
             modelUrl={downloadUrl}
             modelLabel={model.name}
@@ -86,91 +76,44 @@ export const ARPage = () => {
         </div>
       </section>
 
-      {/* Panel lateral / inferior */}
       <aside className="ar-layout__panel">
         <button
-          className="btn btn-ghost btn-sm"
-          style={{ marginBottom: '1rem' }}
+          className="btn btn-ghost btn-sm ar-panel__back"
           onClick={() => navigate(-1)}
         >
           ← Volver
         </button>
 
-        <h1
-          style={{
-            fontSize: '1rem',
-            fontWeight: 700,
-            letterSpacing: '-0.015em',
-            marginBottom: '0.3rem',
-            color: 'var(--text)',
-          }}
-        >
-          {model.name}
-        </h1>
+        <h1 className="ar-panel__title">{model.name}</h1>
 
-        <p
-          style={{
-            fontSize: '0.775rem',
-            color: 'var(--text-3)',
-            marginBottom: '0.75rem',
-            letterSpacing: '0.01em',
-          }}
-        >
+        <p className="ar-panel__meta">
           @{model.user.username}
           {model.license && (
-            <span style={{ opacity: 0.6 }}> · {model.license.label}</span>
+            <span className="ar-panel__license"> · {model.license.label}</span>
           )}
         </p>
 
-        {/* Estado AR */}
-        <p
-          style={{
-            fontSize: '0.775rem',
-            color: 'var(--text-3)',
-            marginBottom: '1rem',
-          }}
-        >
+        <p className="ar-panel__status">
           Estado:{' '}
-          <strong style={{ color: 'var(--accent)', fontWeight: 600 }}>
-            {trackingStatus}
-          </strong>
+          <strong className="ar-panel__status-value">{trackingStatus}</strong>
         </p>
 
-        {/* Descripción */}
         {model.description && (
-          <p
-            style={{
-              fontSize: '0.825rem',
-              color: 'var(--text-2)',
-              lineHeight: 1.65,
-              marginBottom: '1rem',
-            }}
-          >
+          <p className="ar-panel__description">
             {model.description.slice(0, 200)}
             {model.description.length > 200 ? '...' : ''}
           </p>
         )}
 
-        {/* QR para compartir */}
-        <div style={{ borderTop: '1px solid var(--line)', paddingTop: '1rem' }}>
-          <p
-            style={{
-              fontSize: '0.775rem',
-              color: 'var(--text-3)',
-              letterSpacing: '0.01em',
-              marginBottom: '0.75rem',
-            }}
-          >
-            Compartir experiencia AR
-          </p>
+        <div className="ar-panel__share">
+          <p className="ar-panel__share-title">Compartir experiencia AR</p>
           <div className="share-panel">
             <div className="share-panel__qr">
               <QRCodeSVG value={shareUrl} size={140} />
             </div>
             <p className="share-panel__label">Escaneá para ver en AR</p>
             <button
-              className="btn btn-ghost"
-              style={{ fontSize: '0.8rem' }}
+              className="btn btn-ghost ar-panel__copy"
               onClick={() => navigator.clipboard?.writeText(shareUrl)}
             >
               Copiar link

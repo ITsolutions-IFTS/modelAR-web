@@ -13,30 +13,30 @@
   --font-mono:    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Colores de fondo */
-  --bg:        #0b0f16;
-  --surface:   #131820;
-  --surface-2: #1a2130;
-  --surface-3: #202840;
+  --bg:        oklch(0.985 0.003 80);
+  --surface:   oklch(1 0 0);
+  --surface-2: oklch(0.965 0.005 80);
+  --surface-3: oklch(0.935 0.008 80);
 
   /* Bordes */
-  --line:      rgba(255, 255, 255, 0.07);
-  --line-md:   rgba(255, 255, 255, 0.12);
-  --line-lg:   rgba(255, 255, 255, 0.20);
+  --line:      oklch(0.90 0.006 70);
+  --line-md:   oklch(0.84 0.008 70);
+  --line-lg:   oklch(0.76 0.012 70);
 
   /* Texto */
-  --text:      #f0f2f5;
-  --text-2:    rgba(240, 242, 245, 0.65);
-  --text-3:    rgba(240, 242, 245, 0.38);
+  --text:      oklch(0.16 0.005 60);
+  --text-2:    oklch(0.42 0.008 70);
+  --text-3:    oklch(0.60 0.008 70);
 
   /* Acento */
-  --accent:    #9bf00b;
-  --accent-2:  #7bca08;      /* hover / pressed */
-  --accent-fg: #0b0f16;      /* texto sobre acento */
+  --accent:    oklch(0.58 0.22 290);
+  --accent-2:  oklch(0.50 0.22 290);   /* hover / pressed */
+  --accent-fg: #ffffff;                /* texto sobre acento */
 
   /* Sectores */
-  --sector-ecommerce: #9bf00b;
-  --sector-turismo:   #fb923c;
-  --sector-educacion: #60a5fa;
+  --sector-ecommerce: oklch(0.58 0.22 290);
+  --sector-turismo:   oklch(0.62 0.14 55);
+  --sector-educacion: oklch(0.52 0.13 240);
 
   /* Radios — sistema escalado (base 0.875rem como samantha-web) */
   --r-xs: 0.375rem;   /* 6px  */
@@ -48,18 +48,101 @@
   --r-pill: 9999px;
 
   /* Sombras */
-  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.25);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.55);
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.07);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.10);
+  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.16);
 
   /* Layout */
   --header-h: 58px;
+
+  /* Nav */
+  --nav-bg: rgba(252, 251, 249, 0.92);
 
   /* Transiciones */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-fast: 120ms;
   --duration: 200ms;
+}
+
+/* ---- Sitio público — dark theme ------------------------------------------ */
+.public-site {
+  /* Fondo */
+  --bg:        #080808;
+  --surface:   rgba(255, 255, 255, 0.05);
+  --surface-2: rgba(255, 255, 255, 0.03);
+  --surface-3: rgba(255, 255, 255, 0.02);
+
+  /* Bordes */
+  --line:      rgba(255, 255, 255, 0.08);
+  --line-md:   rgba(255, 255, 255, 0.13);
+  --line-lg:   rgba(255, 255, 255, 0.20);
+
+  /* Texto */
+  --text:      #ffffff;
+  --text-2:    rgba(255, 255, 255, 0.72);
+  --text-3:    rgba(255, 255, 255, 0.45);
+
+  /* Acento — más brillante sobre fondo oscuro */
+  --accent:    oklch(0.75 0.24 290);
+  --accent-2:  oklch(0.66 0.24 290);
+
+  /* Nav */
+  --nav-bg: rgba(8, 8, 8, 0.78);
+
+  /* Sombras */
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.8);
+
+  background: #080808;
+  min-height: 100dvh;
+}
+
+/* Scrollbar en dark */
+.public-site * {
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.public-site *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.public-site *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* btn-ghost en dark */
+.public-site .btn-ghost {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.public-site .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Sector badges en dark */
+.public-site .sector-badge--ecommerce {
+  background: rgba(140, 70, 240, 0.15);
+  color: oklch(0.75 0.24 290);
+}
+
+.public-site .sector-badge--turismo {
+  background: rgba(251, 146, 60, 0.15);
+  color: oklch(0.75 0.15 55);
+}
+
+.public-site .sector-badge--educacion {
+  background: rgba(96, 165, 250, 0.15);
+  color: oklch(0.75 0.15 240);
+}
+
+/* Focus ring en dark */
+.public-site .search-bar__input:focus {
+  box-shadow: 0 0 0 3px rgba(140, 70, 240, 0.2);
 }
 
 /* ---- Reset ----------------------------------------------------------------- */
@@ -108,7 +191,7 @@ img, video {
 /* ---- Scrollbar (estilo de samantha-web) ----------------------------------- */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(240, 242, 245, 0.18) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -121,12 +204,12 @@ img, video {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(240, 242, 245, 0.18);
+  background: rgba(0, 0, 0, 0.18);
   border-radius: var(--r-pill);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(240, 242, 245, 0.32);
+  background: rgba(0, 0, 0, 0.28);
 }
 
 /* ---- Tipografía ----------------------------------------------------------- */
@@ -184,13 +267,13 @@ code, pre {
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.04);
   color: var(--text-2);
   border: 1px solid var(--line);
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(0, 0, 0, 0.07);
   border-color: var(--line-md);
   color: var(--text);
 }
@@ -325,6 +408,11 @@ code, pre {
   margin-top: 0.6rem;
 }
 
+.model-card__button {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}
+
 /* ---- Catalog grid --------------------------------------------------------- */
 .catalog-grid {
   display: grid;
@@ -354,7 +442,7 @@ code, pre {
 
 .search-bar__input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(155, 240, 11, 0.12);
+  box-shadow: 0 0 0 3px oklch(0.88 0.10 290 / 0.5);
 }
 
 .search-bar__input::placeholder {
@@ -440,9 +528,9 @@ code, pre {
   line-height: 1.4;
 }
 
-.sector-badge--ecommerce { background: rgba(155, 240, 11, 0.15); color: var(--sector-ecommerce); }
-.sector-badge--turismo   { background: rgba(251, 146, 60, 0.15); color: var(--sector-turismo); }
-.sector-badge--educacion { background: rgba(96, 165, 250, 0.15); color: var(--sector-educacion); }
+.sector-badge--ecommerce { background: oklch(0.93 0.04 165); color: oklch(0.36 0.118 165); }
+.sector-badge--turismo   { background: rgba(251, 146, 60, 0.12); color: var(--sector-turismo); }
+.sector-badge--educacion { background: rgba(96, 165, 250, 0.12); color: var(--sector-educacion); }
 
 /* ---- Loading / Error / Empty states --------------------------------------- */
 .state-loading,
@@ -457,6 +545,10 @@ code, pre {
 
 .state-error {
   color: #f87171;
+}
+
+.state-full-height {
+  height: calc(100dvh - var(--header-h));
 }
 
 /* ---- Share panel ---------------------------------------------------------- */
@@ -481,6 +573,62 @@ code, pre {
   letter-spacing: 0.01em;
 }
 
+/* ---- AR panel ------------------------------------------------------------- */
+.ar-panel__error-message,
+.ar-panel__back,
+.ar-panel__status,
+.ar-panel__description {
+  margin-bottom: 1rem;
+}
+
+.ar-panel__title {
+  margin-bottom: 0.3rem;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.ar-panel__meta,
+.ar-panel__status,
+.ar-panel__share-title {
+  color: var(--text-3);
+  font-size: 0.775rem;
+  letter-spacing: 0.01em;
+}
+
+.ar-panel__meta {
+  margin-bottom: 0.75rem;
+}
+
+.ar-panel__license {
+  opacity: 0.6;
+}
+
+.ar-panel__status-value {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.ar-panel__description {
+  color: var(--text-2);
+  font-size: 0.825rem;
+  line-height: 1.65;
+}
+
+.ar-panel__share {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.ar-panel__share-title {
+  margin-bottom: 0.75rem;
+}
+
+.ar-panel__copy {
+  font-size: 0.8rem;
+}
+
 /* ---- Scan page ------------------------------------------------------------ */
 .scan-page {
   display: flex;
@@ -503,4 +651,58 @@ code, pre {
   height: 1px;
   background: var(--line);
   margin-block: 1rem;
+}
+
+/* ---- App header ----------------------------------------------------------- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.app-header__logo {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.app-header__logo-accent {
+  color: var(--accent);
+}
+
+.app-header__nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.app-header__link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.875rem;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 0.825rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: var(--text-2);
+  background: transparent;
+  transition: all var(--duration-fast);
+}
+
+.app-header__link--active {
+  color: var(--accent);
+  background: color-mix(in oklch, var(--accent) 15%, transparent);
+  border-color: color-mix(in oklch, var(--accent) 40%, transparent);
 }
