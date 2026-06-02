@@ -6,6 +6,10 @@
 }
 
 .orgs-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 28px;
 }
 
@@ -20,6 +24,100 @@
   color: var(--sm-fg-3);
   font-size: 0.875rem;
   margin: 0;
+}
+
+.orgs-empty {
+  background: var(--sm-bg-elev);
+  border: 1px dashed var(--sm-line);
+  border-radius: var(--sm-r-md);
+  color: var(--sm-fg-3);
+  padding: 24px;
+  text-align: center;
+  font-size: 0.9rem;
+  margin: 0 0 20px;
+}
+
+.orgs-empty--error {
+  border-style: solid;
+  border-color: var(--sm-danger, #dc2626);
+  color: var(--sm-danger, #dc2626);
+}
+
+/* New-organization inline form */
+.orgs-form {
+  background: var(--sm-bg-elev);
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.orgs-form-title {
+  margin: 0;
+  font-size: 1.125rem;
+  color: var(--sm-fg);
+}
+
+.orgs-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.orgs-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: var(--sm-fg);
+}
+
+.orgs-form-field--full {
+  grid-column: 1 / -1;
+}
+
+.orgs-form-field > span {
+  font-weight: 600;
+}
+
+.orgs-form-field small {
+  color: var(--sm-fg-3);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.orgs-form-field input,
+.orgs-form-field select {
+  padding: 8px 12px;
+  border-radius: var(--sm-r-md);
+  border: 1px solid var(--sm-line);
+  background: var(--sm-bg);
+  color: var(--sm-fg);
+  font-size: 0.875rem;
+}
+
+.orgs-form-field input:focus,
+.orgs-form-field select:focus {
+  outline: 2px solid var(--sm-accent);
+  outline-offset: -1px;
+}
+
+.orgs-form-error {
+  background: oklch(0.95 0.05 25);
+  color: oklch(0.40 0.18 25);
+  border-radius: var(--sm-r-md);
+  padding: 8px 12px;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.orgs-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .orgs-grid {
@@ -59,10 +157,13 @@
   color: var(--sm-accent-deep);
 }
 
-.org-santillana .org-avatar { background: oklch(0.92 0.05 240); color: oklch(0.40 0.14 240); }
-.org-vega .org-avatar       { background: oklch(0.92 0.05 155); color: oklch(0.36 0.14 155); }
-.org-garbarino .org-avatar  { background: oklch(0.93 0.06 55);  color: oklch(0.45 0.16 55); }
-.org-museo-mar .org-avatar  { background: oklch(0.92 0.05 290); color: oklch(0.40 0.14 290); }
+/* Paleta por sector — derivada desde `SECTOR_UI` en `constants/sectorUi.ts`.
+   La clase `org-${sector}` se agrega al `.org-card` desde el componente. */
+.org-educacion .org-avatar    { background: oklch(0.92 0.05 240); color: oklch(0.40 0.14 240); }
+.org-inmobiliario .org-avatar { background: oklch(0.92 0.05 155); color: oklch(0.36 0.14 155); }
+.org-ecommerce .org-avatar    { background: oklch(0.93 0.06 55);  color: oklch(0.45 0.16 55); }
+.org-museo .org-avatar        { background: oklch(0.92 0.05 290); color: oklch(0.40 0.14 290); }
+.org-turismo .org-avatar      { background: oklch(0.93 0.06 25);  color: oklch(0.45 0.16 25); }
 
 .org-name {
   font-size: 1rem;
@@ -133,6 +234,21 @@
 
 .org-btn--primary:hover {
   background: var(--sm-accent-deep);
+}
+
+.org-btn--ghost {
+  background: transparent;
+  color: var(--sm-fg-3);
+  border: 1px solid var(--sm-line);
+}
+
+.org-btn--ghost:hover:not(:disabled) {
+  background: var(--sm-bg);
+}
+
+.org-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .org-btn--disabled {
@@ -250,6 +366,7 @@
 
 .org-spark-bar {
   flex: 1;
+  height: var(--bar-height, 0%);
   background: var(--sm-accent);
   border-radius: 2px 2px 0 0;
   min-height: 3px;

@@ -22,7 +22,8 @@ import { useAuth } from '../context/AuthContext';
 import { useActiveOrg } from '../context/ActiveOrgContext';
 import { useCampaigns } from '../context/CampaignsContext';
 import { useCollections } from '../context/CollectionsContext';
-import { ORGS } from '../constants/orgs';
+import { useOrganizations } from '../context/OrganizationsContext';
+import { SECTOR_UI } from '../constants/sectorUi';
 import { STORAGE_KEYS } from '../constants/storageKeys';
 import './AdminLayout.css';
 
@@ -30,18 +31,19 @@ function OrgSearch() {
   const [query, setQuery] = useState('');
   const { activeOrg, setActiveOrg } = useActiveOrg();
   const { campaigns } = useCampaigns();
+  const { organizations } = useOrganizations();
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const visibleOrgs = useMemo(() => {
     const base =
       user?.role === 'client'
-        ? ORGS.filter((o) => o.slug === (user.orgSlug ?? ''))
-        : ORGS;
+        ? organizations.filter((o) => o.slug === (user.orgSlug ?? ''))
+        : organizations;
     if (!query.trim()) return base;
     const q = query.toLowerCase();
     return base.filter((o) => o.name.toLowerCase().includes(q));
-  }, [query, user]);
+  }, [query, user, organizations]);
 
   function handleSelect(slug: string, name: string) {
     setActiveOrg({ slug, name });
@@ -109,15 +111,16 @@ function OrgSearch() {
 
 function CollectionsSidebar() {
   const { collections } = useCollections();
+  const { organizations } = useOrganizations();
   const { activeOrg } = useActiveOrg();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const activeColId = searchParams.get('col');
 
-  const org = useMemo(
-    () => ORGS.find((o) => o.slug === activeOrg?.slug),
-    [activeOrg]
-  );
+  const org = useMemo(() => {
+    const match = organizations.find((o) => o.slug === activeOrg?.slug);
+    return match ? { ...match, ...SECTOR_UI[match.sector] } : undefined;
+  }, [organizations, activeOrg]);
   const orgCollections = useMemo(
     () => collections.filter((c) => c.orgSlug === activeOrg?.slug),
     [collections, activeOrg]
