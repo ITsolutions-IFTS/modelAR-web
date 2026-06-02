@@ -575,6 +575,129 @@ export function CampaignFormPage() {
 
 ---
 
+### ITS-S3-WEB-011 — Fix del contrato con modelar-core (auth + paginación + errores) | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-06-01
+
+**Responsable:** Betania
+
+Una vez integrado el frontend contra `modelar-api` (gateway) y `modelar-core` (servicio externo de lógica de negocio), aparecieron discrepancias entre lo que el frontend asumía y lo que el core devuelve. Se corrigieron en `src/services/api.ts`, `src/admin/context/AuthContext.tsx`, `CampaignsContext.tsx` y `CollectionsContext.tsx`.
+
+**Bugs detectados y corregidos:**
+
+| #   | Síntoma                                                                | Causa                                                                                                | Fix                                                                    |
+| --- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 1   | Login "exitoso" pero 401 en todas las llamadas siguientes              | `LoginResponse = { token, client }` pero la API retorna `{ accessToken, refreshToken, client }`      | Tipo actualizado; `AuthContext` guarda `accessToken` y `refreshToken`  |
+| 2   | `apiMe()` rompía silenciosamente al volver a la app                    | Esperaba `{ client }` pero la API devuelve `AdminUser` directo                                       | Tipo cambiado a `AdminUser`                                            |
+| 3   | `setCampaigns is not a function`-like errors                           | `apiGetCampaigns/Collections` declaraban `T[]` pero el core devuelve `{ data, pagination }`          | Tipo `PaginatedResponse<T>` introducido; contexts destructuran `.data` |
+| 4   | Errores mostrados como `[object Object]`                               | `apiFetch` parseaba `body.error` como string, pero es objeto `{ code, message: string \| string[] }` | Parser `extractErrorMessage` que soporta ambas formas                  |
+| 5   | `DELETE` rompía con `Unexpected end of JSON input`                     | `apiFetch` siempre intentaba `res.json()`, fallaba en `204 No Content`                               | Branch para `204` que devuelve `undefined`                             |
+| 6   | Login con password mala desencadenaba "Sesión expirada" + logout falso | `apiFetch` despachaba `UNAUTHORIZED_EVENT` ante cualquier 401, incluso login sin token previo        | Solo dispara el evento si había token en sessionStorage                |
+| 7   | `apiLogout` retornaba 400                                              | No enviaba el `refreshToken` que el core requiere                                                    | Firma cambiada a `apiLogout(refreshToken)`                             |
+
+**Tests actualizados en `src/test/api.test.ts`:** ahora cubren 401-con-token vs 401-sin-token, error con `message: string`, error con `message: string[]`, error con `error: string` (fallback). 23/23 verdes.
+
+**Checklist:**
+
+- [x] `LoginResponse` refleja la forma real de `POST /api/auth/login`
+- [x] `apiFetch` maneja 204 sin parsear body
+- [x] Errores formato `{ error: { code, message } }` parsean correctamente
+- [x] 401 sin token previo NO dispara logout
+- [x] `apiLogout` envía `refreshToken` desde sessionStorage
+- [x] `tsc -b` sin errores (incluye agregar `@types/node` para `vite.config.ts`)
+- [x] Suite de tests pasa (23/23)
+
+---
+
+### ITS-S3-WEB-012 — ConfirmDialog modal accesible (reemplaza `window.confirm`) | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-06-01
+
+**Responsable:** Betania
+
+El requisito de la consigna pide "Solicitar confirmación antes de realizar eliminaciones". El uso actual de `window.confirm()` en `CampaignsPage` no es estilable ni accesible, y en `CollectionsPage` la eliminación se hacía **sin ninguna confirmación**. Se construyó un componente modal reutilizable con API promise-based.
+
+**Componente:** `src/components/ConfirmDialog/ConfirmDialog.tsx`
+
+- `ConfirmProvider` se monta en `App.tsx` envolviendo el árbol.
+- Hook `useConfirm()` devuelve una función `(opts) => Promise<boolean>`.
+- Modal con: focus inicial en el botón confirmar, Escape cierra como cancel, click en backdrop cierra como cancel, `aria-modal` + `role="dialog"`.
+- Dos variantes: `danger` (rojo) y `neutral` (azul).
+
+**Uso típico:**
+
+```tsx
+const confirm = useConfirm();
+
+const ok = await confirm({
+  title: 'Eliminar campaña',
+  message: `Vas a eliminar "${campaign.title}". Esta acción no se puede deshacer.`,
+  confirmLabel: 'Eliminar',
+  variant: 'danger',
+});
+if (ok) await deleteCampaign(campaign.id);
+```
+
+**Aplicado en:**
+
+- `CampaignsPage` — reemplazó `window.confirm(...)`
+- `CollectionsPage` — agregó confirmación (antes borraba directo). El mensaje detecta si la colección tiene campañas asociadas y advierte que quedarán huérfanas.
+
+**Checklist:**
+
+- [x] `ConfirmProvider` montado en `App.tsx`
+- [x] Hook `useConfirm()` con tipos exportados
+- [x] Soporta tecla Escape y click en backdrop
+- [x] Focus inicial en botón confirmar
+- [x] Reemplazado `window.confirm` en CampaignsPage
+- [x] Agregada confirmación en CollectionsPage (con detección de campañas asociadas)
+
+---
+
+### ITS-S3-WEB-013 — Integración con endpoint de Organizations (eliminar hardcodeo) | ✅ Betania
+
+**Estado: ✅ Implementado** — 2026-06-01
+
+**Responsable:** Betania
+
+Hasta este sprint las organizaciones vivían en `src/admin/constants/orgs.ts` con 4 entradas hardcodeadas (santillana, vega, garbarino, museo-mar), inconsistentes con los `org_slug` reales de la base (`modelar-admin`, `muebleria-pampa`, `museo-bernal`, `demo-org`). El core ahora expone CRUD de Organizations vía `/api/organizations` (servicio externo, ver sección **modelar-core**), así que el frontend lo consume.
+
+**Cambios:**
+
+- **`src/admin/types.ts`** — agregado `Organization { id, slug, name, description: string | null, sector }`.
+- **`src/admin/constants/sectorUi.ts`** — nuevo mapping `Record<Sector, { color, collectionLabel, collectionLabelPlural, ctaLabel }>`. Estos campos son **decisiones de UI**, no parte del dominio; se derivan del `sector` que sí viene del API.
+- **`src/admin/context/OrganizationsContext.tsx`** — nuevo context que carga via `apiGetOrganizations()` al montar (cuando hay user) y expone `organizations`, `loading`, `error`, `refetch`, `addOrganization`.
+- **`src/admin/hooks/useOrgResources.ts`** — reescrito: ahora combina `Organization` (API) + `SectorUi` (mapping) → `EnrichedOrg` que conserva la misma forma que el viejo `Org`.
+- **`src/admin/pages/OrganizationsPage.tsx`** — consume el context; agregado form `NewOrgForm` (slug kebab-case validado client-side, name, description, sector) visible para superadmin con botón **"Nueva organización"** en el header.
+- **`src/admin/components/AdminLayout.tsx`** — `OrgSearch` y `CollectionsSidebar` migrados a `useOrganizations()`.
+- **`src/admin/pages/OrganizationsPage.css`** — clases color por sector (`.org-ecommerce`, `.org-museo`, …) en lugar de por slug.
+- **Eliminado:** `src/admin/constants/orgs.ts`.
+
+**API client agregado a `src/services/api.ts`:**
+
+```ts
+apiGetOrganizations()           // GET    — paginado
+apiGetOrganization(slug)        // GET    — by slug
+apiCreateOrganization(data)     // POST   — SUPERADMIN
+apiUpdateOrganization(slug, …)  // PATCH  — SUPERADMIN
+apiDeleteOrganization(slug)     // DELETE — SUPERADMIN
+```
+
+**Bug colateral resuelto en este ticket:** en `CollectionsPage` aparecían **dos botones "Nueva categoría"** cuando la lista estaba vacía + usuario superadmin. Se eliminó el botón duplicado del bloque empty-state; queda solo el del header.
+
+**Checklist:**
+
+- [x] `Organization` agregado a `types.ts`
+- [x] `SECTOR_UI` mapping creado y aplicado en consumidores
+- [x] `OrganizationsContext` carga al login
+- [x] Form de creación visible solo para superadmin
+- [x] `constants/orgs.ts` eliminado
+- [x] CSS por sector en lugar de por slug
+- [x] Botón duplicado en CollectionsPage eliminado
+- [x] `tsc -b` sin errores; 23/23 tests pasan
+
+---
+
 ### ITS-S3-WEB-010 — Suite de tests unitarios (vitest) | ✅ Betania
 
 **Estado: ✅ Implementado** — 2026-05-26
@@ -698,5 +821,14 @@ Sistema genera automáticamente:
 - [x] POST /api/campaigns desde frontend funciona
 - [x] GET /api/sketchfab/search desde frontend funciona (via proxy)
 - [x] Token se envía en headers (Bearer JWT)
+- [x] Contrato real con `modelar-core` corregido (WEB-011): paginación, 204, error shapes
+- [x] CRUD de Organizations consumido desde la API (WEB-013), sin hardcodeo en frontend
+- [x] `accessToken` y `refreshToken` persistidos en sessionStorage
+
+### UX
+
+- [x] `ConfirmDialog` reemplaza `window.confirm` (WEB-012)
+- [x] Eliminación de Collections pide confirmación (advierte sobre campañas asociadas)
+- [x] Eliminación de Campaigns pide confirmación con el título
 
 ---
