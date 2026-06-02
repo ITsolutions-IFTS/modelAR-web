@@ -70,6 +70,7 @@
 
 .dash-conv-bar {
   height: 6px;
+  width: var(--bar-width, 0%);
   background: var(--sm-accent);
   border-radius: 999px;
   min-width: 2px;

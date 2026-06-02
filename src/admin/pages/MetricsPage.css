@@ -209,6 +209,7 @@
 
 .mtr-top-bar {
   height: 100%;
+  width: var(--bar-width, 0%);
   background: var(--sm-accent);
   border-radius: 999px;
   max-width: 100%;
@@ -250,6 +251,7 @@
 
 .mtr-subject-bar {
   height: 100%;
+  width: var(--bar-width, 0%);
   background: var(--sm-accent);
   border-radius: 999px;
 }
@@ -301,6 +303,7 @@
 
 .mtr-funnel-bar {
   height: 100%;
+  width: var(--bar-width, 0%);
   border-radius: 999px;
   transition: width 0.4s ease;
   min-width: 3px;
