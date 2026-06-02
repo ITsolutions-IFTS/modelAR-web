@@ -40,8 +40,10 @@ export function CampaignQRPage() {
         }
       : baseCampaign;
 
-  const hasStats =
-    campaign.views > 0 || campaign.arActivations > 0 || campaign.ctaClicks > 0;
+  const views = campaign.views ?? 0;
+  const arActivations = campaign.arActivations ?? 0;
+  const ctaClicks = campaign.ctaClicks ?? 0;
+  const hasStats = views > 0 || arActivations > 0 || ctaClicks > 0;
 
   return (
     <div className="qrp-page">
@@ -108,30 +110,27 @@ export function CampaignQRPage() {
             <div className="qrp-stats-grid">
               <div className="qrp-stat">
                 <span className="qrp-stat-value qrp-stat-blue">
-                  {formatNumber(campaign.views)}
+                  {formatNumber(views)}
                 </span>
                 <span className="qrp-stat-label">Vistas totales</span>
               </div>
               <div className="qrp-stat">
                 <span className="qrp-stat-value qrp-stat-green">
-                  {formatNumber(campaign.arActivations)}
+                  {formatNumber(arActivations)}
                 </span>
                 <span className="qrp-stat-label">Activaciones AR</span>
               </div>
               <div className="qrp-stat">
                 <span className="qrp-stat-value qrp-stat-orange">
-                  {formatNumber(campaign.ctaClicks)}
+                  {formatNumber(ctaClicks)}
                 </span>
                 <span className="qrp-stat-label">Clicks al CTA</span>
               </div>
             </div>
-            {campaign.views > 0 && (
+            {views > 0 && (
               <p className="qrp-conversion">
                 Tasa de activación AR:{' '}
-                <strong>
-                  {((campaign.arActivations / campaign.views) * 100).toFixed(1)}
-                  %
-                </strong>
+                <strong>{((arActivations / views) * 100).toFixed(1)}%</strong>
               </p>
             )}
           </div>
