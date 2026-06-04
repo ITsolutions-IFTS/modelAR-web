@@ -20,9 +20,9 @@
 - Estados: `.state-loading`, `.state-error`, `.state-empty`
 - Navegación a `/ar/:uid` al hacer click en una tarjeta
 
-✅ **v2 — Skeleton grid:** Resuelto en ITS-REF02 (sprint 4) — `state-loading` con clase CSS implementado. Sin layout shift.
+➡️ **v2 — Skeleton grid:** Parcialmente resuelto en ITS-REF02 (sprint 4) — hay texto de loading con clase CSS pero sin animación shimmer. Skeleton animado pendiente en ITS-REF06 (sprint 6, backlog).
 
-➡️ **v2 — Badge de sector en tarjetas:** Movido a ITS-REF05 (sprint 6, backlog) — requiere filtro por sector en el catálogo antes de mostrar el badge.
+➡️ **v2 — Badge de sector en tarjetas:** Pendiente en ITS-REF05 (sprint 6, backlog) — requiere filtro por sector en el catálogo antes de mostrar el badge.
 
 ➡️ **v2 — Estado vacío ilustrado:** No implementado — no hay ticket activo.
 

@@ -49,9 +49,9 @@ Proyecto creado desde cero en `itsolutions-next/`:
 - Componentes: `.model-card`, `.catalog-grid`, `.sector-tabs`, `.sector-tab`, `.search-bar`, `.share-panel`
 - Badges: `.sector-badge--ecommerce`, `.sector-badge--turismo`, `.sector-badge--educacion`
 
-✅ **v2 — Skeleton loading:** Resuelto en ITS-REF02 (sprint 4) — `state-loading` implementado con clase CSS. Sin layout shift.
+➡️ **v2 — Skeleton loading:** Parcialmente resuelto en ITS-REF02 (sprint 4) — hay texto de loading con clase CSS pero sin animación shimmer. Skeleton animado pendiente en ITS-REF06 (sprint 6, backlog).
 
-➡️ **v2 — Badges en cards:** Requiere tabs de sector en el catálogo. Movido a ITS-REF05 (sprint 6, backlog) — las clases CSS ya existen, falta la lógica de filtro y el render del badge en cada tarjeta.
+➡️ **v2 — Badges en cards:** Pendiente en ITS-REF05 (sprint 6, backlog) — las clases CSS ya existen, falta la lógica de filtro por sector y el render del badge en cada tarjeta.
 
 ---
 
