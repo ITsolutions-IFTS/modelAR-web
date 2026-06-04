@@ -50,9 +50,9 @@
 - `styles.css` — estilos del viewer y controles AR
 - `index.ts` — re-exporta `ARViewer`, `ARTrackingStatus`
 
-🔁 **v2 — Estado de tracking en el viewer:** Los estados de `ARTrackingStatus` son strings técnicos en inglés. Agregar un mapa `STATUS_LABELS` en `types.ts` para mostrar texto amigable en la UI.
+✅ **v2 — Estado de tracking en el viewer:** Resuelto en ITS-REF03 (sprint 4) — status labels implementados con clases CSS para color.
 
-🔁 **v2 — Error recovery:** Si la sesión WebXR falla, el usuario ve el estado "error" pero no tiene forma de reintentar sin recargar la página. Agregar botón de reintento que desmonte y remonte el componente.
+➡️ **v2 — Error recovery:** Pendiente en ITS-REF11 (sprint 6, backlog) — botón de reintento que desmonte y remonte el componente al llegar a estado `error`.
 
 ---
 
@@ -66,7 +66,7 @@
 - `styles.css` — overlay del scanner y animación de línea de escaneo
 - `index.ts` — re-exporta `QRScanner`, `useQRScanner`, `parseScanToModelId`
 
-🔁 **v2 — Permiso denegado:** Si el usuario deniega el permiso de cámara, `useQRScanner` propaga el error pero `QRScanner` no muestra un mensaje explicativo. Agregar estado `'permission-denied'` con instrucciones para el usuario.
+✅ **v2 — Permiso denegado:** Resuelto en ITS-REF04 (sprint 4) — `useQRScanner` setea status `'error'` y `QRScanner` muestra mensaje con instrucciones al usuario.
 
 ---
 
@@ -79,6 +79,7 @@
 **Contexto:** El diagrama original modela la arquitectura con `@mbetania/*` tgz. Desde la migración a `itsolutions-next`, las clases del catálogo cambiaron completamente.
 
 **Actualización pendiente:**
+
 - [ ] Reemplazar `ArCatalog` → `SketchfabService` (métodos: `searchModels`, `getModel`, `getDownloadUrl`)
 - [ ] Reemplazar `CatalogItem` (id ECO-xxx) → `SketchfabModel` (uid, name, thumbnails, user, license)
 - [ ] Mantener sin cambios: `ARViewer`, `ThreeARSurface`, `QRScanner`, `ARPage`, `HomePage`, `ScanPage`
@@ -93,6 +94,7 @@
 **Contexto:** El flujo general QR scan → AR es correcto. Solo el paso de consulta al catálogo cambió con la migración.
 
 **Actualización pendiente:**
+
 - [ ] Reemplazar `ArCatalog.getById(id)` → `SketchfabService.getModel(uid)` + `getDownloadUrl(uid)`
 - [ ] Tomar screenshot → reemplazar Figura 3 en el informe
 
@@ -121,6 +123,7 @@ Modela el ciclo de vida de una sesión AR en `ThreeARSurface`. Los estados y tra
 **Contexto:** El diagrama original muestra `baseMVP` + tres tgz `@mbetania/*`. La arquitectura actual es completamente distinta.
 
 **Actualización pendiente:**
+
 - [ ] Actualizar código Mermaid con la nueva estructura:
 
 ```
@@ -147,6 +150,7 @@ Servicio externo: Sketchfab API v3
 **Contexto:** El diagrama actual muestra correctamente el flujo Dev → build → hosting → browser. Le faltan los nodos de Sketchfab que se agregaron con la migración.
 
 **Actualización pendiente:**
+
 - [ ] Agregar nodo `Sketchfab API v3` — el browser lo consulta para metadatos y URLs de descarga
 - [ ] Agregar nodo `Sketchfab CDN` — el browser descarga los binarios GLB directamente desde ahí
 - [ ] Screenshot → reemplazar Figura 7 en el informe
@@ -160,8 +164,9 @@ Servicio externo: Sketchfab API v3
 **Contexto:** El modelo entidad-relación conceptual para Stage 3 sigue siendo válido. Solo el pie de figura referencia tecnología descartada.
 
 **Actualización pendiente:**
+
 - [ ] Corregir pie de figura — reemplazar la referencia a `@mbetania/ar-catalog` por:
-  > *"En la arquitectura actual, los datos de modelos se obtienen en tiempo real de Sketchfab API v3. Este diagrama modela la estructura de persistencia propuesta para Stage 3, cuando el sistema cuente con backend propio."*
+  > _"En la arquitectura actual, los datos de modelos se obtienen en tiempo real de Sketchfab API v3. Este diagrama modela la estructura de persistencia propuesta para Stage 3, cuando el sistema cuente con backend propio."_
 - [ ] Tomar screenshot → reemplazar Figura 8 en el informe
 
 ---

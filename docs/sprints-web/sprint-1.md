@@ -49,9 +49,9 @@ Proyecto creado desde cero en `itsolutions-next/`:
 - Componentes: `.model-card`, `.catalog-grid`, `.sector-tabs`, `.sector-tab`, `.search-bar`, `.share-panel`
 - Badges: `.sector-badge--ecommerce`, `.sector-badge--turismo`, `.sector-badge--educacion`
 
-🔁 **v2 — Badges en cards:** El badge no se renderiza en las tarjetas (`HomePage.tsx`). Las clases CSS ya existen (`.sector-badge--ecommerce/turismo/educacion`). Para implementar: cruzar el `uid` del modelo con la campaign del contexto, mapear `campaign.subject` → `ITSector` (`educacion` para materias académicas, `ecommerce` para `producto`, etc.) y renderizar `<span className={`sector-badge sector-badge--${sector}`}>`. El campo `sector` que expone la API (`ecommerce | turismo | educacion | inmobiliario | museo`) reemplazará este mapeo cuando se conecte el backend real.
+➡️ **v2 — Skeleton loading:** Parcialmente resuelto en ITS-REF02 (sprint 4) — hay texto de loading con clase CSS pero sin animación shimmer. Skeleton animado pendiente en ITS-REF06 (sprint 6, backlog).
 
-🔁 **v2 — Skeleton loading:** No hay placeholders mientras carga el grid. Mientras `loading === true`, renderizar `N` cards con clase `model-card--skeleton` en lugar del grid vacío. Agregar a `styles.css`: `@keyframes shimmer` + reglas para `.model-card--skeleton` que animen `__thumb`, `__name`, `__meta` y `__action` con gradiente horizontal.
+➡️ **v2 — Badges en cards:** Pendiente en ITS-REF05 (sprint 6, backlog) — las clases CSS ya existen, falta la lógica de filtro por sector y el render del badge en cada tarjeta.
 
 ---
 
@@ -82,7 +82,7 @@ Proyecto creado desde cero en `itsolutions-next/`:
 - Logo "**IT**Solutions AR" con acento en `var(--accent)`
 - NavLinks: Catálogo + Escanear, con estado activo visual
 
-🔁 **v2 — Inline styles:** El AppHeader usa 100% inline styles. Extraer a clases CSS en `styles.css` (`.app-header`, `.app-header__logo`, `.app-header__nav`, `.app-header__link`, `.app-header__link--active`).
+✅ **v2 — Inline styles:** Resuelto en ITS-REF01 (sprint 4) — AppHeader usa clases BEM, sin inline styles.
 
 ---
 

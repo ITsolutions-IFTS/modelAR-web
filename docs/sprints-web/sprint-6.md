@@ -1037,3 +1037,25 @@ En `src/admin/pages/MetricsPage.tsx`:
 - `src/admin/pages/MetricsPage.tsx`
 
 ---
+
+### ITS-REF11 — ARViewer: botón de reintento en estado error | ⏳ Backlog — Betania
+
+**Derivado de:** ITS-C07 (sprint 2) — error recovery no implementado
+
+**Contexto:**
+Si la sesión WebXR falla, `ARViewer.tsx` queda en estado `error` sin forma de reintentar salvo recargar la página. El componente monta `ThreeARSurface` y si este lanza error setea `trackingStatus = 'error'`. Desmontar y remontar el componente reinicia el flujo desde cero.
+
+**Lo que falta:**
+
+En `src/pages/ARPage.tsx`:
+
+- [ ] Agregar estado `retryKey: number` (default `0`)
+- [ ] Cuando `trackingStatus === 'error'`, mostrar botón "Reintentar" en el panel lateral
+- [ ] Al hacer click: `setRetryKey(k => k + 1)`
+- [ ] Pasar `key={retryKey}` al componente `<ARViewer>` para forzar desmonte y remonte
+
+**Archivos a tocar:**
+
+- `src/pages/ARPage.tsx`
+
+---

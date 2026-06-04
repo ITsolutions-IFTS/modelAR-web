@@ -20,16 +20,13 @@
 - Estados: `.state-loading`, `.state-error`, `.state-empty`
 - Navegación a `/ar/:uid` al hacer click en una tarjeta
 
-🔁 **v2 — Skeleton grid:** La primera carga y cada `loadMore()` muestran solo texto "Cargando modelos...". Reemplazar por un grid de `.model-card--skeleton` con animación shimmer (mismas dimensiones que tarjetas reales, evita layout shift).
+➡️ **v2 — Skeleton grid:** Parcialmente resuelto en ITS-REF02 (sprint 4) — hay texto de loading con clase CSS pero sin animación shimmer. Skeleton animado pendiente en ITS-REF06 (sprint 6, backlog).
 
-🔁 **v2 — Badge de sector en tarjetas:** El badge que se muestra en las tarjetas usa siempre `sector-badge--educacion` (azul), solo para modelos con animaciones. El badge debería:
+➡️ **v2 — Badge de sector en tarjetas:** Pendiente en ITS-REF05 (sprint 6, backlog) — requiere filtro por sector en el catálogo antes de mostrar el badge.
 
-- Mostrar el sector activo del tab si está filtrado (ecommerce/turismo/educación)
-- Usar el color correspondiente al sector (`--sector-ecommerce`, etc.)
+➡️ **v2 — Estado vacío ilustrado:** No implementado — no hay ticket activo.
 
-🔁 **v2 — Estado vacío ilustrado:** El estado sin resultados muestra solo texto. Agregar un ícono/ilustración y texto descriptivo ("No encontramos modelos. Probá con otra búsqueda.").
-
-🔁 **v2 — Licencia en tarjeta:** Las tarjetas muestran nombre + usuario. Agregar badge de licencia (CC0, CC-BY, etc.) para facilitar el uso en producción.
+➡️ **v2 — Licencia en tarjeta:** No corresponde para la entrega académica — no hay ticket activo.
 
 ---
 
@@ -46,24 +43,11 @@
 - Botón "Copiar link" usa `navigator.clipboard.writeText`
 - Estado de tracking mostrado como string crudo (ej: `searching-surface`)
 
-🔁 **v2 — Inline styles en panel:** El panel lateral usa casi exclusivamente inline styles. Extraer a clases CSS:
-`.ar-panel__title`, `.ar-panel__meta`, `.ar-panel__status`, `.ar-panel__description`, `.ar-panel__share`
+✅ **v2 — Inline styles en panel:** Resuelto en ITS-REF03 (sprint 4) — `ARPage.tsx` usa clases CSS: `.ar-layout`, `.ar-panel`, `.ar-panel__status`, `.ar-panel__status-value`, `.share-panel`.
 
-🔁 **v2 — Estado AR legible:** El `trackingStatus` se muestra en crudo. Usar un mapa de etiquetas:
+✅ **v2 — Estado AR legible:** Resuelto en ITS-REF03 (sprint 4) — status labels implementados con `STATUS_LABEL` mapeado.
 
-```
-idle              → "Iniciando..."
-initializing      → "Preparando AR..."
-loading-model     → "Cargando modelo..."
-model-ready       → "Modelo listo"
-searching-surface → "Buscando superficie..."
-surface-detected  → "Superficie detectada — tocá para colocar"
-model-placed      → "Modelo colocado"
-session-ended     → "Sesión finalizada"
-error             → "Error"
-```
-
-🔁 **v2 — Loading skeleton ARPage:** El estado `phase === 'loading'` muestra texto plano. Agregar un placeholder que simule el layout del panel (skeleton del nombre, usuario, etc.).
+➡️ **v2 — Loading skeleton ARPage:** No implementado — no hay ticket activo.
 
 ---
 
@@ -75,13 +59,9 @@ error             → "Error"
 - `onDetected` → llama `parseScanToModelId()` → navega a `/ar/:uid`
 - `onError` → `console.warn` (sin feedback visual al usuario)
 
-🔁 **v2 — Error visible al usuario:** Los errores de cámara (permiso denegado, dispositivo sin cámara) van a `console.warn` pero no se muestran en pantalla. Agregar estado de error en `ScanPage` con mensaje explicativo y, si es permiso denegado, instrucciones para habilitarlo en el browser.
+✅ **v2 — Error visible al usuario:** Resuelto en ITS-REF04 (sprint 4) — `useQRScanner` captura errores y `QRScanner` muestra mensaje con instrucciones de permisos.
 
-🔁 **v2 — UI mínima:** La página tiene `<h1>` y un párrafo. Agregar:
-
-- Indicador de estado del scanner (buscando / código detectado)
-- Botón para detener/reiniciar el scanner
-- Historial local de los últimos UID escaneados (localStorage, máx. 5)
+➡️ **v2 — UI mínima (indicador, historial):** No implementado — no hay ticket activo para la entrega.
 
 ---
 

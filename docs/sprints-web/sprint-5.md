@@ -81,6 +81,8 @@ const routes = [
 
 ### ITS-S3-WEB-002 — Estado de autenticación (Context API) | ✅ Betania
 
+**Estado: ✅ Implementado** — 2026-05-26
+
 **Responsable:** Betania
 
 ```ts
@@ -242,13 +244,13 @@ export function AdminHeader() {
 
 **Checklist:**
 
-- [ ] AuthContext creado
-- [ ] AuthProvider envuelve <App />
-- [ ] useAuth hook funciona
-- [ ] Token guardado en localStorage
-- [ ] restoreSession en useEffect
-- [ ] Métodos login, register, logout funcionales
-- [ ] Todos los componentes admin usan useAuth()
+- [x] AuthContext creado
+- [x] AuthProvider envuelve <App />
+- [x] useAuth hook funciona
+- [x] Token guardado en sessionStorage
+- [x] restoreSession en useEffect
+- [x] Métodos login, logout funcionales (register lo gestiona el superadmin)
+- [x] Todos los componentes admin usan useAuth()
 
 ---
 
