@@ -32,7 +32,7 @@ export function ActiveOrgProvider({ children }: { children: ReactNode }) {
     if (!user) {
       setActiveOrgState(null);
       sessionStorage.removeItem(STORAGE_KEYS.ACTIVE_ORG);
-    } else if (user.role === 'client' && !activeOrg) {
+    } else if (!activeOrg) {
       const org: ActiveOrg = { slug: user.orgSlug, name: user.name };
       setActiveOrgState(org);
       safeSetJson(sessionStorage, STORAGE_KEYS.ACTIVE_ORG, org);
