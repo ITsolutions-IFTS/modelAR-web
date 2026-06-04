@@ -52,7 +52,7 @@
 
 ✅ **v2 — Estado de tracking en el viewer:** Resuelto en ITS-REF03 (sprint 4) — status labels implementados con clases CSS para color.
 
-➡️ **v2 — Error recovery:** No implementado — no hay ticket activo para esto.
+➡️ **v2 — Error recovery:** Pendiente en ITS-REF11 (sprint 6, backlog) — botón de reintento que desmonte y remonte el componente al llegar a estado `error`.
 
 ---
 
