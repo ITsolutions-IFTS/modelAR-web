@@ -832,3 +832,208 @@ Sistema genera automáticamente:
 - [x] Eliminación de Campaigns pide confirmación con el título
 
 ---
+
+### ITS-REF05 — HomePage: filtro por sector + badge | ⏳ Backlog
+
+**Derivado de:** ITS-REF02 (badge de sector nunca implementado en catálogo público)
+
+**Contexto:**
+El campo `sector` ya existe en `CampaignEntity` (core) y en el tipo `Campaign` del web. El contexto `CampaignsContext` trae los sectores en cada campaña. Los estilos `.sector-badge` y `.sector-badge--{sector}` ya existen en `styles.css`.
+
+**Lo que falta:**
+
+En `src/pages/HomePage.tsx`:
+
+- [ ] Derivar los sectores únicos desde `campaigns`: `[...new Set(campaigns.map(c => c.sector))]`
+- [ ] Agregar estado `tab: 'all' | CampaignSector` (default `'all'`)
+- [ ] Renderizar tabs de filtro encima del grid: uno por sector presente + "Todos"
+- [ ] Filtrar `uids` por sector antes de llamar a Sketchfab (o filtrar `filtered` por sector si ya los tiene cargados)
+- [ ] En cada tarjeta, cuando `tab !== 'all'`, mostrar `<span className={`sector-badge sector-badge--${tab}`}>{tab}</span>`
+
+**Sectores disponibles** (`CampaignSector` en core):
+`ecommerce` · `turismo` · `educacion` · `inmobiliario` · `museo`
+
+**Archivos a tocar:**
+
+- `src/pages/HomePage.tsx`
+- `src/styles.css` (solo si falta algún sector en las clases existentes)
+
+---
+
+### ITS-REF07 — Toast de feedback post-acción | ⏳ Backlog
+
+**Contexto:**
+Al crear, editar o eliminar campañas y colecciones no hay feedback visual más allá del cambio en la lista. El enunciado pide mensajes claros al usuario tras cada operación. Un sistema de toast liviano cubre esto sin librerías externas.
+
+**Lo que falta:**
+
+`src/components/Toast/Toast.tsx` — nuevo componente:
+
+- [ ] `ToastProvider` con contexto y `useToast()` hook que expone `showToast(message, variant)`
+- [ ] `variant`: `'success' | 'error'`
+- [ ] El toast se auto-descarta a los 3 segundos
+- [ ] Máximo un toast visible a la vez (el nuevo reemplaza al anterior)
+- [ ] Posición: esquina inferior derecha
+
+`src/components/Toast/Toast.css`:
+
+- [ ] Animación de entrada (slide-up) y salida (fade-out)
+- [ ] Variante success: acento verde (`--color-accent`)
+- [ ] Variante error: rojo
+
+`src/App.tsx`:
+
+- [ ] Envolver la app con `<ToastProvider>`
+
+**Dónde llamar a `showToast`:**
+
+| Acción                    | Mensaje                          |
+| ------------------------- | -------------------------------- |
+| Campaña creada            | "Campaña creada correctamente"   |
+| Campaña actualizada       | "Campaña actualizada"            |
+| Campaña eliminada         | "Campaña eliminada"              |
+| Colección creada          | "Colección creada correctamente" |
+| Colección actualizada     | "Colección actualizada"          |
+| Colección eliminada       | "Colección eliminada"            |
+| Error en cualquier acción | mensaje del error recibido       |
+
+**Archivos a tocar:**
+
+- `src/components/Toast/Toast.tsx` (nuevo)
+- `src/components/Toast/Toast.css` (nuevo)
+- `src/components/Toast/index.ts` (nuevo)
+- `src/App.tsx`
+- `src/admin/pages/CampaignsPage.tsx`
+- `src/admin/pages/CollectionsPage.tsx`
+- `src/admin/pages/CampaignFormPage.tsx`
+
+---
+
+### ITS-REF06 — HomePage: skeleton grid animado | ⏳ Backlog
+
+**Derivado de:** ITS-REF02 (skeleton pendiente — actualmente solo muestra texto "Cargando modelos...")
+
+**Contexto:**
+`HomePage.tsx` tiene `loading === true` mientras se resuelven los `Promise.all` de Sketchfab. Hoy muestra `<div className="state-loading">Cargando modelos...</div>`. El objetivo es reemplazarlo por tarjetas skeleton con animación shimmer que mantengan el mismo layout que las tarjetas reales (sin layout shift al cargar).
+
+**Lo que falta:**
+
+En `src/styles.css`:
+
+- [ ] Agregar `@keyframes shimmer` con gradiente animado de izquierda a derecha:
+  ```css
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+  ```
+- [ ] Agregar `.model-card--skeleton` que use el keyframe:
+  ```css
+  .model-card--skeleton .model-card__thumb,
+  .model-card--skeleton .model-card__name,
+  .model-card--skeleton .model-card__meta {
+    background: linear-gradient(
+      90deg,
+      var(--color-surface) 25%,
+      var(--color-border) 50%,
+      var(--color-surface) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 4px;
+    color: transparent;
+  }
+  ```
+
+En `src/pages/HomePage.tsx`:
+
+- [ ] Mientras `loading === true`, renderizar 6 tarjetas skeleton en lugar de `state-loading`:
+  ```tsx
+  {
+    loading &&
+      Array.from({ length: 6 }).map((_, i) => (
+        <article key={i} className="model-card model-card--skeleton">
+          <div className="model-card__thumb" />
+          <div className="model-card__body">
+            <p className="model-card__name">...</p>
+            <p className="model-card__meta">...</p>
+          </div>
+        </article>
+      ));
+  }
+  ```
+- [ ] Eliminar el `{loading && <div className="state-loading">...}` actual
+
+**Archivos a tocar:**
+
+- `src/pages/HomePage.tsx`
+- `src/styles.css`
+
+---
+
+### ITS-REF08 — Submit button: estado loading en formularios | ⏳ Backlog
+
+**Contexto:**
+`CampaignFormPage.tsx` no deshabilita el botón de submit mientras se procesa la request. El usuario puede hacer doble click y generar requests duplicadas, y no hay feedback de que algo está pasando.
+
+**Lo que falta:**
+
+En `src/admin/pages/CampaignFormPage.tsx`:
+
+- [ ] Agregar estado `submitting: boolean` (default `false`)
+- [ ] Al iniciar el submit: `setSubmitting(true)`, al finalizar (finally): `setSubmitting(false)`
+- [ ] El botón de submit debe tener `disabled={submitting}` y mostrar `"Guardando..."` mientras `submitting === true`
+
+**Archivos a tocar:**
+
+- `src/admin/pages/CampaignFormPage.tsx`
+
+---
+
+### ITS-REF09 — MetricsPage: animación de entrada en barras | ⏳ Backlog
+
+**Contexto:**
+`DynamicBar` aplica el ancho vía CSS custom property `--bar-width` pero no tiene transición — las barras aparecen en su valor final instantáneamente. Una animación de entrada mejora la percepción de la página en la presentación.
+
+**Lo que falta:**
+
+En `MetricsPage.css` (o donde se definen `.mtr-top-bar`, `.mtr-subject-bar`, `.mtr-funnel-bar`):
+
+- [ ] Agregar `transition: width 0.6s ease-out` (o `height` para barras verticales) a todas las clases que usen `DynamicBar`
+- [ ] Verificar que el valor inicial sea `width: 0%` para que la transición arranque desde cero al montar
+
+**Archivos a tocar:**
+
+- `src/admin/pages/MetricsPage.css`
+
+---
+
+### ITS-REF10 — MetricsPage: count-up animado en KPIs | ⏳ Backlog
+
+**Contexto:**
+Los números grandes de vistas, activaciones AR, clicks al CTA y tasa AR aparecen estáticos al cargar. Un count-up desde 0 hasta el valor final al montar la página le da vida a la sección de métricas.
+
+**Lo que falta:**
+
+`src/admin/hooks/useCountUp.ts` — nuevo hook:
+
+- [ ] `useCountUp(target: number, duration = 800): number` — retorna el valor animado actual
+- [ ] Usa `requestAnimationFrame` internamente, sin dependencias externas
+- [ ] Si `target === 0`, retorna 0 directamente sin animar
+
+En `src/admin/pages/MetricsPage.tsx`:
+
+- [ ] Crear un sub-componente `KpiValue({ value, formatter })` que use `useCountUp(value)` internamente
+- [ ] Reemplazar los cuatro `{formatNumber(totals.x)}` de `.mtr-kpi-value` por `<KpiValue>`
+- [ ] La tasa AR (`toFixed(1)%`) también anima, formateando el número durante la animación
+
+**Archivos a tocar:**
+
+- `src/admin/hooks/useCountUp.ts` (nuevo)
+- `src/admin/pages/MetricsPage.tsx`
+
+---
