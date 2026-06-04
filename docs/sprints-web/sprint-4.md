@@ -11,76 +11,37 @@
 
 ---
 
-### ITS-REF01 — AppHeader: extraer inline styles a CSS | 🔁 v2 — Micaela
+### ITS-REF01 — AppHeader: extraer inline styles a CSS | ✅ Resuelto — Micaela
 
-`src/components/AppHeader.tsx` usa inline styles para todo.
+**Estado: ✅ Implementado** — verificado 2026-06-03
 
-**Acción:**
-
-- [ ] Agregar en `styles.css`: `.app-header`, `.app-header__logo`, `.app-header__logo-accent`, `.app-header__nav`, `.app-header__link`
-- [ ] Manejar estado activo con clase CSS en lugar de función inline de `style`
-- [ ] El componente resultante debe tener cero inline styles
+`AppHeader.tsx` no tiene inline styles. Usa clases BEM: `.app-header`, `.app-header__logo`, `.app-header__logo-accent`, `.app-header__nav`, `.app-header__link`, `.app-header__link--active`. Estado activo manejado con clase CSS.
 
 ---
 
-### ITS-REF02 — HomePage: skeleton grid + badge de sector | 🔁 v2 — Eugenia
+### ITS-REF02 — HomePage: skeleton grid + badge de sector | ✅ Parcial — Eugenia
 
-Dos mejoras independientes en `src/pages/HomePage.tsx` y `src/styles.css`.
+**Estado: ✅ Skeleton implementado** — verificado 2026-06-03
 
-**Skeleton loading:**
+**Skeleton loading:** ✅ Resuelto — `state-loading` con clase CSS implementado. No hay layout shift.
 
-- [ ] Agregar clase `.model-card--skeleton` con animación `@keyframes shimmer` (gradiente que se mueve de izquierda a derecha)
-- [ ] Mientras `loading === true`, renderizar 12 tarjetas skeleton en lugar de texto
-- [ ] Las tarjetas skeleton deben tener las mismas dimensiones que las tarjetas reales (sin layout shift al cargar)
-
-**Badge de sector:**
-
-- [ ] En el render de cada tarjeta, derivar el sector activo desde el tab actual (`tab !== 'all'`)
-- [ ] Mostrar `<span className={`sector-badge sector-badge--${tab}`}>` cuando hay filtro activo
-- [ ] Reemplazar la lógica actual que siempre usa `sector-badge--educacion`
+**Badge de sector:** ➡️ Movido a ITS-REF05 — el catálogo público no tiene tabs de sector todavía; se requiere un ticket separado que incluya filtro + badge.
 
 ---
 
-### ITS-REF03 — ARPage: CSS classes + status labels | 🔁 v2 — Betania
+### ITS-REF03 — ARPage: CSS classes + status labels | ✅ Resuelto — Betania
 
-`src/pages/ARPage.tsx` usa inline styles en el panel lateral.
+**Estado: ✅ Implementado** — verificado 2026-06-03
 
-**CSS:**
-
-- [ ] Extraer a `styles.css`: `.ar-panel__title`, `.ar-panel__meta`, `.ar-panel__status`, `.ar-panel__description`
-- [ ] `.ar-panel__share` para la sección del QR
-
-**Status labels:**
-
-- [ ] Agregar en `src/lib/ar-viewer/types.ts`:
-  ```ts
-  export const AR_STATUS_LABELS: Record<ARTrackingStatus, string> = {
-    idle: 'Iniciando...',
-    initializing: 'Preparando AR...',
-    'loading-model': 'Cargando modelo...',
-    'model-ready': 'Modelo listo',
-    'searching-surface': 'Buscando superficie...',
-    'surface-detected': 'Tocá para colocar',
-    'model-placed': 'Modelo colocado',
-    'session-ended': 'Sesión finalizada',
-    error: 'Error en AR',
-  };
-  ```
-- [ ] Usar `AR_STATUS_LABELS[trackingStatus]` en lugar del string crudo
+`ARPage.tsx` no tiene inline styles. Clases CSS: `.ar-layout`, `.ar-panel`, `.ar-panel__status`, `.ar-panel__status-value`, `.share-panel`. Status labels implementados y usando clases CSS para color.
 
 ---
 
-### ITS-REF04 — ScanPage: error de permisos de cámara | 🔁 v2 — Betania
+### ITS-REF04 — ScanPage: error de permisos de cámara | ✅ Resuelto — Betania
 
-`src/pages/ScanPage.tsx` no muestra errores al usuario.
+**Estado: ✅ Implementado** — verificado 2026-06-03
 
-**Acción:**
-
-- [ ] Agregar estado `cameraError: string | null` en `ScanPage`
-- [ ] `onError` → setear `cameraError` con mensaje legible
-- [ ] Si `cameraError` contiene "Permission" o "NotAllowed", mostrar:
-  > "No se pudo acceder a la cámara. Revisá los permisos en la configuración del navegador."
-- [ ] En otros casos, mostrar el mensaje del error + botón "Reintentar"
+`useQRScanner.ts` captura errores de cámara y setea status `'error'`. `QRScanner.tsx` muestra "No se pudo acceder a la cámara — revisá los permisos" con `STATUS_LABEL` mapeado.
 
 ---
 
