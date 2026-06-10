@@ -833,30 +833,32 @@ Sistema genera automáticamente:
 
 ---
 
-### ITS-REF05 — HomePage: filtro por sector + badge | ⏳ Backlog
+### ITS-REF05 — HomePage: filtro por sector + badge | ⏳ Backlog — Micaela
 
-**Derivado de:** ITS-REF02 (badge de sector nunca implementado en catálogo público)
+*Derivado de:* ITS-REF02 (badge de sector nunca implementado en catálogo público)
 
-**Contexto:**
-El campo `sector` ya existe en `CampaignEntity` (core) y en el tipo `Campaign` del web. El contexto `CampaignsContext` trae los sectores en cada campaña. Los estilos `.sector-badge` y `.sector-badge--{sector}` ya existen en `styles.css`.
+> ⛔ *Bloqueado por ITS-REF12 + ITS-REF13.* Hoy HomePage lee las campañas de CampaignsContext, que solo hace fetch if (user) (CampaignsContext.tsx:54-60) y se alimenta de GET /api/campaigns, endpoint *protegido. Como visitante deslogueado en /catalogo no hay campañas → no hay sectores que derivar ni nada que filtrar. Este ticket asume que **ITS-REF13* ya migró HomePage a consumir el endpoint público (apiGetPublicCampaigns()), que a su vez depende de *ITS-REF12* (endpoint en core). No empezar REF05 hasta que ambos estén mergeados.
 
-**Lo que falta:**
+*Contexto:*
+El campo sector ya existe en CampaignEntity (core) y en el tipo Campaign del web (src/admin/types.ts:44, como tipo Sector — *no* CampaignSector, ese es el nombre del enum en core). Tras ITS-REF13, HomePage tiene un estado local campaigns: Campaign[] (cada uno con sector + sketchfabUid) traído del endpoint público. Los estilos .sector-badge y .sector-badge--{sector} ya existen en styles.css (líneas 520-533).
 
-En `src/pages/HomePage.tsx`:
 
-- [ ] Derivar los sectores únicos desde `campaigns`: `[...new Set(campaigns.map(c => c.sector))]`
-- [ ] Agregar estado `tab: 'all' | CampaignSector` (default `'all'`)
+*Lo que falta:*
+
+En src/pages/HomePage.tsx:
+
+- [ ] Derivar los sectores únicos desde campaigns: [...new Set(campaigns.map(c => c.sector))]
+- - [ ] Agregar estado tab: 'all' | Sector (default 'all') — importar Sector de @/admin/types
 - [ ] Renderizar tabs de filtro encima del grid: uno por sector presente + "Todos"
-- [ ] Filtrar `uids` por sector antes de llamar a Sketchfab (o filtrar `filtered` por sector si ya los tiene cargados)
-- [ ] En cada tarjeta, cuando `tab !== 'all'`, mostrar `<span className={`sector-badge sector-badge--${tab}`}>{tab}</span>`
+- - [ ] Filtrar las campañas por sector (campaigns.filter(c => tab === 'all' || c.sector === tab)) y derivar los uids de ese subconjunto *antes* de llamar a Sketchfab (el sector vive en campaign, no en el SketchfabModel)
+- [ ] En cada tarjeta, cuando tab !== 'all', mostrar <span className={`sector-badge sector-badge--${tab}}>{tab}</span>` (el badge usa el tab activo, no requiere el sector por-card)
+- *Sectores disponibles* (Sector en web = CampaignSector en core):
+ecommerce · turismo · educacion · inmobiliario · museo
 
-**Sectores disponibles** (`CampaignSector` en core):
-`ecommerce` · `turismo` · `educacion` · `inmobiliario` · `museo`
+*Archivos a tocar:*
 
-**Archivos a tocar:**
-
-- `src/pages/HomePage.tsx`
-- `src/styles.css` (solo si falta algún sector en las clases existentes)
+- src/pages/HomePage.tsx
+- src/styles.css (solo si falta algún sector en las clases existentes)
 
 ---
 
@@ -1057,5 +1059,187 @@ En `src/pages/ARPage.tsx`:
 **Archivos a tocar:**
 
 - `src/pages/ARPage.tsx`
+
+---
+
+### ITS-REF12 — Endpoint público de listado de campañas (`GET /api/campaigns/public`) | ⏳ Backlog — Betania
+
+> 🗂️ **Repo:** `modelar-core` (NestJS). No es un ticket de frontend — el código vive en `modelar-core`, no en este repo.
+> ⛔ **Bloquea a:** ITS-REF13 (consumo en web) → ITS-REF05 (filtro por sector).
+
+**Derivado de:** ITS-REF05 — al implementarlo se detectó que el catálogo público (`/catalogo`) no tiene fuente de datos sin login.
+
+**Contexto / problema:**
+El catálogo público necesita listar campañas sin estar autenticado, pero hoy el único `GET` de listado es `@Get()` en `campaigns.controller.ts`, **protegido** y filtrado por `clientId` (`@CurrentUser()` → `list-campaigns.use-case.ts:28`). El único endpoint público existente es `@Public() @Get(':id/public')` (`campaigns.controller.ts:87-93`), que trae **una** campaña por id y solo si `status === ACTIVE` (`get-public-campaign.use-case.ts:58`). Falta el equivalente de **listado** público.
+
+Arquitectura hexagonal: `controller` → `use-case` (`application/campaigns/`) → repo (`infrastructure/persistence/campaigns/campaign.sequelize.repository.ts`). No hay `service`. La respuesta paginada es `PaginatedResult<T>` (`domain/shared/types/pagination.ts`): `{ data, pagination: { page, limit, total, totalPages } }`.
+
+**Lo que falta:**
+
+1. **DTO de query** — nuevo `src/modules/campaigns/dto/list-public-campaigns-query.dto.ts`, espejo de `ListCampaignsQueryDto` pero **sin `status`** (forzado a `ACTIVE` internamente) y **con `orgSlug` opcional**:
+   - [ ] `page: number = 1` (`@IsOptional @Type(() => Number) @IsInt @Min(1)`)
+   - [ ] `limit: number = 20` (`@IsInt @Min(1) @Max(100)`)
+   - [ ] `sector?: CampaignSector` (`@IsOptional @IsEnum(CampaignSector)` — reutiliza el enum existente)
+   - [ ] `orgSlug?: string` (`@IsOptional @Matches(/^[a-z0-9-]+$/)` — mismo patrón que `register.dto.ts`)
+
+2. **Use case** — nuevo `src/application/campaigns/list-public-campaigns.use-case.ts`:
+   - [ ] `execute(input: { page; limit; sector?; orgSlug? }): Promise<PaginatedResult<CampaignEntity>>`
+   - [ ] Llama a un nuevo método de repo `findPublic(filters, pagination)` que fije `status = ACTIVE` en el `where`
+   - [ ] (Opcional) cachear con `buildCacheKey(CacheNamespace.CAMPAIGN_PUBLIC, orgSlug ?? 'all', 'list:' + page + ':' + limit + ':' + (sector ?? '*'))` siguiendo el patrón de `get-public-campaign.use-case.ts`
+   - [ ] Registrarlo en `campaigns.module.ts` como provider
+
+3. **Repositorio** — en `ICampaignRepository` (puerto) + `CampaignSequelizeRepository`:
+   - [ ] Agregar `findPublic(filters: { sector?; orgSlug? }, pagination: { page; limit }): Promise<PaginatedResult<CampaignEntity>>`
+   - [ ] Espejo de `findByClientId` (líneas 37-66) pero con `where = { status: CampaignStatus.ACTIVE, ...(orgSlug && { orgSlug }), ...(sector && { sector }) }`. El paranoid de Sequelize ya excluye soft-deleted. Hay índice `(status, deleted_at)` e índice por `org_slug` que soportan el filtro.
+   - [ ] `findAndCountAll` + `order` `created_at DESC` + construir `PaginatedResult` igual que `findByClientId`
+
+4. **DTO de salida público** — nuevo `src/modules/campaigns/dto/public-campaign.dto.ts` (mapper entidad→salida):
+   - [ ] Exponer **solo**: `id, title, description, sector, sketchfabUid, ctaUrl, qrValue, collectionId, orgSlug, status, createdAt`
+   - [ ] **Omitir** `clientId` y `deletedAt` (datos internos de multi-tenant)
+   - [ ] ⚠️ **Fuga preexistente a corregir de paso:** el endpoint actual `@Get(':id/public')` devuelve la `CampaignEntity` **cruda**, filtrando `clientId` y `deletedAt` al público. Aplicar este mismo mapper también a `:id/public` para cerrar esa fuga.
+
+5. **Controller** — en `src/modules/campaigns/campaigns.controller.ts`:
+   - [ ] Agregar `@Public() @Get('public') listPublic(@Query() query: ListPublicCampaignsQueryDto)`
+   - [ ] ⚠️ **Orden de rutas crítico:** declarar `@Get('public')` **ANTES** de `@Get(':id')` y de `@Get(':id/public')`. Nest enruta por orden de declaración; si va después, `:id` captura `"public"` como un UUID y rompe con error de validación.
+   - [ ] Mapear el resultado con `PublicCampaignDto` antes de devolver
+
+**Notas:**
+- `@Public()` (de `common/decorators/public.decorator.ts`) basta para auth: `JwtAuthGuard` y `RolesGuard` respetan `IS_PUBLIC_KEY`. **No hace falta tocar guards.**
+- ⚠️ El `ThrottlerGuard` global **no** respeta `@Public()`, así que el endpoint hereda el rate limit global (`RATE_LIMIT_TTL`/`RATE_LIMIT_MAX`). Aceptable; mencionarlo en el PR.
+- El campo `views` **no** existe en la campaña (vive en analytics) — fuera de scope.
+- Coordinar con Micaela: ITS-REF13 espera shape `PaginatedResponse<Campaign>` (`{ data, pagination }`). Mantener ese contrato.
+
+**Archivos a tocar (`modelar-core`):**
+
+- `src/modules/campaigns/campaigns.controller.ts`
+- `src/modules/campaigns/dto/list-public-campaigns-query.dto.ts` (nuevo)
+- `src/modules/campaigns/dto/public-campaign.dto.ts` (nuevo)
+- `src/application/campaigns/list-public-campaigns.use-case.ts` (nuevo)
+- `src/modules/campaigns/campaigns.module.ts` (registrar use case)
+- `src/domain/campaigns/ports/*` (puerto del repo) + `src/infrastructure/persistence/campaigns/campaign.sequelize.repository.ts`
+- Tests del nuevo use case / endpoint
+
+**Criterio de aceptación:**
+
+- [ ] `GET /api/campaigns/public` responde **sin** `Authorization` con `200` y `{ data, pagination }`
+- [ ] Solo devuelve campañas `ACTIVE` (no DRAFT/PAUSED/soft-deleted)
+- [ ] `?sector=museo` y `?orgSlug=museo-bernal` filtran correctamente; `?page`/`?limit` paginan
+- [ ] La respuesta **no** incluye `clientId` ni `deletedAt`
+- [ ] `tsc` + tests verdes
+
+---
+
+### ITS-REF13 — HomePage: consumir endpoint público de campañas (quitar dependencia auth) | ⏳ Backlog — Micaela
+
+> ⛔ **Bloqueado por ITS-REF12** (necesita el endpoint `GET /api/campaigns/public` en core). · **Bloquea a:** ITS-REF05.
+> 🎯 Ticket pensado para ser **copy-paste a código y quedar funcional**. Seguir los pasos en orden.
+
+**Derivado de:** ITS-REF05 — el catálogo público depende de `CampaignsContext`, que solo hace fetch `if (user)`.
+
+**Contexto / problema:**
+`HomePage` (`/catalogo`, pública) lee `const { campaigns } = useCampaigns()` (`HomePage.tsx:10`). Ese contexto (`CampaignsContext.tsx:54-60`) solo trae datos cuando hay `user` logueado y consume `GET /api/campaigns` (protegido). Resultado: deslogueado, `campaigns = []` y el catálogo se ve vacío. La solución es que `HomePage` deje de usar el contexto y haga su propio fetch del **endpoint público** (ITS-REF12), siguiendo el mismo patrón que `ARPage` (página pública: `useState` + `useEffect` + servicio, sin contexto).
+
+`apiFetch` (`src/services/api.ts:79-121`) ya es seguro para llamadas sin token: inyecta `Authorization` **condicionalmente** (`:91`) y no dispara logout cuando no hay token (`:103`). No hay que tocar auth.
+
+---
+
+#### Paso 1 — Agregar el helper en `src/services/api.ts`
+
+Justo después de `apiGetCampaign` (línea ~151), agregar:
+
+```ts
+/** Catálogo público: campañas ACTIVE sin requerir auth (ITS-REF12). */
+export const apiGetPublicCampaigns = () =>
+  apiFetch<PaginatedResponse<Campaign>>('/api/campaigns/public');
+```
+
+- [ ] El tipo `PaginatedResponse<Campaign>` y `Campaign` ya están importados/definidos en `api.ts` — no agregar imports nuevos.
+
+#### Paso 2 — Reescribir el data-flow de `src/pages/HomePage.tsx`
+
+**2a. Imports.** Reemplazar la línea `import { useCampaigns } from '@/admin/context/CampaignsContext';` (`:6`) por:
+
+```ts
+import { apiGetPublicCampaigns } from '@/services/api';
+import type { Campaign } from '@/admin/types';
+```
+
+**2b. Estado.** Quitar `const { campaigns } = useCampaigns();` (`:10`) y agregar un estado local. El bloque de estado queda así:
+
+```ts
+const navigate = useNavigate();
+const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+const [models, setModels] = useState<SketchfabModel[]>([]);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState<string | null>(null);
+const [keyword, setKeyword] = useState('');
+```
+
+**2c. Eliminar** la derivación a nivel de cuerpo `const uids = [...new Set(campaigns.map((c) => c.sketchfabUid))];` (`:17`) — se moverá dentro de los efectos.
+
+**2d. Efecto 1 — traer campañas al montar** (nuevo, reemplaza la dependencia del contexto):
+
+```ts
+// Fetch público de campañas al montar (no requiere login).
+useEffect(() => {
+  apiGetPublicCampaigns()
+    .then(({ data }) => setCampaigns(data))
+    .catch((err: Error) => {
+      setError(err.message);
+      setLoading(false);
+    });
+}, []);
+```
+
+**2e. Efecto 2 — resolver modelos de Sketchfab cuando llegan las campañas.** Reemplazar el `useEffect` actual (`:19-31`) por:
+
+```ts
+// Cuando hay campañas, resolver cada modelo en Sketchfab.
+useEffect(() => {
+  if (campaigns.length === 0) return;
+  const uids = [...new Set(campaigns.map((c) => c.sketchfabUid))];
+  setLoading(true);
+  setError(null);
+  Promise.all(uids.map((uid) => getModel(uid)))
+    .then((results) => setModels(results))
+    .catch((err: Error) => setError(err.message))
+    .finally(() => setLoading(false));
+}, [campaigns]);
+```
+
+> ⚠️ Caso borde: si el fetch público devuelve `data: []` (no hay campañas activas), el Efecto 2 hace `return` temprano y `loading` queda en `true`. Para que muestre el empty-state, en el Efecto 1 setear `setLoading(false)` también cuando `data.length === 0`:
+> ```ts
+> .then(({ data }) => {
+>   setCampaigns(data);
+>   if (data.length === 0) setLoading(false);
+> })
+> ```
+
+**2f.** El resto de `HomePage` (filtro por `keyword`, render del grid, `getBestThumbnail`, navegación) **no cambia**.
+
+#### Paso 3 — Verificación manual
+
+- [ ] Con el core levantado y **sin login** (sessionStorage sin `modelar_token`), entrar a `/#/catalogo`: deben verse las campañas `ACTIVE`.
+- [ ] En DevTools → Network: la request a `/api/campaigns/public` sale **sin** header `Authorization` y responde `200`.
+- [ ] Logueado, el catálogo sigue funcionando igual (el header `Authorization` se manda pero el endpoint lo ignora).
+- [ ] `npm run build` / `tsc -b` sin errores de tipos.
+
+**Notas / caveats:**
+
+- ⚠️ **Config de prod:** `.env.production` tiene `VITE_API_BASE_URL=/api/sketchfab`. Con eso, `apiFetch('/api/campaigns/public')` armaría `/api/sketchfab/api/campaigns/public` (roto). En **dev** (`.env` con `VITE_API_BASE_URL` vacío + proxy de Vite a `:3001`) funciona bien. Antes de desplegar a prod, coordinar el ajuste de la base URL (fuera del scope inmediato de este ticket, pero **dejarlo anotado en el PR**).
+- No tocar `CampaignsContext` ni `AuthContext`: el admin sigue usándolos tal cual. Este ticket solo desacopla `HomePage`.
+- Patrón de referencia: `ARPage.tsx:22-43` (página pública con `useState`/`useEffect` + servicio, sin contexto).
+
+**Archivos a tocar:**
+
+- `src/services/api.ts` (1 helper nuevo)
+- `src/pages/HomePage.tsx`
+
+**Criterio de aceptación:**
+
+- [ ] El catálogo público muestra campañas estando **deslogueado**
+- [ ] `HomePage` ya no importa `useCampaigns`
+- [ ] Empty-state correcto cuando no hay campañas activas
+- [ ] `tsc -b` verde
 
 ---
