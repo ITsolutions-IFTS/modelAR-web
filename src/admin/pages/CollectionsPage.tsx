@@ -85,7 +85,7 @@ export function CollectionsPage() {
   const { addCollection, updateCollection, deleteCollection } =
     useCollections();
   const { campaigns } = useCampaigns();
-  const { org, orgCollections, activeOrg } = useOrgResources();
+  const { org, orgCollections } = useOrgResources();
   const { user } = useAuth();
   const confirm = useConfirm();
   const isSuperadmin = user?.role === 'superadmin';
@@ -106,7 +106,7 @@ export function CollectionsPage() {
         <div>
           <h1>{labelPlural}</h1>
           <p>
-            {activeOrg?.name} · Organizá tus campañas por {label.toLowerCase()}
+            {org?.name} · Organizá tus campañas por {label.toLowerCase()}
           </p>
         </div>
         {isSuperadmin && !adding && (

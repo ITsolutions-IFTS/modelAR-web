@@ -144,8 +144,12 @@ export const apiLogout = (refreshToken: string) =>
 
 // ── Campaigns ──────────────────────────────────────────────────────────────
 
-export const apiGetCampaigns = () =>
-  apiFetch<PaginatedResponse<Campaign>>('/api/campaigns');
+export const apiGetCampaigns = (params?: { orgSlug?: string }) => {
+  const qs = params?.orgSlug
+    ? `?orgSlug=${encodeURIComponent(params.orgSlug)}`
+    : '';
+  return apiFetch<PaginatedResponse<Campaign>>(`/api/campaigns${qs}`);
+};
 
 export const apiGetCampaign = (id: string) =>
   apiFetch<Campaign>(`/api/campaigns/${id}`);

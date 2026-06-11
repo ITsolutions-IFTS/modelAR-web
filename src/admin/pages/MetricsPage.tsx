@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useOrganizations } from '../context/OrganizationsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { aggregateCampaignStats } from '../utils/campaignStats';
 import { SECTOR_LABELS } from '../types';
@@ -8,19 +9,77 @@ import { DynamicBar } from '../components/DynamicBar';
 import './MetricsPage.css';
 
 export function MetricsPage() {
-  const { org, orgCampaigns, activeOrg } = useOrgResources();
+  const { organizations } = useOrganizations();
+  const { org, orgCampaigns, isSuperadmin } = useOrgResources();
+  const [selectedOrg, setSelectedOrg] = useState('');
 
-  const totals = useMemo(
-    () => aggregateCampaignStats(orgCampaigns),
-    [orgCampaigns]
+  const sortedOrganizations = useMemo(
+    () => [...organizations].sort((a, b) => a.name.localeCompare(b.name)),
+    [organizations]
   );
 
-  const subjectTotals = useMemo(() => {
+  const organizationOptions = useMemo(() => {
+    const baseOptions = sortedOrganizations.map((organization) => ({
+      slug: organization.slug,
+      label: organization.name,
+    }));
+    const knownSlugs = new Set(
+      baseOptions.map((organization) => organization.slug)
+    );
+    const fallbackOptions = [
+      ...new Set(orgCampaigns.map((campaign) => campaign.orgSlug)),
+    ]
+      .filter((slug) => !knownSlugs.has(slug))
+      .map((slug) => ({ slug, label: slug }));
+    return [...baseOptions, ...fallbackOptions].sort((a, b) =>
+      a.label.localeCompare(b.label)
+    );
+  }, [sortedOrganizations, orgCampaigns]);
+
+  useEffect(() => {
+    if (!isSuperadmin) return;
+    const firstOrg = organizationOptions[0]?.slug ?? '';
+    const hasSelectedOrg = organizationOptions.some(
+      (organization) => organization.slug === selectedOrg
+    );
+    if (!selectedOrg || !hasSelectedOrg) {
+      setSelectedOrg(firstOrg);
+    }
+  }, [isSuperadmin, organizationOptions, selectedOrg]);
+
+  const selectedOrganization = useMemo(
+    () =>
+      isSuperadmin
+        ? organizationOptions.find(
+            (organization) => organization.slug === selectedOrg
+          )
+        : undefined,
+    [isSuperadmin, organizationOptions, selectedOrg]
+  );
+
+  const visibleCampaigns = useMemo(
+    () =>
+      isSuperadmin
+        ? orgCampaigns.filter((campaign) => campaign.orgSlug === selectedOrg)
+        : orgCampaigns,
+    [orgCampaigns, isSuperadmin, selectedOrg]
+  );
+
+  const totals = useMemo(
+    () => aggregateCampaignStats(visibleCampaigns),
+    [visibleCampaigns]
+  );
+
+  const sectorTotals = useMemo(() => {
     const map: Partial<Record<Sector, number>> = {};
-    orgCampaigns.forEach((c) => {
-      map[c.sector] = (map[c.sector] ?? 0) + (c.arActivations ?? 0);
+    visibleCampaigns.forEach((campaign) => {
+      map[campaign.sector] =
+        (map[campaign.sector] ?? 0) + (campaign.arActivations ?? 0);
     });
-    const max = Math.max(...(Object.values(map).filter(Boolean) as number[]));
+    const values = Object.values(map).filter(
+      (value): value is number => typeof value === 'number' && value > 0
+    );
+    const max = values.length > 0 ? Math.max(...values) : 0;
     return Object.entries(map)
       .map(([sector, value]) => ({
         subject: sector as Sector,
@@ -29,26 +88,54 @@ export function MetricsPage() {
         pct: max > 0 ? Math.round(((value ?? 0) / max) * 100) : 0,
       }))
       .sort((a, b) => b.value - a.value);
-  }, [orgCampaigns]);
+  }, [visibleCampaigns]);
 
   const topCampaigns = useMemo(
     () =>
-      [...orgCampaigns]
-        .filter((c) => (c.views ?? 0) > 0)
-        .map((c) => ({
-          ...c,
-          rate: ((c.arActivations ?? 0) / (c.views ?? 1)) * 100,
+      [...visibleCampaigns]
+        .filter((campaign) => (campaign.views ?? 0) > 0)
+        .map((campaign) => ({
+          ...campaign,
+          rate: ((campaign.arActivations ?? 0) / (campaign.views ?? 1)) * 100,
         }))
         .sort((a, b) => b.rate - a.rate)
         .slice(0, 4),
-    [orgCampaigns]
+    [visibleCampaigns]
   );
+
+  const subtitle = isSuperadmin
+    ? (selectedOrganization?.label ?? 'Sin organizaciones')
+    : org?.name;
 
   return (
     <div className="mtr-page">
       <div className="mtr-header">
-        <h1>Métricas</h1>
-        <p>Últimas 8 semanas · {activeOrg?.name}</p>
+        <div>
+          <h1>Métricas</h1>
+          <p>
+            {isSuperadmin ? subtitle : `Últimas 8 semanas · ${subtitle ?? ''}`}
+          </p>
+        </div>
+        {isSuperadmin && (
+          <label className="mtr-org-select">
+            <span>Organización</span>
+            <select
+              value={selectedOrg}
+              onChange={(e) => setSelectedOrg(e.target.value)}
+              disabled={organizationOptions.length === 0}
+            >
+              {organizationOptions.length === 0 ? (
+                <option value="">Sin organizaciones</option>
+              ) : (
+                organizationOptions.map((organization) => (
+                  <option key={organization.slug} value={organization.slug}>
+                    {organization.label}
+                  </option>
+                ))
+              )}
+            </select>
+          </label>
+        )}
       </div>
 
       <div className="mtr-kpis">
@@ -91,16 +178,21 @@ export function MetricsPage() {
         <div className="mtr-card">
           <h2 className="mtr-card-title">Top campañas por conversión</h2>
           <div className="mtr-top-list">
-            {topCampaigns.map((c, i) => (
-              <div key={c.id} className="mtr-top-row">
-                <span className="mtr-top-rank">#{i + 1}</span>
+            {topCampaigns.map((campaign, index) => (
+              <div key={campaign.id} className="mtr-top-row">
+                <span className="mtr-top-rank">#{index + 1}</span>
                 <div className="mtr-top-info">
-                  <span className="mtr-top-name">{c.title}</span>
+                  <span className="mtr-top-name">{campaign.title}</span>
                   <div className="mtr-top-bar-wrap">
-                    <DynamicBar className="mtr-top-bar" percent={c.rate} />
+                    <DynamicBar
+                      className="mtr-top-bar"
+                      percent={campaign.rate}
+                    />
                   </div>
                 </div>
-                <span className="mtr-top-rate">{c.rate.toFixed(1)}%</span>
+                <span className="mtr-top-rate">
+                  {campaign.rate.toFixed(1)}%
+                </span>
               </div>
             ))}
           </div>
@@ -112,16 +204,21 @@ export function MetricsPage() {
             Identificá qué áreas curriculares generan mayor engagement con AR.
           </p>
           <div className="mtr-subject-list">
-            {subjectTotals.map((s) => (
-              <div key={s.subject} className="mtr-subject-row">
-                <span className={`sector-badge sector-badge--${s.subject}`}>
-                  {s.label}
+            {sectorTotals.map((sector) => (
+              <div key={sector.subject} className="mtr-subject-row">
+                <span
+                  className={`sector-badge sector-badge--${sector.subject}`}
+                >
+                  {sector.label}
                 </span>
                 <div className="mtr-subject-bar-wrap">
-                  <DynamicBar className="mtr-subject-bar" percent={s.pct} />
+                  <DynamicBar
+                    className="mtr-subject-bar"
+                    percent={sector.pct}
+                  />
                 </div>
                 <span className="mtr-subject-value">
-                  {formatNumber(s.value)}
+                  {formatNumber(sector.value)}
                 </span>
               </div>
             ))}
@@ -131,8 +228,8 @@ export function MetricsPage() {
         <div className="mtr-card">
           <h2 className="mtr-card-title">Funnel de conversión</h2>
           <p className="mtr-card-desc">
-            Detectá en qué etapa se pierden usuarios: QR escaneado → AR cargado
-            → click en CTA.
+            Detectá en qué etapa se pierden usuarios: QR escaneado {'->'} AR
+            cargado {'->'} click en CTA.
           </p>
           <div className="mtr-funnel">
             {[
