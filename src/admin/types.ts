@@ -65,6 +65,7 @@ export type CreateCampaignInput = {
   sketchfabUid: string;
   ctaUrl?: string;
   collectionId?: string;
+  newCollectionName?: string;
   orgSlug?: string;
 };
 

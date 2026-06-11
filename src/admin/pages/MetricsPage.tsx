@@ -31,9 +31,23 @@ export function MetricsPage() {
     ]
       .filter((slug) => !knownSlugs.has(slug))
       .map((slug) => ({ slug, label: slug }));
-    return [...baseOptions, ...fallbackOptions].sort((a, b) =>
-      a.label.localeCompare(b.label)
+    const combinedOptions = [...baseOptions, ...fallbackOptions];
+    const nameCounts = combinedOptions.reduce<Record<string, number>>(
+      (acc, organization) => {
+        acc[organization.label] = (acc[organization.label] ?? 0) + 1;
+        return acc;
+      },
+      {}
     );
+    return combinedOptions
+      .map((organization) => ({
+        ...organization,
+        label:
+          nameCounts[organization.label] > 1
+            ? `${organization.label} (${organization.slug})`
+            : organization.label,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [sortedOrganizations, orgCampaigns]);
 
   useEffect(() => {

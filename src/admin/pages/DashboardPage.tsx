@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useOrganizations } from '../context/OrganizationsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { SECTOR_LABELS } from '../types';
@@ -21,9 +21,11 @@ function ConvBar({ rate }: { rate: number }) {
 
 export function DashboardPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { organizations } = useOrganizations();
   const { org, orgCampaigns, isSuperadmin } = useOrgResources();
   const [selectedOrg, setSelectedOrg] = useState('');
+  const requestedOrgSlug = searchParams.get('orgSlug') ?? '';
 
   const sortedOrganizations = useMemo(
     () => [...organizations].sort((a, b) => a.name.localeCompare(b.name)),
@@ -43,9 +45,23 @@ export function DashboardPage() {
     ]
       .filter((slug) => !knownSlugs.has(slug))
       .map((slug) => ({ slug, label: slug }));
-    return [...baseOptions, ...fallbackOptions].sort((a, b) =>
-      a.label.localeCompare(b.label)
+    const combinedOptions = [...baseOptions, ...fallbackOptions];
+    const nameCounts = combinedOptions.reduce<Record<string, number>>(
+      (acc, organization) => {
+        acc[organization.label] = (acc[organization.label] ?? 0) + 1;
+        return acc;
+      },
+      {}
     );
+    return combinedOptions
+      .map((organization) => ({
+        ...organization,
+        label:
+          nameCounts[organization.label] > 1
+            ? `${organization.label} (${organization.slug})`
+            : organization.label,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [sortedOrganizations, orgCampaigns]);
 
   useEffect(() => {
@@ -54,10 +70,27 @@ export function DashboardPage() {
     const hasSelectedOrg = organizationOptions.some(
       (organization) => organization.slug === selectedOrg
     );
-    if (!selectedOrg || !hasSelectedOrg) {
-      setSelectedOrg(firstOrg);
+    const hasRequestedOrg = organizationOptions.some(
+      (organization) => organization.slug === requestedOrgSlug
+    );
+    const nextOrg = hasRequestedOrg
+      ? requestedOrgSlug
+      : hasSelectedOrg
+        ? selectedOrg
+        : firstOrg;
+    if (nextOrg !== selectedOrg) {
+      setSelectedOrg(nextOrg);
     }
-  }, [isSuperadmin, organizationOptions, selectedOrg]);
+    if (nextOrg && nextOrg !== requestedOrgSlug) {
+      setSearchParams({ orgSlug: nextOrg }, { replace: true });
+    }
+  }, [
+    isSuperadmin,
+    organizationOptions,
+    requestedOrgSlug,
+    selectedOrg,
+    setSearchParams,
+  ]);
 
   const selectedOrganization = useMemo(
     () =>
@@ -92,6 +125,11 @@ export function DashboardPage() {
     ? (selectedOrganization?.label ?? 'Sin organizaciones')
     : org?.name;
 
+  function handleOrgChange(nextOrg: string) {
+    setSelectedOrg(nextOrg);
+    setSearchParams({ orgSlug: nextOrg }, { replace: true });
+  }
+
   return (
     <div className="dashboard-page admin-page">
       <div className="dashboard-header admin-page-header">
@@ -104,7 +142,7 @@ export function DashboardPage() {
             <span>Organización</span>
             <select
               value={selectedOrg}
-              onChange={(e) => setSelectedOrg(e.target.value)}
+              onChange={(e) => handleOrgChange(e.target.value)}
               disabled={organizationOptions.length === 0}
             >
               {organizationOptions.length === 0 ? (

@@ -109,7 +109,7 @@ export function CollectionsPage() {
             {org?.name} · Organizá tus campañas por {label.toLowerCase()}
           </p>
         </div>
-        {isSuperadmin && !adding && (
+        {!isSuperadmin && !adding && (
           <button
             className="col-btn col-btn--primary"
             onClick={() => setAdding(true)}
@@ -119,7 +119,7 @@ export function CollectionsPage() {
         )}
       </div>
 
-      {adding && (
+      {!isSuperadmin && adding && (
         <div className="colp-form-wrap">
           <h2 className="colp-form-title">Nueva {label}</h2>
           <CollectionForm
@@ -169,7 +169,7 @@ export function CollectionsPage() {
                       {campaignCount(col.id) !== 1 ? 's' : ''}
                     </span>
                   </div>
-                  {isSuperadmin && (
+                  {!isSuperadmin && (
                     <div className="colp-item-actions">
                       <button
                         className="col-btn col-btn--ghost"

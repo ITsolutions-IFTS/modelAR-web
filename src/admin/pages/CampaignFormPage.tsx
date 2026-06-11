@@ -14,7 +14,7 @@ import { useCollections } from '../context/CollectionsContext';
 import { useOrganizations } from '../context/OrganizationsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { SECTOR_LABELS } from '../types';
-import type { Campaign, Sector } from '../types';
+import type { Campaign, CreateCampaignInput, Sector } from '../types';
 import './CampaignFormPage.css';
 
 interface FormFields {
@@ -83,6 +83,12 @@ export function CampaignFormPage() {
   const sortedOrganizations = [...organizations].sort((a, b) =>
     a.name.localeCompare(b.name)
   );
+  const organizationNameCounts = sortedOrganizations.reduce<
+    Record<string, number>
+  >((acc, organization) => {
+    acc[organization.name] = (acc[organization.name] ?? 0) + 1;
+    return acc;
+  }, {});
   const shouldSkipCollectionOnCreate = isSuperadmin && !editCampaign;
 
   const [fields, setFields] = useState<FormFields>({
@@ -180,11 +186,12 @@ export function CampaignFormPage() {
         ? undefined
         : fields.collectionId || undefined;
 
-      if (
+      const wantsNewCollection =
         !shouldSkipCollectionOnCreate &&
         showNewCollection &&
-        fields.newCollectionName.trim()
-      ) {
+        fields.newCollectionName.trim().length > 0;
+
+      if (editCampaign && wantsNewCollection) {
         try {
           const newCol = await addCollection({
             name: fields.newCollectionName.trim(),
@@ -198,13 +205,20 @@ export function CampaignFormPage() {
         }
       }
 
-      const basePayload = {
+      const basePayload: CreateCampaignInput = {
         title: fields.title,
         description: fields.description,
         sector: fields.sector as Sector,
         sketchfabUid: selectedUid!,
-        collectionId,
       };
+
+      if (collectionId) {
+        basePayload.collectionId = collectionId;
+      }
+
+      if (!editCampaign && wantsNewCollection) {
+        basePayload.newCollectionName = fields.newCollectionName.trim();
+      }
 
       if (editCampaign) {
         await updateCampaign(editCampaign.id, basePayload);
@@ -326,7 +340,9 @@ export function CampaignFormPage() {
                 </option>
                 {sortedOrganizations.map((organization) => (
                   <option key={organization.slug} value={organization.slug}>
-                    {organization.name}
+                    {organizationNameCounts[organization.name] > 1
+                      ? `${organization.name} (${organization.slug})`
+                      : organization.name}
                   </option>
                 ))}
               </select>

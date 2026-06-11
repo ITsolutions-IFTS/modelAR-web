@@ -86,7 +86,7 @@ function OrgCard({
   const obs = ORG_OBS[org.slug];
 
   function handleSelect() {
-    navigate('/admin/dashboard');
+    navigate(`/admin/dashboard?orgSlug=${encodeURIComponent(org.slug)}`);
   }
 
   const uptimeOk = obs && obs.uptime >= 99;
