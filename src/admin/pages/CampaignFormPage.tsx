@@ -10,7 +10,6 @@ import { searchModels } from '@/services/sketchfab';
 import type { SketchfabModel } from '@/types/sketchfab';
 import { getBestThumbnail } from '@/types/sketchfab';
 import { useCampaigns } from '../context/CampaignsContext';
-import { useCollections } from '../context/CollectionsContext';
 import { useOrganizations } from '../context/OrganizationsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { SECTOR_LABELS } from '../types';
@@ -75,7 +74,6 @@ export function CampaignFormPage() {
   const location = useLocation();
   const editCampaign = (location.state as { edit?: Campaign } | null)?.edit;
   const { addCampaign, updateCampaign } = useCampaigns();
-  const { addCollection } = useCollections();
   const { organizations } = useOrganizations();
   const { org, orgCollections, isSuperadmin } = useOrgResources();
   const [showNewCollection, setShowNewCollection] = useState(false);
@@ -182,7 +180,7 @@ export function CampaignFormPage() {
     if (!validate()) return;
     setSubmitError(null);
     try {
-      let collectionId = shouldSkipCollectionOnCreate
+      const collectionId = shouldSkipCollectionOnCreate
         ? undefined
         : fields.collectionId || undefined;
 
@@ -191,20 +189,6 @@ export function CampaignFormPage() {
         showNewCollection &&
         fields.newCollectionName.trim().length > 0;
 
-      if (editCampaign && wantsNewCollection) {
-        try {
-          const newCol = await addCollection({
-            name: fields.newCollectionName.trim(),
-          });
-          collectionId = newCol.id;
-        } catch (err) {
-          setSubmitError(
-            `No se pudo crear la colección: ${(err as Error).message}`
-          );
-          return;
-        }
-      }
-
       const basePayload: CreateCampaignInput = {
         title: fields.title,
         description: fields.description,
@@ -212,11 +196,11 @@ export function CampaignFormPage() {
         sketchfabUid: selectedUid!,
       };
 
-      if (collectionId) {
+      if (!wantsNewCollection && collectionId) {
         basePayload.collectionId = collectionId;
       }
 
-      if (!editCampaign && wantsNewCollection) {
+      if (wantsNewCollection) {
         basePayload.newCollectionName = fields.newCollectionName.trim();
       }
 

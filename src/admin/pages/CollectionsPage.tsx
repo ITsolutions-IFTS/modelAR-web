@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { PencilSimpleIcon, TrashIcon, PlusIcon } from '@phosphor-icons/react';
 import { useCollections } from '../context/CollectionsContext';
 import { useCampaigns } from '../context/CampaignsContext';
@@ -89,12 +90,13 @@ export function CollectionsPage() {
   const { user } = useAuth();
   const confirm = useConfirm();
   const isSuperadmin = user?.role === 'superadmin';
-
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const label = org?.collectionLabel ?? 'Colección';
   const labelPlural = org?.collectionLabelPlural ?? 'Colecciones';
+
+  if (isSuperadmin) return <Navigate to="/admin/campanas" replace />;
 
   function campaignCount(collectionId: string) {
     return campaigns.filter((c) => c.collectionId === collectionId).length;
@@ -106,7 +108,8 @@ export function CollectionsPage() {
         <div>
           <h1>{labelPlural}</h1>
           <p>
-            {org?.name} · Organizá tus campañas por {label.toLowerCase()}
+            {org?.name ?? 'General'} · Organizá tus campañas por{' '}
+            {label.toLowerCase()}
           </p>
         </div>
         {!isSuperadmin && !adding && (
