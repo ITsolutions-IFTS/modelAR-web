@@ -51,6 +51,11 @@ export interface Campaign {
   qrValue: string;
   orgSlug: string;
   collectionId?: string;
+  createdBy?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
 }
 
 export type CreateCampaignInput = {
@@ -60,6 +65,8 @@ export type CreateCampaignInput = {
   sketchfabUid: string;
   ctaUrl?: string;
   collectionId?: string;
+  newCollectionName?: string;
+  orgSlug?: string;
 };
 
 export type UpdateCampaignInput = Partial<CreateCampaignInput>;

@@ -4,7 +4,6 @@ import {
   Route,
   Navigate,
   useLocation,
-  Outlet,
 } from 'react-router-dom';
 import { AppHeader } from './components/AppHeader';
 import { LandingPage } from './pages/LandingPage';
@@ -12,10 +11,6 @@ import { HomePage } from './pages/HomePage';
 import { ARPage } from './pages/ARPage';
 import { ScanPage } from './pages/ScanPage';
 import { AuthProvider } from './admin/context/AuthContext';
-import {
-  ActiveOrgProvider,
-  useActiveOrg,
-} from './admin/context/ActiveOrgContext';
 import { CampaignsProvider } from './admin/context/CampaignsContext';
 import { CollectionsProvider } from './admin/context/CollectionsContext';
 import { OrganizationsProvider } from './admin/context/OrganizationsContext';
@@ -30,15 +25,6 @@ import { CampaignQRPage } from './admin/pages/CampaignQRPage';
 import { MetricsPage } from './admin/pages/MetricsPage';
 import { OrganizationsPage } from './admin/pages/OrganizationsPage';
 import { CollectionsPage } from './admin/pages/CollectionsPage';
-
-function OrgGuard() {
-  const { activeOrg } = useActiveOrg();
-  return activeOrg ? (
-    <Outlet />
-  ) : (
-    <Navigate to="/admin/organizaciones" replace />
-  );
-}
 
 function AppShell() {
   const location = useLocation();
@@ -67,20 +53,15 @@ function AppShell() {
               path="/admin/organizaciones"
               element={<OrganizationsPage />}
             />
-            <Route element={<OrgGuard />}>
-              <Route path="/admin/dashboard" element={<DashboardPage />} />
-              <Route path="/admin/metricas" element={<MetricsPage />} />
-              <Route path="/admin/campanas" element={<CampaignsPage />} />
-              <Route
-                path="/admin/campanas/nueva"
-                element={<CampaignFormPage />}
-              />
-              <Route
-                path="/admin/campanas/:id/qr"
-                element={<CampaignQRPage />}
-              />
-              <Route path="/admin/colecciones" element={<CollectionsPage />} />
-            </Route>
+            <Route path="/admin/dashboard" element={<DashboardPage />} />
+            <Route path="/admin/metricas" element={<MetricsPage />} />
+            <Route path="/admin/campanas" element={<CampaignsPage />} />
+            <Route
+              path="/admin/campanas/nueva"
+              element={<CampaignFormPage />}
+            />
+            <Route path="/admin/campanas/:id/qr" element={<CampaignQRPage />} />
+            <Route path="/admin/colecciones" element={<CollectionsPage />} />
           </Route>
         </Route>
 
@@ -97,13 +78,11 @@ export default function App() {
       <ConfirmProvider>
         <AuthProvider>
           <OrganizationsProvider>
-            <ActiveOrgProvider>
-              <CampaignsProvider>
-                <CollectionsProvider>
-                  <AppShell />
-                </CollectionsProvider>
-              </CampaignsProvider>
-            </ActiveOrgProvider>
+            <CampaignsProvider>
+              <CollectionsProvider>
+                <AppShell />
+              </CollectionsProvider>
+            </CampaignsProvider>
           </OrganizationsProvider>
         </AuthProvider>
       </ConfirmProvider>

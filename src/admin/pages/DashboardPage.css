@@ -9,6 +9,28 @@
   margin-bottom: 32px;
 }
 
+.admin-page-select {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 240px;
+  font-size: 0.85rem;
+  color: var(--sm-fg-2);
+}
+
+.admin-page-select span {
+  font-weight: 600;
+}
+
+.admin-page-select select {
+  padding: 10px 12px;
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-md);
+  background: var(--sm-bg-elev);
+  color: var(--sm-fg);
+  font: inherit;
+}
+
 /* Stats row */
 .dashboard-stats {
   display: grid;

@@ -10,16 +10,17 @@ import { searchModels } from '@/services/sketchfab';
 import type { SketchfabModel } from '@/types/sketchfab';
 import { getBestThumbnail } from '@/types/sketchfab';
 import { useCampaigns } from '../context/CampaignsContext';
-import { useCollections } from '../context/CollectionsContext';
+import { useOrganizations } from '../context/OrganizationsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { SECTOR_LABELS } from '../types';
-import type { Campaign, Sector } from '../types';
+import type { Campaign, CreateCampaignInput, Sector } from '../types';
 import './CampaignFormPage.css';
 
 interface FormFields {
   title: string;
   description: string;
   sector: string;
+  orgSlug: string;
   collectionId: string;
   newCollectionName: string;
 }
@@ -28,6 +29,7 @@ interface FormErrors {
   title?: string;
   description?: string;
   sector?: string;
+  orgSlug?: string;
   model?: string;
 }
 
@@ -72,14 +74,26 @@ export function CampaignFormPage() {
   const location = useLocation();
   const editCampaign = (location.state as { edit?: Campaign } | null)?.edit;
   const { addCampaign, updateCampaign } = useCampaigns();
-  const { addCollection } = useCollections();
-  const { org, orgCollections } = useOrgResources();
+  const { organizations } = useOrganizations();
+  const { org, orgCollections, isSuperadmin } = useOrgResources();
   const [showNewCollection, setShowNewCollection] = useState(false);
+
+  const sortedOrganizations = [...organizations].sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+  const organizationNameCounts = sortedOrganizations.reduce<
+    Record<string, number>
+  >((acc, organization) => {
+    acc[organization.name] = (acc[organization.name] ?? 0) + 1;
+    return acc;
+  }, {});
+  const shouldSkipCollectionOnCreate = isSuperadmin && !editCampaign;
 
   const [fields, setFields] = useState<FormFields>({
     title: editCampaign?.title ?? '',
     description: editCampaign?.description ?? '',
     sector: editCampaign?.sector ?? '',
+    orgSlug: editCampaign?.orgSlug ?? '',
     collectionId: editCampaign?.collectionId ?? '',
     newCollectionName: '',
   });
@@ -153,6 +167,9 @@ export function CampaignFormPage() {
     if (!fields.description.trim())
       newErrors.description = 'La descripción es obligatoria.';
     if (!fields.sector) newErrors.sector = 'Seleccioná un sector.';
+    if (isSuperadmin && !editCampaign && !fields.orgSlug) {
+      newErrors.orgSlug = 'Seleccioná una organización destino.';
+    }
     if (!selectedUid) newErrors.model = 'Seleccioná un modelo 3D de Sketchfab.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -163,33 +180,38 @@ export function CampaignFormPage() {
     if (!validate()) return;
     setSubmitError(null);
     try {
-      let collectionId = fields.collectionId || undefined;
+      const collectionId = shouldSkipCollectionOnCreate
+        ? undefined
+        : fields.collectionId || undefined;
 
-      if (showNewCollection && fields.newCollectionName.trim()) {
-        try {
-          const newCol = await addCollection({
-            name: fields.newCollectionName.trim(),
-          });
-          collectionId = newCol.id;
-        } catch (err) {
-          setSubmitError(
-            `No se pudo crear la colección: ${(err as Error).message}`
-          );
-          return;
-        }
-      }
+      const wantsNewCollection =
+        !shouldSkipCollectionOnCreate &&
+        showNewCollection &&
+        fields.newCollectionName.trim().length > 0;
 
-      const payload = {
+      const basePayload: CreateCampaignInput = {
         title: fields.title,
         description: fields.description,
         sector: fields.sector as Sector,
         sketchfabUid: selectedUid!,
-        collectionId,
       };
+
+      if (!wantsNewCollection && collectionId) {
+        basePayload.collectionId = collectionId;
+      }
+
+      if (wantsNewCollection) {
+        basePayload.newCollectionName = fields.newCollectionName.trim();
+      }
+
       if (editCampaign) {
-        await updateCampaign(editCampaign.id, payload);
+        await updateCampaign(editCampaign.id, basePayload);
         setSubmittedId(editCampaign.id);
       } else {
+        const payload =
+          isSuperadmin && fields.orgSlug
+            ? { ...basePayload, orgSlug: fields.orgSlug }
+            : basePayload;
         const created = await addCampaign(payload);
         setSubmittedId(created.id);
       }
@@ -258,7 +280,7 @@ export function CampaignFormPage() {
               id="cfp-title"
               name="title"
               type="text"
-              placeholder="ej: Geometría 5° grado — Poliedros"
+              placeholder="ej: Geometría 5° grado · Poliedros"
               value={fields.title}
               onChange={handleFieldChange}
             />
@@ -283,6 +305,36 @@ export function CampaignFormPage() {
               <span className="cfp-error-msg">{errors.description}</span>
             )}
           </div>
+
+          {isSuperadmin && (
+            <div
+              className={`cfp-field ${errors.orgSlug ? 'cfp-field--error' : ''}`}
+            >
+              <label htmlFor="cfp-org">Organización destino</label>
+              <select
+                id="cfp-org"
+                name="orgSlug"
+                value={fields.orgSlug}
+                onChange={handleFieldChange}
+                disabled={Boolean(editCampaign)}
+                className={errors.orgSlug ? 'cfp-input--error' : ''}
+              >
+                <option value="" disabled>
+                  Seleccioná una organización
+                </option>
+                {sortedOrganizations.map((organization) => (
+                  <option key={organization.slug} value={organization.slug}>
+                    {organizationNameCounts[organization.name] > 1
+                      ? `${organization.name} (${organization.slug})`
+                      : organization.name}
+                  </option>
+                ))}
+              </select>
+              {errors.orgSlug && (
+                <span className="cfp-error-msg">{errors.orgSlug}</span>
+              )}
+            </div>
+          )}
 
           <div className="cfp-field">
             <label>Sector</label>
@@ -319,64 +371,66 @@ export function CampaignFormPage() {
             )}
           </div>
 
-          <div className="cfp-field">
-            <label htmlFor="cfp-collection">
-              {org?.collectionLabel ?? 'Colección'}{' '}
-              <span className="cfp-field-optional">(opcional)</span>
-            </label>
-            {!showNewCollection ? (
-              <div className="cfp-collection-row">
-                <select
-                  id="cfp-collection"
-                  name="collectionId"
-                  value={fields.collectionId}
-                  onChange={handleFieldChange}
-                >
-                  <option value="">
-                    Sin {org?.collectionLabel?.toLowerCase() ?? 'colección'}
-                  </option>
-                  {orgCollections.map((col) => (
-                    <option key={col.id} value={col.id}>
-                      {col.name}
+          {!shouldSkipCollectionOnCreate && (
+            <div className="cfp-field">
+              <label htmlFor="cfp-collection">
+                {org?.collectionLabel ?? 'Colección'}{' '}
+                <span className="cfp-field-optional">(opcional)</span>
+              </label>
+              {!showNewCollection ? (
+                <div className="cfp-collection-row">
+                  <select
+                    id="cfp-collection"
+                    name="collectionId"
+                    value={fields.collectionId}
+                    onChange={handleFieldChange}
+                  >
+                    <option value="">
+                      Sin {org?.collectionLabel?.toLowerCase() ?? 'colección'}
                     </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  className="cfp-btn cfp-btn-ghost cfp-btn-new-col"
-                  onClick={() => setShowNewCollection(true)}
-                >
-                  + Nueva {org?.collectionLabel?.toLowerCase() ?? 'colección'}
-                </button>
-              </div>
-            ) : (
-              <div className="cfp-collection-new">
-                <input
-                  type="text"
-                  name="newCollectionName"
-                  placeholder={`Nombre de la ${org?.collectionLabel?.toLowerCase() ?? 'colección'}...`}
-                  value={fields.newCollectionName}
-                  onChange={handleFieldChange}
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  className="cfp-btn cfp-btn-ghost"
-                  onClick={() => {
-                    setShowNewCollection(false);
-                    setFields((prev) => ({ ...prev, newCollectionName: '' }));
-                  }}
-                >
-                  Cancelar
-                </button>
-              </div>
-            )}
-          </div>
+                    {orgCollections.map((col) => (
+                      <option key={col.id} value={col.id}>
+                        {col.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="cfp-btn cfp-btn-ghost cfp-btn-new-col"
+                    onClick={() => setShowNewCollection(true)}
+                  >
+                    + Nueva {org?.collectionLabel?.toLowerCase() ?? 'colección'}
+                  </button>
+                </div>
+              ) : (
+                <div className="cfp-collection-new">
+                  <input
+                    type="text"
+                    name="newCollectionName"
+                    placeholder={`Nombre de la ${org?.collectionLabel?.toLowerCase() ?? 'colección'}...`}
+                    value={fields.newCollectionName}
+                    onChange={handleFieldChange}
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    className="cfp-btn cfp-btn-ghost"
+                    onClick={() => {
+                      setShowNewCollection(false);
+                      setFields((prev) => ({ ...prev, newCollectionName: '' }));
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           <div
             className={`cfp-field ${errors.model ? 'cfp-field--error' : ''}`}
           >
-            <label>Modelo 3D — buscar en Sketchfab</label>
+            <label>Modelo 3D · buscar en Sketchfab</label>
             <div className="cfp-search-row">
               <input
                 type="text"

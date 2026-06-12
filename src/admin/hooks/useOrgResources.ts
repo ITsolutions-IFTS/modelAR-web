@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useActiveOrg } from '../context/ActiveOrgContext';
 import { useAuth } from '../context/AuthContext';
 import { useCampaigns } from '../context/CampaignsContext';
 import { useCollections } from '../context/CollectionsContext';
@@ -21,7 +20,6 @@ export function enrichOrg(org: Organization): EnrichedOrg {
 }
 
 export function useOrgResources() {
-  const { activeOrg } = useActiveOrg();
   const { user } = useAuth();
   const { organizations } = useOrganizations();
   const { campaigns } = useCampaigns();
@@ -30,27 +28,15 @@ export function useOrgResources() {
   const isSuperadmin = user?.role === 'superadmin';
 
   const org = useMemo(() => {
-    const match = organizations.find((o) => o.slug === activeOrg?.slug);
+    if (!user?.orgSlug || isSuperadmin) return undefined;
+    const match = organizations.find((o) => o.slug === user.orgSlug);
     return match ? enrichOrg(match) : undefined;
-  }, [organizations, activeOrg]);
+  }, [organizations, user?.orgSlug, isSuperadmin]);
 
-  // Superadmin ve todo sin filtrar por org — es admin global.
-  // Cliente ve solo los recursos de su propia org.
-  const orgCampaigns = useMemo(
-    () =>
-      isSuperadmin
-        ? campaigns
-        : campaigns.filter((c) => c.orgSlug === activeOrg?.slug),
-    [campaigns, activeOrg, isSuperadmin]
-  );
-
-  const orgCollections = useMemo(
-    () =>
-      isSuperadmin
-        ? collections
-        : collections.filter((c) => c.orgSlug === activeOrg?.slug),
-    [collections, activeOrg, isSuperadmin]
-  );
-
-  return { org, orgCampaigns, orgCollections, activeOrg };
+  return {
+    org,
+    orgCampaigns: campaigns,
+    orgCollections: collections,
+    isSuperadmin,
+  };
 }
