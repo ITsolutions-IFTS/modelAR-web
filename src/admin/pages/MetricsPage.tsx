@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useOrganizations } from '../context/OrganizationsContext';
+import { useSearchParams } from 'react-router-dom';
+import { useOrganizationOptions } from '../hooks/useOrganizationOptions';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { aggregateCampaignStats } from '../utils/campaignStats';
 import { SECTOR_LABELS } from '../types';
@@ -9,57 +10,39 @@ import { DynamicBar } from '../components/DynamicBar';
 import './MetricsPage.css';
 
 export function MetricsPage() {
-  const { organizations } = useOrganizations();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { org, orgCampaigns, isSuperadmin } = useOrgResources();
   const [selectedOrg, setSelectedOrg] = useState('');
-
-  const sortedOrganizations = useMemo(
-    () => [...organizations].sort((a, b) => a.name.localeCompare(b.name)),
-    [organizations]
-  );
-
-  const organizationOptions = useMemo(() => {
-    const baseOptions = sortedOrganizations.map((organization) => ({
-      slug: organization.slug,
-      label: organization.name,
-    }));
-    const knownSlugs = new Set(
-      baseOptions.map((organization) => organization.slug)
-    );
-    const fallbackOptions = [
-      ...new Set(orgCampaigns.map((campaign) => campaign.orgSlug)),
-    ]
-      .filter((slug) => !knownSlugs.has(slug))
-      .map((slug) => ({ slug, label: slug }));
-    const combinedOptions = [...baseOptions, ...fallbackOptions];
-    const nameCounts = combinedOptions.reduce<Record<string, number>>(
-      (acc, organization) => {
-        acc[organization.label] = (acc[organization.label] ?? 0) + 1;
-        return acc;
-      },
-      {}
-    );
-    return combinedOptions
-      .map((organization) => ({
-        ...organization,
-        label:
-          nameCounts[organization.label] > 1
-            ? `${organization.label} (${organization.slug})`
-            : organization.label,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [sortedOrganizations, orgCampaigns]);
+  const requestedOrgSlug = searchParams.get('orgSlug') ?? '';
+  const organizationOptions = useOrganizationOptions(orgCampaigns);
 
   useEffect(() => {
     if (!isSuperadmin) return;
     const firstOrg = organizationOptions[0]?.slug ?? '';
+    const hasRequestedOrg = organizationOptions.some(
+      (organization) => organization.slug === requestedOrgSlug
+    );
     const hasSelectedOrg = organizationOptions.some(
       (organization) => organization.slug === selectedOrg
     );
-    if (!selectedOrg || !hasSelectedOrg) {
-      setSelectedOrg(firstOrg);
+    const nextOrg = hasRequestedOrg
+      ? requestedOrgSlug
+      : hasSelectedOrg
+        ? selectedOrg
+        : firstOrg;
+    if (nextOrg !== selectedOrg) {
+      setSelectedOrg(nextOrg);
     }
-  }, [isSuperadmin, organizationOptions, selectedOrg]);
+    if (nextOrg && nextOrg !== requestedOrgSlug) {
+      setSearchParams({ orgSlug: nextOrg }, { replace: true });
+    }
+  }, [
+    isSuperadmin,
+    organizationOptions,
+    requestedOrgSlug,
+    selectedOrg,
+    setSearchParams,
+  ]);
 
   const selectedOrganization = useMemo(
     () =>
@@ -121,6 +104,11 @@ export function MetricsPage() {
     ? (selectedOrganization?.label ?? 'Sin organizaciones')
     : org?.name;
 
+  function handleOrgChange(nextOrg: string) {
+    setSelectedOrg(nextOrg);
+    setSearchParams({ orgSlug: nextOrg }, { replace: true });
+  }
+
   return (
     <div className="mtr-page">
       <div className="mtr-header">
@@ -135,7 +123,7 @@ export function MetricsPage() {
             <span>Organización</span>
             <select
               value={selectedOrg}
-              onChange={(e) => setSelectedOrg(e.target.value)}
+              onChange={(e) => handleOrgChange(e.target.value)}
               disabled={organizationOptions.length === 0}
             >
               {organizationOptions.length === 0 ? (

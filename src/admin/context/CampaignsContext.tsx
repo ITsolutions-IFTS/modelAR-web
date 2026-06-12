@@ -27,7 +27,7 @@ interface CampaignsContextValue {
   addCampaign: (data: CreateCampaignInput) => Promise<Campaign>;
   updateCampaign: (id: string, data: UpdateCampaignInput) => Promise<Campaign>;
   deleteCampaign: (id: string) => Promise<void>;
-  refetch: () => Promise<void>;
+  refetch: (orgSlug?: string) => Promise<void>;
 }
 
 const CampaignsContext = createContext<CampaignsContextValue | null>(null);
@@ -38,11 +38,11 @@ export function CampaignsProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCampaigns = useCallback(async () => {
+  const fetchCampaigns = useCallback(async (orgSlug?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await apiGetCampaigns();
+      const { data } = await apiGetCampaigns(orgSlug ? { orgSlug } : undefined);
       setCampaigns(data);
     } catch (err) {
       setError((err as Error).message);

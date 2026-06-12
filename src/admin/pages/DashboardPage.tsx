@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useOrganizations } from '../context/OrganizationsContext';
+import { useOrganizationOptions } from '../hooks/useOrganizationOptions';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { SECTOR_LABELS } from '../types';
 import { aggregateCampaignStats } from '../utils/campaignStats';
@@ -22,47 +22,10 @@ function ConvBar({ rate }: { rate: number }) {
 export function DashboardPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { organizations } = useOrganizations();
   const { org, orgCampaigns, isSuperadmin } = useOrgResources();
   const [selectedOrg, setSelectedOrg] = useState('');
   const requestedOrgSlug = searchParams.get('orgSlug') ?? '';
-
-  const sortedOrganizations = useMemo(
-    () => [...organizations].sort((a, b) => a.name.localeCompare(b.name)),
-    [organizations]
-  );
-
-  const organizationOptions = useMemo(() => {
-    const baseOptions = sortedOrganizations.map((organization) => ({
-      slug: organization.slug,
-      label: organization.name,
-    }));
-    const knownSlugs = new Set(
-      baseOptions.map((organization) => organization.slug)
-    );
-    const fallbackOptions = [
-      ...new Set(orgCampaigns.map((campaign) => campaign.orgSlug)),
-    ]
-      .filter((slug) => !knownSlugs.has(slug))
-      .map((slug) => ({ slug, label: slug }));
-    const combinedOptions = [...baseOptions, ...fallbackOptions];
-    const nameCounts = combinedOptions.reduce<Record<string, number>>(
-      (acc, organization) => {
-        acc[organization.label] = (acc[organization.label] ?? 0) + 1;
-        return acc;
-      },
-      {}
-    );
-    return combinedOptions
-      .map((organization) => ({
-        ...organization,
-        label:
-          nameCounts[organization.label] > 1
-            ? `${organization.label} (${organization.slug})`
-            : organization.label,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [sortedOrganizations, orgCampaigns]);
+  const organizationOptions = useOrganizationOptions(orgCampaigns);
 
   useEffect(() => {
     if (!isSuperadmin) return;

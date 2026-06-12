@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   QrCodeIcon,
@@ -21,7 +21,7 @@ export function CampaignsPage() {
   const [orgFilter, setOrgFilter] = useState('');
   const activeColId = searchParams.get('col');
 
-  const { deleteCampaign } = useCampaigns();
+  const { deleteCampaign, refetch, loading, error } = useCampaigns();
   const { organizations } = useOrganizations();
   const { org, orgCampaigns, orgCollections, isSuperadmin } = useOrgResources();
   const confirm = useConfirm();
@@ -42,34 +42,28 @@ export function CampaignsPage() {
     [sortedOrganizations]
   );
 
-  const organizationOptions = useMemo(() => {
-    const uniqueOrgSlugs = [
-      ...new Set(orgCampaigns.map((campaign) => campaign.orgSlug)),
-    ];
-    return uniqueOrgSlugs
-      .map((slug) => ({
-        slug,
-        label: organizationNames[slug] ?? slug,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [orgCampaigns, organizationNames]);
-
-  const filteredByOrg = useMemo(
+  const organizationOptions = useMemo(
     () =>
-      isSuperadmin && orgFilter
-        ? orgCampaigns.filter((campaign) => campaign.orgSlug === orgFilter)
-        : orgCampaigns,
-    [orgCampaigns, isSuperadmin, orgFilter]
+      sortedOrganizations.map((organization) => ({
+        slug: organization.slug,
+        label: organizationNames[organization.slug] ?? organization.slug,
+      })),
+    [sortedOrganizations, organizationNames]
   );
+
+  useEffect(() => {
+    if (!isSuperadmin) return;
+    void refetch(orgFilter || undefined);
+  }, [isSuperadmin, orgFilter, refetch]);
 
   const visibleCampaigns = useMemo(
     () =>
       !isSuperadmin && activeColId
-        ? filteredByOrg.filter(
+        ? orgCampaigns.filter(
             (campaign) => campaign.collectionId === activeColId
           )
-        : filteredByOrg,
-    [filteredByOrg, isSuperadmin, activeColId]
+        : orgCampaigns,
+    [orgCampaigns, isSuperadmin, activeColId]
   );
 
   const activeCol = orgCollections.find(
@@ -132,10 +126,10 @@ export function CampaignsPage() {
             onClick={() => selectCol(null)}
           >
             Todas{' '}
-            <span className="camps-filter-count">{filteredByOrg.length}</span>
+            <span className="camps-filter-count">{orgCampaigns.length}</span>
           </button>
           {orgCollections.map((col) => {
-            const count = filteredByOrg.filter(
+            const count = orgCampaigns.filter(
               (campaign) => campaign.collectionId === col.id
             ).length;
             return (
@@ -156,7 +150,17 @@ export function CampaignsPage() {
       )}
 
       <div className="camps-table-wrapper admin-table-wrapper">
-        {visibleCampaigns.length === 0 ? (
+        {error && (
+          <div className="camps-empty">
+            <p>{error}</p>
+          </div>
+        )}
+        {loading && !error && visibleCampaigns.length === 0 && (
+          <div className="camps-empty">
+            <p>Cargando campañas...</p>
+          </div>
+        )}
+        {!loading && !error && visibleCampaigns.length === 0 ? (
           <div className="camps-empty">
             <p>
               {!isSuperadmin && activeColId
@@ -174,7 +178,7 @@ export function CampaignsPage() {
               <PlusIcon weight="bold" size={14} /> Crear primera campaña
             </button>
           </div>
-        ) : (
+        ) : !error && visibleCampaigns.length > 0 ? (
           <table className="camps-table admin-table">
             <thead>
               <tr>
@@ -265,7 +269,7 @@ export function CampaignsPage() {
               })}
             </tbody>
           </table>
-        )}
+        ) : null}
       </div>
     </div>
   );

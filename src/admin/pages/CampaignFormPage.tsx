@@ -10,7 +10,7 @@ import { searchModels } from '@/services/sketchfab';
 import type { SketchfabModel } from '@/types/sketchfab';
 import { getBestThumbnail } from '@/types/sketchfab';
 import { useCampaigns } from '../context/CampaignsContext';
-import { useOrganizations } from '../context/OrganizationsContext';
+import { useOrganizationOptions } from '../hooks/useOrganizationOptions';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { SECTOR_LABELS } from '../types';
 import type { Campaign, CreateCampaignInput, Sector } from '../types';
@@ -74,19 +74,9 @@ export function CampaignFormPage() {
   const location = useLocation();
   const editCampaign = (location.state as { edit?: Campaign } | null)?.edit;
   const { addCampaign, updateCampaign } = useCampaigns();
-  const { organizations } = useOrganizations();
   const { org, orgCollections, isSuperadmin } = useOrgResources();
   const [showNewCollection, setShowNewCollection] = useState(false);
-
-  const sortedOrganizations = [...organizations].sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
-  const organizationNameCounts = sortedOrganizations.reduce<
-    Record<string, number>
-  >((acc, organization) => {
-    acc[organization.name] = (acc[organization.name] ?? 0) + 1;
-    return acc;
-  }, {});
+  const organizationOptions = useOrganizationOptions();
   const shouldSkipCollectionOnCreate = isSuperadmin && !editCampaign;
 
   const [fields, setFields] = useState<FormFields>({
@@ -322,11 +312,9 @@ export function CampaignFormPage() {
                 <option value="" disabled>
                   Seleccioná una organización
                 </option>
-                {sortedOrganizations.map((organization) => (
+                {organizationOptions.map((organization) => (
                   <option key={organization.slug} value={organization.slug}>
-                    {organizationNameCounts[organization.name] > 1
-                      ? `${organization.name} (${organization.slug})`
-                      : organization.name}
+                    {organization.label}
                   </option>
                 ))}
               </select>
