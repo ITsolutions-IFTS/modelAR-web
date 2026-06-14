@@ -17,6 +17,7 @@ import { OrganizationsProvider } from './admin/context/OrganizationsContext';
 import { ProtectedRoute } from './admin/components/ProtectedRoute';
 import { AdminLayout } from './admin/components/AdminLayout';
 import { ConfirmProvider } from './components/ConfirmDialog';
+import { ToastProvider } from './components/Toast';
 import { LoginPage } from './admin/pages/LoginPage';
 import { DashboardPage } from './admin/pages/DashboardPage';
 import { CampaignsPage } from './admin/pages/CampaignsPage';
@@ -76,15 +77,17 @@ export default function App() {
   return (
     <HashRouter>
       <ConfirmProvider>
-        <AuthProvider>
-          <OrganizationsProvider>
-            <CampaignsProvider>
-              <CollectionsProvider>
-                <AppShell />
-              </CollectionsProvider>
-            </CampaignsProvider>
-          </OrganizationsProvider>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <OrganizationsProvider>
+              <CampaignsProvider>
+                <CollectionsProvider>
+                  <AppShell />
+                </CollectionsProvider>
+              </CampaignsProvider>
+            </OrganizationsProvider>
+          </AuthProvider>
+        </ToastProvider>
       </ConfirmProvider>
     </HashRouter>
   );

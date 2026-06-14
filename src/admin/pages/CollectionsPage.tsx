@@ -6,6 +6,7 @@ import { useCampaigns } from '../context/CampaignsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { useAuth } from '../context/AuthContext';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { useToast } from '@/components/Toast';
 import type { Collection } from '../types';
 import './CollectionsPage.css';
 
@@ -89,10 +90,10 @@ export function CollectionsPage() {
   const { org, orgCollections } = useOrgResources();
   const { user } = useAuth();
   const confirm = useConfirm();
+  const showToast = useToast();
   const isSuperadmin = user?.role === 'superadmin';
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-
   const label = org?.collectionLabel ?? 'Colección';
   const labelPlural = org?.collectionLabelPlural ?? 'Colecciones';
 
@@ -126,9 +127,17 @@ export function CollectionsPage() {
         <div className="colp-form-wrap">
           <h2 className="colp-form-title">Nueva {label}</h2>
           <CollectionForm
-            onSave={(data) => {
-              addCollection(data);
-              setAdding(false);
+            onSave={async (data) => {
+              try {
+                await addCollection(data);
+                showToast('Colección creada correctamente', 'success');
+                setAdding(false);
+              } catch (err) {
+                showToast(
+                  (err as Error).message || 'Error al crear la colección',
+                  'error'
+                );
+              }
             }}
             onCancel={() => setAdding(false)}
           />
@@ -149,9 +158,18 @@ export function CollectionsPage() {
               {editingId === col.id ? (
                 <CollectionForm
                   initial={col}
-                  onSave={(data) => {
-                    updateCollection(col.id, data);
-                    setEditingId(null);
+                  onSave={async (data) => {
+                    try {
+                      await updateCollection(col.id, data);
+                      showToast('Colección actualizada', 'success');
+                      setEditingId(null);
+                    } catch (err) {
+                      showToast(
+                        (err as Error).message ||
+                          'Error al actualizar la colección',
+                        'error'
+                      );
+                    }
                   }}
                   onCancel={() => setEditingId(null)}
                 />
@@ -193,7 +211,19 @@ export function CollectionsPage() {
                             confirmLabel: 'Eliminar',
                             variant: 'danger',
                           });
-                          if (ok) await deleteCollection(col.id);
+
+                          if (ok) {
+                            try {
+                              await deleteCollection(col.id);
+                              showToast('Colección eliminada', 'success');
+                            } catch (err) {
+                              showToast(
+                                (err as Error).message ||
+                                  'Error al eliminar la colección',
+                                'error'
+                              );
+                            }
+                          }
                         }}
                       >
                         <TrashIcon weight="regular" size={14} /> Eliminar

@@ -12,7 +12,13 @@ export default defineConfig({
   },
   server: {
     port: 5174,
-    allowedHosts: ['localhost', '.ngrok-free.app', '.ngrok.io', '.loca.lt'],
+    allowedHosts: [
+      'localhost',
+      '.ngrok-free.app',
+      'sensually-psychic-grunge.ngrok-free.dev',
+      '.ngrok.io',
+      '.loca.lt',
+    ],
     proxy: {
       '/api': {
         target: 'http://localhost:3000',

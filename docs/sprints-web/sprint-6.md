@@ -835,79 +835,71 @@ Sistema genera automáticamente:
 
 ### ITS-REF05 — HomePage: filtro por sector + badge | ⏳ Backlog — Micaela
 
-*Derivado de:* ITS-REF02 (badge de sector nunca implementado en catálogo público)
+_Derivado de:_ ITS-REF02 (badge de sector nunca implementado en catálogo público)
 
-> ⛔ *Bloqueado por ITS-REF12 + ITS-REF13.* Hoy HomePage lee las campañas de CampaignsContext, que solo hace fetch if (user) (CampaignsContext.tsx:54-60) y se alimenta de GET /api/campaigns, endpoint *protegido. Como visitante deslogueado en /catalogo no hay campañas → no hay sectores que derivar ni nada que filtrar. Este ticket asume que **ITS-REF13* ya migró HomePage a consumir el endpoint público (apiGetPublicCampaigns()), que a su vez depende de *ITS-REF12* (endpoint en core). No empezar REF05 hasta que ambos estén mergeados.
+> ⛔ _Bloqueado por ITS-REF12 + ITS-REF13._ Hoy HomePage lee las campañas de CampaignsContext, que solo hace fetch if (user) (CampaignsContext.tsx:54-60) y se alimenta de GET /api/campaigns, endpoint _protegido. Como visitante deslogueado en /catalogo no hay campañas → no hay sectores que derivar ni nada que filtrar. Este ticket asume que \*\*ITS-REF13_ ya migró HomePage a consumir el endpoint público (apiGetPublicCampaigns()), que a su vez depende de _ITS-REF12_ (endpoint en core). No empezar REF05 hasta que ambos estén mergeados.
 
-*Contexto:*
-El campo sector ya existe en CampaignEntity (core) y en el tipo Campaign del web (src/admin/types.ts:44, como tipo Sector — *no* CampaignSector, ese es el nombre del enum en core). Tras ITS-REF13, HomePage tiene un estado local campaigns: Campaign[] (cada uno con sector + sketchfabUid) traído del endpoint público. Los estilos .sector-badge y .sector-badge--{sector} ya existen en styles.css (líneas 520-533).
+_Contexto:_
+El campo sector ya existe en CampaignEntity (core) y en el tipo Campaign del web (src/admin/types.ts:44, como tipo Sector — _no_ CampaignSector, ese es el nombre del enum en core). Tras ITS-REF13, HomePage tiene un estado local campaigns: Campaign[] (cada uno con sector + sketchfabUid) traído del endpoint público. Los estilos .sector-badge y .sector-badge--{sector} ya existen en styles.css (líneas 520-533).
 
-
-*Lo que falta:*
+_Lo que falta:_
 
 En src/pages/HomePage.tsx:
 
 - [ ] Derivar los sectores únicos desde campaigns: [...new Set(campaigns.map(c => c.sector))]
 - - [ ] Agregar estado tab: 'all' | Sector (default 'all') — importar Sector de @/admin/types
 - [ ] Renderizar tabs de filtro encima del grid: uno por sector presente + "Todos"
-- - [ ] Filtrar las campañas por sector (campaigns.filter(c => tab === 'all' || c.sector === tab)) y derivar los uids de ese subconjunto *antes* de llamar a Sketchfab (el sector vive en campaign, no en el SketchfabModel)
+- - [ ] Filtrar las campañas por sector (campaigns.filter(c => tab === 'all' || c.sector === tab)) y derivar los uids de ese subconjunto _antes_ de llamar a Sketchfab (el sector vive en campaign, no en el SketchfabModel)
 - [ ] En cada tarjeta, cuando tab !== 'all', mostrar <span className={`sector-badge sector-badge--${tab}}>{tab}</span>` (el badge usa el tab activo, no requiere el sector por-card)
-- *Sectores disponibles* (Sector en web = CampaignSector en core):
-ecommerce · turismo · educacion · inmobiliario · museo
+- _Sectores disponibles_ (Sector en web = CampaignSector en core):
+  ecommerce · turismo · educacion · inmobiliario · museo
 
-*Archivos a tocar:*
+_Archivos a tocar:_
 
 - src/pages/HomePage.tsx
 - src/styles.css (solo si falta algún sector en las clases existentes)
 
 ---
 
-### ITS-REF07 — Toast de feedback post-acción | ⏳ Backlog
+### **ITS-REF07 — Toast de feedback post-acción | ✅ Matías**
 
-**Contexto:**
-Al crear, editar o eliminar campañas y colecciones no hay feedback visual más allá del cambio en la lista. El enunciado pide mensajes claros al usuario tras cada operación. Un sistema de toast liviano cubre esto sin librerías externas.
+**Estado: ✅ Implementado** — 2026-06-14
 
-**Lo que falta:**
+**Responsable:** Matías
 
-`src/components/Toast/Toast.tsx` — nuevo componente:
+**Contexto:** Al crear, editar o eliminar campañas y colecciones no hay feedback visual más allá del cambio en la lista. El enunciado pide mensajes claros al usuario tras cada operación. Un sistema de toast liviano cubre esto sin librerías externas.
 
-- [ ] `ToastProvider` con contexto y `useToast()` hook que expone `showToast(message, variant)`
-- [ ] `variant`: `'success' | 'error'`
-- [ ] El toast se auto-descarta a los 3 segundos
-- [ ] Máximo un toast visible a la vez (el nuevo reemplaza al anterior)
-- [ ] Posición: esquina inferior derecha
+**Nota de implementación:** Se construyó un sistema de notificaciones global basado en React Context. El ToastProvider se montó a nivel raíz en App.tsx (inmediatamente debajo del ConfirmProvider) para asegurar que los toasts sobrevivan a la navegación mediante React Router (por ejemplo, al redirigir al listado tras editar una campaña).
 
-`src/components/Toast/Toast.css`:
+Para evitar el apilamiento excesivo y prevenir "race conditions" con los temporizadores (setTimeout), el Provider almacena un único toast a la vez y utiliza Date.now() como propiedad key en el nodo del DOM. Esto fuerza un desmonte y remonte inmediato de React al lanzar mensajes consecutivos, lo que reinicia limpiamente tanto la animación de entrada como los 3 segundos de vida.
 
-- [ ] Animación de entrada (slide-up) y salida (fade-out)
-- [ ] Variante success: acento verde (`--color-accent`)
-- [ ] Variante error: rojo
+A nivel de arquitectura, se refactorizaron los manejadores de eventos (handlers) en CampaignsPage, CollectionsPage y CampaignFormPage transformándolos a funciones asíncronas con bloques try/catch explícitos. Esto permitió capturar los errores reales del backend y emitirlos visualmente con la variante error. Se corrigió un problema de legibilidad en el Modo Claro mediante el uso de color: inherit sobre el contenedor del toast para que herede la configuración del tema en lugar de forzar blanco sobre blanco.
 
-`src/App.tsx`:
+**Componente principal:** src/components/Toast/Toast.tsx
 
-- [ ] Envolver la app con `<ToastProvider>`
+**Checklist:**
 
-**Dónde llamar a `showToast`:**
+- [x] ToastProvider con contexto y useToast() hook creados y tipados (ToastContextValue).
 
-| Acción                    | Mensaje                          |
-| ------------------------- | -------------------------------- |
-| Campaña creada            | "Campaña creada correctamente"   |
-| Campaña actualizada       | "Campaña actualizada"            |
-| Campaña eliminada         | "Campaña eliminada"              |
-| Colección creada          | "Colección creada correctamente" |
-| Colección actualizada     | "Colección actualizada"          |
-| Colección eliminada       | "Colección eliminada"            |
-| Error en cualquier acción | mensaje del error recibido       |
+- [x] Variantes implementadas: 'success' | 'error' utilizando iconos de Phosphor.
 
-**Archivos a tocar:**
+- [x] El toast se auto-descarta a los 3 segundos (manejado vía useEffect con función de limpieza clearTimeout).
 
-- `src/components/Toast/Toast.tsx` (nuevo)
-- `src/components/Toast/Toast.css` (nuevo)
-- `src/components/Toast/index.ts` (nuevo)
-- `src/App.tsx`
-- `src/admin/pages/CampaignsPage.tsx`
-- `src/admin/pages/CollectionsPage.tsx`
-- `src/admin/pages/CampaignFormPage.tsx`
+- [x] Máximo un toast visible a la vez (el nuevo reemplaza al anterior y reinicia el temporizador vía la prop key del DOM).
+
+- [x] Posición: esquina inferior derecha (.toast-container con flex-direction column y manipulación de pointer-events).
+
+- [x] Animación de entrada fluida (toast-slide-up con interpolación cubic-bezier).
+
+- [x] Diseño compatible tanto con tema oscuro como claro (eliminación de color: white; hardcodeado por color: inherit).
+
+- [x] <ToastProvider> envuelve la app en src/App.tsx (ubicado en la raíz junto al ConfirmProvider para evitar desmontes de enrutamiento).
+
+- [x] CampaignsPage: refactorizado para mostrar feedback asíncrono al eliminar una campaña.
+
+- [x] CollectionsPage: flujos de crear, editar y eliminar migrados a try/catch con sus respectivos toasts y manejo de errores.
+
+- [x] CampaignFormPage: agregado soporte de feedback para la creación. Al editar, se redirige al administrador mostrando el toast exitoso en la vista de destino para mejorar la UX.
 
 ---
 
@@ -1104,6 +1096,7 @@ Arquitectura hexagonal: `controller` → `use-case` (`application/campaigns/`) �
    - [ ] Mapear el resultado con `PublicCampaignDto` antes de devolver
 
 **Notas:**
+
 - `@Public()` (de `common/decorators/public.decorator.ts`) basta para auth: `JwtAuthGuard` y `RolesGuard` respetan `IS_PUBLIC_KEY`. **No hace falta tocar guards.**
 - ⚠️ El `ThrottlerGuard` global **no** respeta `@Public()`, así que el endpoint hereda el rate limit global (`RATE_LIMIT_TTL`/`RATE_LIMIT_MAX`). Aceptable; mencionarlo en el PR.
 - El campo `views` **no** existe en la campaña (vive en analytics) — fuera de scope.
@@ -1208,6 +1201,7 @@ useEffect(() => {
 ```
 
 > ⚠️ Caso borde: si el fetch público devuelve `data: []` (no hay campañas activas), el Efecto 2 hace `return` temprano y `loading` queda en `true`. Para que muestre el empty-state, en el Efecto 1 setear `setLoading(false)` también cuando `data.length === 0`:
+>
 > ```ts
 > .then(({ data }) => {
 >   setCampaigns(data);
