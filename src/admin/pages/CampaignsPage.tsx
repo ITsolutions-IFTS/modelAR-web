@@ -5,6 +5,8 @@ import {
   PencilSimpleIcon,
   TrashIcon,
   PlusIcon,
+  PlayIcon,
+  PauseIcon,
 } from '@phosphor-icons/react';
 import { useCampaigns } from '../context/CampaignsContext';
 import { useOrganizations } from '../context/OrganizationsContext';
@@ -21,7 +23,7 @@ export function CampaignsPage() {
   const [orgFilter, setOrgFilter] = useState('');
   const activeColId = searchParams.get('col');
 
-  const { deleteCampaign } = useCampaigns();
+  const { deleteCampaign, updateCampaign } = useCampaigns();
   const { organizations } = useOrganizations();
   const { org, orgCampaigns, orgCollections, isSuperadmin } = useOrgResources();
   const confirm = useConfirm();
@@ -183,6 +185,7 @@ export function CampaignsPage() {
                 <th>Creada por</th>
                 <th>Materia</th>
                 {!isSuperadmin && <th>{label}</th>}
+                <th>Estado</th>
                 <th className="col-num">Vistas</th>
                 <th className="col-num">AR</th>
                 <th className="col-num">Clicks</th>
@@ -217,6 +220,17 @@ export function CampaignsPage() {
                         )}
                       </td>
                     )}
+                    <td>
+                      <span
+                        className={`campaign-status campaign-status--${campaign.status ?? 'draft'}`}
+                      >
+                        {campaign.status === 'active'
+                          ? 'Activa'
+                          : campaign.status === 'paused'
+                            ? 'Pausada'
+                            : 'Borrador'}
+                      </span>
+                    </td>
                     <td className="cell-num">
                       {formatNumber(campaign.views ?? 0)}
                     </td>
@@ -227,6 +241,25 @@ export function CampaignsPage() {
                       {formatNumber(campaign.ctaClicks ?? 0)}
                     </td>
                     <td className="cell-actions">
+                      {campaign.status === 'active' ? (
+                        <button
+                          className="btn-pause"
+                          onClick={() =>
+                            updateCampaign(campaign.id, { status: 'paused' })
+                          }
+                        >
+                          <PauseIcon weight="regular" size={15} /> Pausar
+                        </button>
+                      ) : (
+                        <button
+                          className="btn-activate"
+                          onClick={() =>
+                            updateCampaign(campaign.id, { status: 'active' })
+                          }
+                        >
+                          <PlayIcon weight="regular" size={15} /> Activar
+                        </button>
+                      )}
                       <button
                         className="btn-qr"
                         onClick={() =>
