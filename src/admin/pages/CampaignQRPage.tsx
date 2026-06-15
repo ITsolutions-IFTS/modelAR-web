@@ -12,6 +12,7 @@ const FALLBACK_CAMPAIGN: Campaign = {
   title: 'Geometría 5° grado — Poliedros',
   description: 'Escaneá el QR y explorá figuras 3D en tu living.',
   sector: 'educacion',
+  status: 'active',
   sketchfabUid: 'fe85107a4491481f8b176f85df856365',
   ctaUrl: 'https://santillana.com.ar/libro/matematica-5',
   views: 0,
