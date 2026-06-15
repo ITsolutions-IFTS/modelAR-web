@@ -239,6 +239,7 @@
   background: var(--sm-accent);
   border-radius: 999px;
   max-width: 100%;
+  transition: width 0.6s ease-out;
 }
 
 .mtr-top-rate {
@@ -280,6 +281,7 @@
   width: var(--bar-width, 0%);
   background: var(--sm-accent);
   border-radius: 999px;
+  transition: width 0.6s ease-out;
 }
 
 .mtr-subject-value {
@@ -333,6 +335,7 @@
   border-radius: 999px;
   transition: width 0.4s ease;
   min-width: 3px;
+  transition: width 0.6s ease-out;
 }
 
 .mtr-funnel--views { background: oklch(0.60 0.14 240); }
@@ -385,6 +388,7 @@
   height: 100%;
   border-radius: 999px;
   min-width: 3px;
+  transition: width 0.6s ease-out;
 }
 
 .mtr-device--android { background: oklch(0.58 0.16 145); }
