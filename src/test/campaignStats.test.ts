@@ -7,6 +7,7 @@ const base: Campaign = {
   title: 'Test',
   description: '',
   sector: 'educacion',
+  status: 'active',
   sketchfabUid: 'uid1',
   qrValue: 'http://localhost/#/ar/uid1',
   createdAt: '2026-01-01',
