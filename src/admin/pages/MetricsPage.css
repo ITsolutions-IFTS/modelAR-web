@@ -239,7 +239,7 @@
   background: var(--sm-accent);
   border-radius: 999px;
   max-width: 100%;
-  transition: width 0.6s ease-out;
+  transition: width 0.6s ease-out; /*Cambios en todas las animaciones con DynamicBar*/
 }
 
 .mtr-top-rate {
