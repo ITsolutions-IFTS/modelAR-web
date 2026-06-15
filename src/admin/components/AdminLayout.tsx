@@ -9,6 +9,8 @@ import {
   MoonIcon,
   SunIcon,
   SignOutIcon,
+  List,
+  X,
 } from '@phosphor-icons/react';
 import { useAuth } from '../context/AuthContext';
 import { STORAGE_KEYS } from '../constants/storageKeys';
@@ -20,6 +22,10 @@ export function AdminLayout() {
   const [dark, setDark] = useState(
     () => localStorage.getItem(STORAGE_KEYS.DARK_MODE) === '1'
   );
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+  const closeSidebar = () => setSidebarOpen(false);
 
   const toggleDark = () => {
     setDark((prev) => {
@@ -30,8 +36,27 @@ export function AdminLayout() {
   };
 
   return (
-    <div className={`admin-layout admin-root${dark ? ' dark' : ''}`}>
-      <aside className="admin-sidebar">
+    <div
+      className={`admin-layout admin-root${dark ? ' dark' : ''}${sidebarOpen ? ' sidebar-open' : ''}`}
+    >
+      <button
+        className="admin-mobile-toggle-btn"
+        onClick={toggleSidebar}
+        type="button"
+        aria-label={sidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
+      >
+        {sidebarOpen ? (
+          <X size={20} weight="bold" />
+        ) : (
+          <List size={20} weight="bold" />
+        )}
+      </button>
+      <div
+        className={`admin-sidebar-backdrop${sidebarOpen ? ' visible' : ''}`}
+        onClick={closeSidebar}
+      />
+
+      <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="admin-sidebar-brand">
           <h2>model.ar</h2>
         </div>
@@ -44,6 +69,7 @@ export function AdminLayout() {
               className={({ isActive }) =>
                 `admin-nav-link${isActive ? ' active' : ''}`
               }
+              onClick={closeSidebar}
             >
               <BuildingsIcon
                 className="admin-nav-icon"
@@ -59,6 +85,7 @@ export function AdminLayout() {
             className={({ isActive }) =>
               `admin-nav-link${isActive ? ' active' : ''}`
             }
+            onClick={closeSidebar}
           >
             <SquaresFourIcon
               className="admin-nav-icon"
@@ -72,6 +99,7 @@ export function AdminLayout() {
             className={({ isActive }) =>
               `admin-nav-link${isActive ? ' active' : ''}`
             }
+            onClick={closeSidebar}
           >
             <ChartLineUpIcon
               className="admin-nav-icon"
@@ -86,6 +114,7 @@ export function AdminLayout() {
             className={({ isActive }) =>
               `admin-nav-link${isActive ? ' active' : ''}`
             }
+            onClick={closeSidebar}
           >
             <MegaphoneIcon
               className="admin-nav-icon"
@@ -100,6 +129,7 @@ export function AdminLayout() {
               className={({ isActive }) =>
                 `admin-nav-link${isActive ? ' active' : ''}`
               }
+              onClick={closeSidebar}
             >
               <BooksIcon
                 className="admin-nav-icon"
@@ -114,7 +144,10 @@ export function AdminLayout() {
         <div className="admin-sidebar-footer">
           <button
             className="admin-theme-btn"
-            onClick={toggleDark}
+            onClick={() => {
+              toggleDark();
+              setSidebarOpen(false);
+            }}
             type="button"
           >
             {dark ? (
@@ -124,7 +157,13 @@ export function AdminLayout() {
             )}
             {dark ? 'Modo claro' : 'Modo oscuro'}
           </button>
-          <button className="admin-logout-btn" onClick={logout}>
+          <button
+            className="admin-logout-btn"
+            onClick={() => {
+              logout();
+              setSidebarOpen(false);
+            }}
+          >
             <SignOutIcon
               className="admin-nav-icon"
               weight="regular"
