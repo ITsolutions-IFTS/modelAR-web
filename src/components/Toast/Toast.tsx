@@ -48,7 +48,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ showToast }}>
       {children}
       {toast && (
-        <div className="toast-container">
+        <div
+          className="toast-container"
+          role={toast.variant === 'error' ? 'alert' : 'status'}
+          aria-live={toast.variant === 'error' ? 'assertive' : 'polite'}
+        >
           <div className={`toast toast--${toast.variant}`} key={toast.id}>
             {toast.variant === 'success' ? (
               <CheckCircleIcon
