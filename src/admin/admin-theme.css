@@ -200,9 +200,26 @@
 .btn-edit,
 .btn-delete { margin-left: 6px; }
 
-.btn-qr:hover    { background-color: var(--sm-accent);  border-color: var(--sm-accent);  color: #fff; }
-.btn-edit:hover  { background-color: var(--sm-warn);    border-color: var(--sm-warn);    color: #fff; }
-.btn-delete:hover{ background-color: var(--sm-danger);  border-color: var(--sm-danger);  color: #fff; }
+.btn-qr:hover       { background-color: var(--sm-accent);  border-color: var(--sm-accent);  color: #fff; }
+.btn-edit:hover     { background-color: var(--sm-warn);    border-color: var(--sm-warn);    color: #fff; }
+.btn-delete:hover   { background-color: var(--sm-danger);  border-color: var(--sm-danger);  color: #fff; }
+.btn-activate:hover { background-color: var(--sm-ok);      border-color: var(--sm-ok);      color: #fff; }
+.btn-pause:hover    { background-color: var(--sm-warn);    border-color: var(--sm-warn);    color: #fff; }
+
+.btn-activate,
+.btn-pause { margin-right: 6px; }
+
+/* ── Campaign status badge ── */
+.campaign-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--sm-r-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.campaign-status--active  { background: oklch(0.92 0.06 155); color: var(--sm-ok); }
+.campaign-status--draft   { background: var(--sm-bg-soft);    color: var(--sm-fg-3); }
+.campaign-status--paused  { background: oklch(0.95 0.04 70);  color: var(--sm-warn); }
 
 /* ── Shared table base ── */
 .admin-table {
