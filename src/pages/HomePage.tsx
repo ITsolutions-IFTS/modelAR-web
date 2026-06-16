@@ -56,6 +56,7 @@ export const HomePage = () => {
 
         <div className="catalog-grid">
           {loading &&
+            models.length === 0 &&
             Array.from({ length: 6 }).map((_, i) => (
               <article key={i} className="model-card">
                 <div className="model-card__thumb">
