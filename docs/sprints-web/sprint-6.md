@@ -835,27 +835,26 @@ Sistema genera automáticamente:
 
 ### ITS-REF05 — HomePage: filtro por sector + badge | ⏳ Backlog — Micaela
 
-*Derivado de:* ITS-REF02 (badge de sector nunca implementado en catálogo público)
+_Derivado de:_ ITS-REF02 (badge de sector nunca implementado en catálogo público)
 
-> ⛔ *Bloqueado por ITS-REF12 + ITS-REF13.* Hoy HomePage lee las campañas de CampaignsContext, que solo hace fetch if (user) (CampaignsContext.tsx:54-60) y se alimenta de GET /api/campaigns, endpoint *protegido. Como visitante deslogueado en /catalogo no hay campañas → no hay sectores que derivar ni nada que filtrar. Este ticket asume que **ITS-REF13* ya migró HomePage a consumir el endpoint público (apiGetPublicCampaigns()), que a su vez depende de *ITS-REF12* (endpoint en core). No empezar REF05 hasta que ambos estén mergeados.
+> ⛔ _Bloqueado por ITS-REF12 + ITS-REF13._ Hoy HomePage lee las campañas de CampaignsContext, que solo hace fetch if (user) (CampaignsContext.tsx:54-60) y se alimenta de GET /api/campaigns, endpoint _protegido. Como visitante deslogueado en /catalogo no hay campañas → no hay sectores que derivar ni nada que filtrar. Este ticket asume que \*\*ITS-REF13_ ya migró HomePage a consumir el endpoint público (apiGetPublicCampaigns()), que a su vez depende de _ITS-REF12_ (endpoint en core). No empezar REF05 hasta que ambos estén mergeados.
 
-*Contexto:*
-El campo sector ya existe en CampaignEntity (core) y en el tipo Campaign del web (src/admin/types.ts:44, como tipo Sector — *no* CampaignSector, ese es el nombre del enum en core). Tras ITS-REF13, HomePage tiene un estado local campaigns: Campaign[] (cada uno con sector + sketchfabUid) traído del endpoint público. Los estilos .sector-badge y .sector-badge--{sector} ya existen en styles.css (líneas 520-533).
+_Contexto:_
+El campo sector ya existe en CampaignEntity (core) y en el tipo Campaign del web (src/admin/types.ts:44, como tipo Sector — _no_ CampaignSector, ese es el nombre del enum en core). Tras ITS-REF13, HomePage tiene un estado local campaigns: Campaign[] (cada uno con sector + sketchfabUid) traído del endpoint público. Los estilos .sector-badge y .sector-badge--{sector} ya existen en styles.css (líneas 520-533).
 
-
-*Lo que falta:*
+_Lo que falta:_
 
 En src/pages/HomePage.tsx:
 
 - [ ] Derivar los sectores únicos desde campaigns: [...new Set(campaigns.map(c => c.sector))]
 - - [ ] Agregar estado tab: 'all' | Sector (default 'all') — importar Sector de @/admin/types
 - [ ] Renderizar tabs de filtro encima del grid: uno por sector presente + "Todos"
-- - [ ] Filtrar las campañas por sector (campaigns.filter(c => tab === 'all' || c.sector === tab)) y derivar los uids de ese subconjunto *antes* de llamar a Sketchfab (el sector vive en campaign, no en el SketchfabModel)
+- - [ ] Filtrar las campañas por sector (campaigns.filter(c => tab === 'all' || c.sector === tab)) y derivar los uids de ese subconjunto _antes_ de llamar a Sketchfab (el sector vive en campaign, no en el SketchfabModel)
 - [ ] En cada tarjeta, cuando tab !== 'all', mostrar <span className={`sector-badge sector-badge--${tab}}>{tab}</span>` (el badge usa el tab activo, no requiere el sector por-card)
-- *Sectores disponibles* (Sector en web = CampaignSector en core):
-ecommerce · turismo · educacion · inmobiliario · museo
+- _Sectores disponibles_ (Sector en web = CampaignSector en core):
+  ecommerce · turismo · educacion · inmobiliario · museo
 
-*Archivos a tocar:*
+_Archivos a tocar:_
 
 - src/pages/HomePage.tsx
 - src/styles.css (solo si falta algún sector en las clases existentes)
@@ -1040,25 +1039,61 @@ En `src/admin/pages/MetricsPage.tsx`:
 
 ---
 
-### ITS-REF11 — ARViewer: botón de reintento en estado error | ⏳ Backlog — Betania
+### **ITS-REF11 — ARViewer: botón de reintento en estado error | ✅ Matías**
+
+**Estado: ✅ Implementado** — 2026-06-15
+
+**Responsable:** Matías
 
 **Derivado de:** ITS-C07 (sprint 2) — error recovery no implementado
 
-**Contexto:**
-Si la sesión WebXR falla, `ARViewer.tsx` queda en estado `error` sin forma de reintentar salvo recargar la página. El componente monta `ThreeARSurface` y si este lanza error setea `trackingStatus = 'error'`. Desmontar y remontar el componente reinicia el flujo desde cero.
+**Contexto:** Si la sesión WebXR / la carga del modelo falla, el panel de ARPage.tsx muestra "Estado: error-…" sin forma de reintentar salvo recargar la página. Desmontar y remontar <ARViewer> reinicia el flujo desde cero (nueva sesión WebXR, recarga del modelo). Se fuerza el remonte cambiando su key.
 
-**Lo que falta:**
+**⚠️� Corrección sobre el supuesto original:** El contexto inicial asumía que ThreeARSurface setea trackingStatus = 'error' (pelado). **No es así.** Los estados de error reales que emite ThreeARSurface son 'error-carga-modelo', 'error-hit-test-source' y 'error-reference-space' (src/lib/ar-viewer/ThreeARSurface.tsx). Por eso la condición del botón usa trackingStatus.startsWith('error'), NO === 'error' (que nunca matchearía y dejaría el botón inerte).
 
-En `src/pages/ARPage.tsx`:
+**Nota de implementación:** Se implementó un mecanismo de recuperación de errores (error recovery) para el visor 3D, permitiendo reiniciar el flujo de carga sin necesidad de recargar la página completa.
 
-- [ ] Agregar estado `retryKey: number` (default `0`)
-- [ ] Cuando `trackingStatus === 'error'`, mostrar botón "Reintentar" en el panel lateral
-- [ ] Al hacer click: `setRetryKey(k => k + 1)`
-- [ ] Pasar `key={retryKey}` al componente `<ARViewer>` para forzar desmonte y remonte
+- **Decisión técnica (Remonte por key):** Se agregó un estado numérico retryKey en ARPage.tsx que se pasa como prop key a <ARViewer>. Al incrementar la key, React fuerza la destrucción y recreación del componente. Esto garantiza un reinicio limpio y delega la recolección de basura (memoria de Three.js, cancelación de loops de animación, cierre de sesión WebXR) al useEffect de limpieza interno de la librería, previniendo _memory leaks_ .
 
-**Archivos a tocar:**
+- **Renderizado dinámico:** Se utilizó .startsWith('error') para el renderizado condicional del botón. Esto asegura compatibilidad futura si se agregan nuevos sufijos de error en el componente subyacente.
 
-- `src/pages/ARPage.tsx`
+- **Consideraciones de entorno (Testing):** Se documentó que en navegadores de PC (sin hardware WebXR), la app utiliza el visor de fallback de Google (<model-viewer>). Este fallback maneja los errores de red de manera interna (quedando perpetuamente en loading-model) y no emite los eventos custom de Three.js. Para pruebas en escritorio se requiere inyectar manualmente el estado de error, pero el comportamiento es nativo y automático en dispositivos móviles reales.
+
+- **Archivos modificados:** src/pages/ARPage.tsx.
+
+**Implementación en código:**
+
+// src/pages/ARPage.tsx
+
+// 1. Declaración del estado para forzar el remonte const [retryKey, setRetryKey] = useState(0);
+
+// 2. Inyección de la key en el componente visor
+
+<ARViewer
+
+key={retryKey} modelUrl={downloadUrl} modelLabel={model.name} description={model.description ?? undefined} onStatusChange={setTrackingStatus} />
+
+// 3. Componente condicional en el panel lateral (ar-layout\_\_panel)
+
+{trackingStatus.startsWith('error') && (
+
+<button
+
+className="btn btn-primary ar-panel\_\_retry" onClick={() => setRetryKey((k) => k + 1)}
+
+>
+
+Reintentar </button> )}
+
+**Checklist:**
+
+- [x] Agregar estado retryKey: number inicializado en 0 en ARPage.tsx.
+
+- [x] Pasar key={retryKey} al componente <ARViewer> para habilitar el control forzado de su ciclo de vida.
+
+- [x] Mostrar botón "Reintentar" de forma condicional evaluando si el estado de tracking comienza con el prefijo "error".
+
+- [x] Asociar al evento onClick del botón la función setRetryKey((k) => k + 1) para gatillar el desmonte y re-montaje limpio del visor.
 
 ---
 
@@ -1104,6 +1139,7 @@ Arquitectura hexagonal: `controller` → `use-case` (`application/campaigns/`) �
    - [ ] Mapear el resultado con `PublicCampaignDto` antes de devolver
 
 **Notas:**
+
 - `@Public()` (de `common/decorators/public.decorator.ts`) basta para auth: `JwtAuthGuard` y `RolesGuard` respetan `IS_PUBLIC_KEY`. **No hace falta tocar guards.**
 - ⚠️ El `ThrottlerGuard` global **no** respeta `@Public()`, así que el endpoint hereda el rate limit global (`RATE_LIMIT_TTL`/`RATE_LIMIT_MAX`). Aceptable; mencionarlo en el PR.
 - El campo `views` **no** existe en la campaña (vive en analytics) — fuera de scope.
@@ -1208,6 +1244,7 @@ useEffect(() => {
 ```
 
 > ⚠️ Caso borde: si el fetch público devuelve `data: []` (no hay campañas activas), el Efecto 2 hace `return` temprano y `loading` queda en `true`. Para que muestre el empty-state, en el Efecto 1 setear `setLoading(false)` también cuando `data.length === 0`:
+>
 > ```ts
 > .then(({ data }) => {
 >   setCampaigns(data);

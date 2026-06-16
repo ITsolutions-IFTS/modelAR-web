@@ -18,6 +18,7 @@ export const ARPage = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [trackingStatus, setTrackingStatus] =
     useState<ARTrackingStatus>('idle');
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (!uid) {
@@ -68,6 +69,7 @@ export const ARPage = () => {
       <section className="ar-layout__viewer">
         <div className="ar-viewer-wrap">
           <ARViewer
+            key={retryKey}
             modelUrl={downloadUrl}
             modelLabel={model.name}
             description={model.description ?? undefined}
@@ -97,6 +99,15 @@ export const ARPage = () => {
           Estado:{' '}
           <strong className="ar-panel__status-value">{trackingStatus}</strong>
         </p>
+
+        {trackingStatus.startsWith('error') && (
+          <button
+            className="btn btn-primary ar-panel__retry"
+            onClick={() => setRetryKey((k) => k + 1)}
+          >
+            Reintentar
+          </button>
+        )}
 
         {model.description && (
           <p className="ar-panel__description">
