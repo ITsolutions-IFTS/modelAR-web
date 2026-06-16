@@ -4,7 +4,6 @@ import { PlusIcon } from '@phosphor-icons/react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { useCampaigns } from '../context/CampaignsContext';
-import { useActiveOrg } from '../context/ActiveOrgContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrganizations } from '../context/OrganizationsContext';
 import { enrichOrg, type EnrichedOrg } from '../hooks/useOrgResources';
@@ -158,13 +157,11 @@ function OrgCard({
   totalViews,
   isSuperadmin,
 }: OrgCardProps) {
-  const { setActiveOrg } = useActiveOrg();
   const navigate = useNavigate();
   const obs = ORG_OBS[org.slug];
 
   function handleSelect() {
-    setActiveOrg({ slug: org.slug, name: org.name });
-    navigate('/admin/dashboard');
+    navigate(`/admin/dashboard?orgSlug=${encodeURIComponent(org.slug)}`);
   }
 
   const uptimeOk = obs && obs.uptime >= 99;
@@ -245,7 +242,7 @@ function OrgCard({
       )}
 
       <button className="org-btn org-btn--primary" onClick={handleSelect}>
-        Entrar
+        Ver dashboard
       </button>
     </div>
   );

@@ -1,12 +1,15 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   QrCodeIcon,
   PencilSimpleIcon,
   TrashIcon,
   PlusIcon,
+  PlayIcon,
+  PauseIcon,
 } from '@phosphor-icons/react';
 import { useCampaigns } from '../context/CampaignsContext';
+import { useOrganizations } from '../context/OrganizationsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { SECTOR_LABELS } from '../types';
 import { formatNumber } from '../utils/format';
@@ -17,22 +20,69 @@ import './CampaignsPage.css';
 export function CampaignsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [orgFilter, setOrgFilter] = useState('');
   const activeColId = searchParams.get('col');
 
-  const { deleteCampaign } = useCampaigns();
-  const { org, orgCampaigns, orgCollections, activeOrg } = useOrgResources();
+  const { deleteCampaign, updateCampaign } = useCampaigns();
+  const { organizations } = useOrganizations();
+  const { org, orgCampaigns, orgCollections, isSuperadmin } = useOrgResources();
   const confirm = useConfirm();
+
+  const sortedOrganizations = useMemo(
+    () => [...organizations].sort((a, b) => a.name.localeCompare(b.name)),
+    [organizations]
+  );
+
+  const organizationNames = useMemo(
+    () =>
+      Object.fromEntries(
+        sortedOrganizations.map((organization) => [
+          organization.slug,
+          organization.name,
+        ])
+      ),
+    [sortedOrganizations]
+  );
+
+  const organizationOptions = useMemo(() => {
+    const uniqueOrgSlugs = [
+      ...new Set(orgCampaigns.map((campaign) => campaign.orgSlug)),
+    ];
+    return uniqueOrgSlugs
+      .map((slug) => ({
+        slug,
+        label: organizationNames[slug] ?? slug,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [orgCampaigns, organizationNames]);
+
+  const filteredByOrg = useMemo(
+    () =>
+      isSuperadmin && orgFilter
+        ? orgCampaigns.filter((campaign) => campaign.orgSlug === orgFilter)
+        : orgCampaigns,
+    [orgCampaigns, isSuperadmin, orgFilter]
+  );
 
   const visibleCampaigns = useMemo(
     () =>
-      activeColId
-        ? orgCampaigns.filter((c) => c.collectionId === activeColId)
-        : orgCampaigns,
-    [orgCampaigns, activeColId]
+      !isSuperadmin && activeColId
+        ? filteredByOrg.filter(
+            (campaign) => campaign.collectionId === activeColId
+          )
+        : filteredByOrg,
+    [filteredByOrg, isSuperadmin, activeColId]
   );
 
-  const activeCol = orgCollections.find((c) => c.id === activeColId);
+  const activeCol = orgCollections.find(
+    (collection) => collection.id === activeColId
+  );
   const label = org?.collectionLabelPlural ?? 'Colecciones';
+  const subtitle = isSuperadmin ? 'Todas las organizaciones' : org?.name;
+
+  function getOrganizationLabel(orgSlug: string) {
+    return organizationNames[orgSlug] ?? orgSlug;
+  }
 
   function selectCol(id: string | null) {
     if (id) setSearchParams({ col: id });
@@ -45,8 +95,8 @@ export function CampaignsPage() {
         <div className="camps-header-text admin-page-header-text">
           <h1>Campañas</h1>
           <p>
-            {activeOrg?.name}
-            {activeCol ? ` · ${activeCol.name}` : ''}
+            {subtitle}
+            {!isSuperadmin && activeCol ? ` · ${activeCol.name}` : ''}
           </p>
         </div>
         <button
@@ -57,23 +107,45 @@ export function CampaignsPage() {
         </button>
       </div>
 
-      {orgCollections.length > 0 && (
+      {isSuperadmin && (
+        <div className="camps-filter-tabs">
+          <label className="camps-filter-label" htmlFor="camps-org-filter">
+            Organización
+          </label>
+          <select
+            id="camps-org-filter"
+            value={orgFilter}
+            onChange={(e) => setOrgFilter(e.target.value)}
+          >
+            <option value="">Todas</option>
+            {organizationOptions.map((organization) => (
+              <option key={organization.slug} value={organization.slug}>
+                {organization.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {!isSuperadmin && orgCollections.length > 0 && (
         <div className="camps-filter-tabs">
           <button
             className={`camps-filter-tab${!activeColId ? ' active' : ''}`}
             onClick={() => selectCol(null)}
           >
             Todas{' '}
-            <span className="camps-filter-count">{orgCampaigns.length}</span>
+            <span className="camps-filter-count">{filteredByOrg.length}</span>
           </button>
           {orgCollections.map((col) => {
-            const count = orgCampaigns.filter(
-              (c) => c.collectionId === col.id
+            const count = filteredByOrg.filter(
+              (campaign) => campaign.collectionId === col.id
             ).length;
             return (
               <button
                 key={col.id}
-                className={`camps-filter-tab${activeColId === col.id ? ' active' : ''}`}
+                className={`camps-filter-tab${
+                  activeColId === col.id ? ' active' : ''
+                }`}
                 onClick={() => selectCol(col.id)}
               >
                 {col.name}
@@ -89,9 +161,13 @@ export function CampaignsPage() {
         {visibleCampaigns.length === 0 ? (
           <div className="camps-empty">
             <p>
-              {activeColId
-                ? `No hay campañas en esta ${org?.collectionLabel?.toLowerCase() ?? 'colección'}.`
-                : 'No hay campañas activas para esta organización.'}
+              {!isSuperadmin && activeColId
+                ? `No hay campañas en esta ${
+                    org?.collectionLabel?.toLowerCase() ?? 'colección'
+                  }.`
+                : isSuperadmin
+                  ? 'No hay campañas activas para el filtro seleccionado.'
+                  : 'No hay campañas activas para esta organización.'}
             </p>
             <button
               className="camps-btn-new"
@@ -104,9 +180,12 @@ export function CampaignsPage() {
           <table className="camps-table admin-table">
             <thead>
               <tr>
+                {isSuperadmin && <th>Organización</th>}
                 <th>Título</th>
+                <th>Creada por</th>
                 <th>Materia</th>
-                <th>{label}</th>
+                {!isSuperadmin && <th>{label}</th>}
+                <th>Estado</th>
                 <th className="col-num">Vistas</th>
                 <th className="col-num">AR</th>
                 <th className="col-num">Clicks</th>
@@ -116,11 +195,15 @@ export function CampaignsPage() {
             <tbody>
               {visibleCampaigns.map((campaign: Campaign) => {
                 const col = orgCollections.find(
-                  (c) => c.id === campaign.collectionId
+                  (collection) => collection.id === campaign.collectionId
                 );
                 return (
                   <tr key={campaign.id}>
+                    {isSuperadmin && (
+                      <td>{getOrganizationLabel(campaign.orgSlug)}</td>
+                    )}
                     <td className="cell-title">{campaign.title}</td>
+                    <td>{campaign.createdBy?.name ?? '—'}</td>
                     <td>
                       <span
                         className={`sector-badge sector-badge--${campaign.sector}`}
@@ -128,12 +211,25 @@ export function CampaignsPage() {
                         {SECTOR_LABELS[campaign.sector]}
                       </span>
                     </td>
-                    <td className="cell-collection">
-                      {col ? (
-                        <span className="camps-col-badge">{col.name}</span>
-                      ) : (
-                        <span className="camps-col-empty">—</span>
-                      )}
+                    {!isSuperadmin && (
+                      <td className="cell-collection">
+                        {col ? (
+                          <span className="camps-col-badge">{col.name}</span>
+                        ) : (
+                          <span className="camps-col-empty">—</span>
+                        )}
+                      </td>
+                    )}
+                    <td>
+                      <span
+                        className={`campaign-status campaign-status--${campaign.status ?? 'draft'}`}
+                      >
+                        {campaign.status === 'active'
+                          ? 'Activa'
+                          : campaign.status === 'paused'
+                            ? 'Pausada'
+                            : 'Borrador'}
+                      </span>
                     </td>
                     <td className="cell-num">
                       {formatNumber(campaign.views ?? 0)}
@@ -145,6 +241,25 @@ export function CampaignsPage() {
                       {formatNumber(campaign.ctaClicks ?? 0)}
                     </td>
                     <td className="cell-actions">
+                      {campaign.status === 'active' ? (
+                        <button
+                          className="btn-pause"
+                          onClick={() =>
+                            updateCampaign(campaign.id, { status: 'paused' })
+                          }
+                        >
+                          <PauseIcon weight="regular" size={15} /> Pausar
+                        </button>
+                      ) : (
+                        <button
+                          className="btn-activate"
+                          onClick={() =>
+                            updateCampaign(campaign.id, { status: 'active' })
+                          }
+                        >
+                          <PlayIcon weight="regular" size={15} /> Activar
+                        </button>
+                      )}
                       <button
                         className="btn-qr"
                         onClick={() =>

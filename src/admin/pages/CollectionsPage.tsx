@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { PencilSimpleIcon, TrashIcon, PlusIcon } from '@phosphor-icons/react';
 import { useCollections } from '../context/CollectionsContext';
 import { useCampaigns } from '../context/CampaignsContext';
@@ -85,16 +86,17 @@ export function CollectionsPage() {
   const { addCollection, updateCollection, deleteCollection } =
     useCollections();
   const { campaigns } = useCampaigns();
-  const { org, orgCollections, activeOrg } = useOrgResources();
+  const { org, orgCollections } = useOrgResources();
   const { user } = useAuth();
   const confirm = useConfirm();
   const isSuperadmin = user?.role === 'superadmin';
-
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const label = org?.collectionLabel ?? 'Colección';
   const labelPlural = org?.collectionLabelPlural ?? 'Colecciones';
+
+  if (isSuperadmin) return <Navigate to="/admin/campanas" replace />;
 
   function campaignCount(collectionId: string) {
     return campaigns.filter((c) => c.collectionId === collectionId).length;
@@ -106,10 +108,11 @@ export function CollectionsPage() {
         <div>
           <h1>{labelPlural}</h1>
           <p>
-            {activeOrg?.name} · Organizá tus campañas por {label.toLowerCase()}
+            {org?.name ?? 'General'} · Organizá tus campañas por{' '}
+            {label.toLowerCase()}
           </p>
         </div>
-        {isSuperadmin && !adding && (
+        {!isSuperadmin && !adding && (
           <button
             className="col-btn col-btn--primary"
             onClick={() => setAdding(true)}
@@ -119,7 +122,7 @@ export function CollectionsPage() {
         )}
       </div>
 
-      {adding && (
+      {!isSuperadmin && adding && (
         <div className="colp-form-wrap">
           <h2 className="colp-form-title">Nueva {label}</h2>
           <CollectionForm
@@ -169,7 +172,7 @@ export function CollectionsPage() {
                       {campaignCount(col.id) !== 1 ? 's' : ''}
                     </span>
                   </div>
-                  {isSuperadmin && (
+                  {!isSuperadmin && (
                     <div className="colp-item-actions">
                       <button
                         className="col-btn col-btn--ghost"

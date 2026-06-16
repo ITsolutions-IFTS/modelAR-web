@@ -37,12 +37,15 @@ export interface Collection {
   description?: string;
 }
 
+export type CampaignStatus = 'draft' | 'active' | 'paused';
+
 export interface Campaign {
   id: string;
   title: string;
   description: string;
   sector: Sector;
   sketchfabUid: string;
+  status: CampaignStatus;
   ctaUrl?: string;
   views?: number;
   arActivations?: number;
@@ -51,6 +54,11 @@ export interface Campaign {
   qrValue: string;
   orgSlug: string;
   collectionId?: string;
+  createdBy?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
 }
 
 export type CreateCampaignInput = {
@@ -60,9 +68,13 @@ export type CreateCampaignInput = {
   sketchfabUid: string;
   ctaUrl?: string;
   collectionId?: string;
+  newCollectionName?: string;
+  orgSlug?: string;
 };
 
-export type UpdateCampaignInput = Partial<CreateCampaignInput>;
+export type UpdateCampaignInput = Partial<CreateCampaignInput> & {
+  status?: CampaignStatus;
+};
 
 export type UserRole = 'superadmin' | 'client';
 

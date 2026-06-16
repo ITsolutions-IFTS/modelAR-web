@@ -7,6 +7,10 @@
 
 .mtr-header {
   margin-bottom: 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .mtr-header h1 {
@@ -20,6 +24,28 @@
   color: var(--sm-fg-3);
   font-size: 0.85rem;
   margin: 0;
+}
+
+.mtr-org-select {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 240px;
+  font-size: 0.85rem;
+  color: var(--sm-fg-2);
+}
+
+.mtr-org-select span {
+  font-weight: 600;
+}
+
+.mtr-org-select select {
+  padding: 10px 12px;
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-md);
+  background: var(--sm-bg-elev);
+  color: var(--sm-fg);
+  font: inherit;
 }
 
 /* KPIs */
