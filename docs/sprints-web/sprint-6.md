@@ -861,52 +861,45 @@ _Archivos a tocar:_
 
 ---
 
-### ITS-REF07 — Toast de feedback post-acción | ⏳ Backlog
+### **ITS-REF07 — Toast de feedback post-acción | ✅ Matías**
 
-**Contexto:**
-Al crear, editar o eliminar campañas y colecciones no hay feedback visual más allá del cambio en la lista. El enunciado pide mensajes claros al usuario tras cada operación. Un sistema de toast liviano cubre esto sin librerías externas.
+**Estado: ✅ Implementado** — 2026-06-14
 
-**Lo que falta:**
+**Responsable:** Matías
 
-`src/components/Toast/Toast.tsx` — nuevo componente:
+**Contexto:** Al crear, editar o eliminar campañas y colecciones no hay feedback visual más allá del cambio en la lista. El enunciado pide mensajes claros al usuario tras cada operación. Un sistema de toast liviano cubre esto sin librerías externas.
 
-- [ ] `ToastProvider` con contexto y `useToast()` hook que expone `showToast(message, variant)`
-- [ ] `variant`: `'success' | 'error'`
-- [ ] El toast se auto-descarta a los 3 segundos
-- [ ] Máximo un toast visible a la vez (el nuevo reemplaza al anterior)
-- [ ] Posición: esquina inferior derecha
+**Nota de implementación:** Se construyó un sistema de notificaciones global basado en React Context. El ToastProvider se montó a nivel raíz en App.tsx (inmediatamente debajo del ConfirmProvider) para asegurar que los toasts sobrevivan a la navegación mediante React Router (por ejemplo, al redirigir al listado tras editar una campaña).
 
-`src/components/Toast/Toast.css`:
+Para evitar el apilamiento excesivo y prevenir "race conditions" con los temporizadores (setTimeout), el Provider almacena un único toast a la vez y utiliza Date.now() como propiedad key en el nodo del DOM. Esto fuerza un desmonte y remonte inmediato de React al lanzar mensajes consecutivos, lo que reinicia limpiamente tanto la animación de entrada como los 3 segundos de vida.
 
-- [ ] Animación de entrada (slide-up) y salida (fade-out)
-- [ ] Variante success: acento verde (`--color-accent`)
-- [ ] Variante error: rojo
+A nivel de arquitectura, se refactorizaron los manejadores de eventos (handlers) en CampaignsPage, CollectionsPage y CampaignFormPage transformándolos a funciones asíncronas con bloques try/catch explícitos. Esto permitió capturar los errores reales del backend y emitirlos visualmente con la variante error. Se corrigió un problema de legibilidad en el Modo Claro mediante el uso de color: inherit sobre el contenedor del toast para que herede la configuración del tema en lugar de forzar blanco sobre blanco.
 
-`src/App.tsx`:
+**Componente principal:** src/components/Toast/Toast.tsx
 
-- [ ] Envolver la app con `<ToastProvider>`
+**Checklist:**
 
-**Dónde llamar a `showToast`:**
+- [x] ToastProvider con contexto y useToast() hook creados y tipados (ToastContextValue).
 
-| Acción                    | Mensaje                          |
-| ------------------------- | -------------------------------- |
-| Campaña creada            | "Campaña creada correctamente"   |
-| Campaña actualizada       | "Campaña actualizada"            |
-| Campaña eliminada         | "Campaña eliminada"              |
-| Colección creada          | "Colección creada correctamente" |
-| Colección actualizada     | "Colección actualizada"          |
-| Colección eliminada       | "Colección eliminada"            |
-| Error en cualquier acción | mensaje del error recibido       |
+- [x] Variantes implementadas: 'success' | 'error' utilizando iconos de Phosphor.
 
-**Archivos a tocar:**
+- [x] El toast se auto-descarta a los 3 segundos (manejado vía useEffect con función de limpieza clearTimeout).
 
-- `src/components/Toast/Toast.tsx` (nuevo)
-- `src/components/Toast/Toast.css` (nuevo)
-- `src/components/Toast/index.ts` (nuevo)
-- `src/App.tsx`
-- `src/admin/pages/CampaignsPage.tsx`
-- `src/admin/pages/CollectionsPage.tsx`
-- `src/admin/pages/CampaignFormPage.tsx`
+- [x] Máximo un toast visible a la vez (el nuevo reemplaza al anterior y reinicia el temporizador vía la prop key del DOM).
+
+- [x] Posición: esquina inferior derecha (.toast-container con flex-direction column y manipulación de pointer-events).
+
+- [x] Animación de entrada fluida (toast-slide-up con interpolación cubic-bezier).
+
+- [x] Diseño compatible tanto con tema oscuro como claro (eliminación de color: white; hardcodeado por color: inherit).
+
+- [x] <ToastProvider> envuelve la app en src/App.tsx (ubicado en la raíz junto al ConfirmProvider para evitar desmontes de enrutamiento).
+
+- [x] CampaignsPage: refactorizado para mostrar feedback asíncrono al eliminar una campaña.
+
+- [x] CollectionsPage: flujos de crear, editar y eliminar migrados a try/catch con sus respectivos toasts y manejo de errores.
+
+- [x] CampaignFormPage: agregado soporte de feedback para la creación. Al editar, se redirige al administrador mostrando el toast exitoso en la vista de destino para mejorar la UX.
 
 ---
 

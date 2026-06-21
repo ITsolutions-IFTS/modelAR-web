@@ -14,6 +14,7 @@ import { useOrgResources } from '../hooks/useOrgResources';
 import { SECTOR_LABELS } from '../types';
 import { formatNumber } from '../utils/format';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { useToast } from '@/components/Toast';
 import type { Campaign } from '../types';
 import './CampaignsPage.css';
 
@@ -27,6 +28,7 @@ export function CampaignsPage() {
   const { organizations } = useOrganizations();
   const { org, orgCampaigns, orgCollections, isSuperadmin } = useOrgResources();
   const confirm = useConfirm();
+  const showToast = useToast();
 
   const sortedOrganizations = useMemo(
     () => [...organizations].sort((a, b) => a.name.localeCompare(b.name)),
@@ -287,7 +289,18 @@ export function CampaignsPage() {
                             confirmLabel: 'Eliminar',
                             variant: 'danger',
                           });
-                          if (ok) await deleteCampaign(campaign.id);
+                          if (ok) {
+                            try {
+                              await deleteCampaign(campaign.id);
+                              showToast('Campaña eliminada', 'success');
+                            } catch (err) {
+                              showToast(
+                                (err as Error).message ||
+                                  'Error al eliminar la campaña',
+                                'error'
+                              );
+                            }
+                          }
                         }}
                       >
                         <TrashIcon weight="regular" size={15} /> Eliminar

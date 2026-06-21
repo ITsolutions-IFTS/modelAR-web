@@ -10,6 +10,7 @@ import { searchModels } from '@/services/sketchfab';
 import type { SketchfabModel } from '@/types/sketchfab';
 import { getBestThumbnail } from '@/types/sketchfab';
 import { useCampaigns } from '../context/CampaignsContext';
+import { useToast } from '@/components/Toast';
 import { useOrganizations } from '../context/OrganizationsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { SECTOR_LABELS } from '../types';
@@ -77,7 +78,7 @@ export function CampaignFormPage() {
   const { organizations } = useOrganizations();
   const { org, orgCollections, isSuperadmin } = useOrgResources();
   const [showNewCollection, setShowNewCollection] = useState(false);
-
+  const showToast = useToast();
   const sortedOrganizations = [...organizations].sort((a, b) =>
     a.name.localeCompare(b.name)
   );
@@ -206,7 +207,9 @@ export function CampaignFormPage() {
 
       if (editCampaign) {
         await updateCampaign(editCampaign.id, basePayload);
-        setSubmittedId(editCampaign.id);
+        showToast('Campaña actualizada', 'success');
+        navigate('/admin/campanas'); // Redirige al listado tras editar
+        return;
       } else {
         const payload =
           isSuperadmin && fields.orgSlug
@@ -214,10 +217,15 @@ export function CampaignFormPage() {
             : basePayload;
         const created = await addCampaign(payload);
         setSubmittedId(created.id);
+        showToast('Campaña creada correctamente', 'success');
+        setSubmitted(true); // Muestra la pantalla de éxito con el QR
       }
-      setSubmitted(true);
     } catch (err) {
       setSubmitError((err as Error).message);
+      showToast(
+        (err as Error).message || 'Error al guardar la campaña',
+        'error'
+      );
     }
   }
 
