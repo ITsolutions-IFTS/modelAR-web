@@ -46,6 +46,11 @@ export function CampaignQRPage() {
   const ctaClicks = campaign.ctaClicks ?? 0;
   const hasStats = views > 0 || arActivations > 0 || ctaClicks > 0;
 
+  // La URL del QR se deriva en vivo del front (VITE_PUBLIC_WEB_URL u origin
+  // actual) en lugar de usar campaign.qrValue, que puede traer una base vieja
+  // (localhost) guardada por el core al crear la campaña.
+  const qrUrl = buildArQrUrl(campaign.sketchfabUid);
+
   return (
     <div className="qrp-page">
       <div className="qrp-back-row">
@@ -74,7 +79,7 @@ export function CampaignQRPage() {
 
           <div className="qrp-qr-wrapper">
             <QRCodeSVG
-              value={campaign.qrValue}
+              value={qrUrl}
               size={240}
               level="H"
               includeMargin
@@ -83,12 +88,12 @@ export function CampaignQRPage() {
           </div>
 
           <a
-            href={campaign.qrValue}
+            href={qrUrl}
             className="qrp-qr-url"
             target="_blank"
             rel="noopener noreferrer"
           >
-            {campaign.qrValue}
+            {qrUrl}
           </a>
 
           <div className="qrp-actions">
