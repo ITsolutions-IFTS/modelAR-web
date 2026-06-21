@@ -707,10 +707,51 @@ code, pre {
   border-color: color-mix(in oklch, var(--accent) 40%, transparent);
 }
 
+/* Grupo izquierdo: flecha de volver + logo */
+.app-header__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-header__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.app-header__back:hover {
+  border-color: var(--line-md);
+  background: var(--surface-3);
+}
+
+/* Backoffice — link destacado a la derecha */
+.app-header__link--cta {
+  color: var(--accent);
+  border-color: color-mix(in oklch, var(--accent) 40%, transparent);
+}
+
+.app-header__link--cta:hover {
+  background: color-mix(in oklch, var(--accent) 12%, transparent);
+}
+
 /* ── Responsive: sitio público ── */
 @media (max-width: 640px) {
   .page { padding: 1.25rem 0.875rem 2.5rem; }
   .app-header { padding: 0 1rem; }
+  .app-header__left { gap: 0.5rem; }
+  .app-header__back { width: 32px; height: 32px; }
+  .app-header__nav { gap: 0.15rem; }
   .app-header__link { padding: 0.4rem 0.7rem; }
   .search-bar__input { min-height: 44px; font-size: 1rem; }
   .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
