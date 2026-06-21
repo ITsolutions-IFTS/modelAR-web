@@ -117,6 +117,8 @@ export function CampaignFormPage() {
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [activated, setActivated] = useState(false);
 
   const selectedUid = selectedModel?.uid ?? editCampaign?.sketchfabUid ?? null;
 
@@ -234,6 +236,26 @@ export function CampaignFormPage() {
     }
   }
 
+  // La campaña se crea en estado DRAFT: el QR no resuelve públicamente hasta
+  // que se la ACTIVA. Permitimos activarla acá mismo (además del botón de la
+  // tabla) para que el QR funcione apenas se genera.
+  async function handleActivate() {
+    if (!submittedId || activating || activated) return;
+    setActivating(true);
+    try {
+      await updateCampaign(submittedId, { status: 'active' });
+      setActivated(true);
+      showToast('Campaña activada — el QR ya funciona', 'success');
+    } catch (err) {
+      showToast(
+        (err as Error).message || 'No se pudo activar la campaña',
+        'error'
+      );
+    } finally {
+      setActivating(false);
+    }
+  }
+
   if (submitted) {
     return (
       <div className="cfp-page">
@@ -243,11 +265,26 @@ export function CampaignFormPage() {
           </div>
           <h2 className="cfp-success-title">¡Campaña creada!</h2>
           <p className="cfp-success-msg">
-            Tu QR ya está listo para usar en tus materiales.
+            {activated
+              ? 'La campaña está activa: el QR ya resuelve en producción.'
+              : 'Se creó en borrador. Activala para que el QR funcione al escanearlo.'}
           </p>
           <div className="cfp-success-actions">
+            {!activated && (
+              <button
+                className="cfp-btn cfp-btn-primary"
+                onClick={handleActivate}
+                disabled={activating}
+              >
+                {activating ? 'Activando...' : 'Activar campaña'}
+              </button>
+            )}
             <button
-              className="cfp-btn cfp-btn-primary"
+              className={
+                activated
+                  ? 'cfp-btn cfp-btn-primary'
+                  : 'cfp-btn cfp-btn-secondary'
+              }
               onClick={() =>
                 navigate(`/admin/campanas/${submittedId}/qr`, {
                   state: { uid: selectedUid },
