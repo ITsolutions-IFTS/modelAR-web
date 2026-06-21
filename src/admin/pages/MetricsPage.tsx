@@ -5,8 +5,21 @@ import { aggregateCampaignStats } from '../utils/campaignStats';
 import { SECTOR_LABELS } from '../types';
 import type { Sector } from '../types';
 import { formatNumber } from '../utils/format';
+import { useCountUp } from '../hooks/useCountUp';
 import { DynamicBar } from '../components/DynamicBar';
 import './MetricsPage.css';
+
+interface KpiValueProps {
+  value: number;
+  formatter: (val: number) => React.ReactNode;
+}
+
+function KpiValue({ value, formatter }: KpiValueProps) {
+  // Consumimos el hook que creamos en el Paso 1
+  const animatedValue = useCountUp(value, 800);
+
+  return <>{formatter(animatedValue)}</>;
+}
 
 export function MetricsPage() {
   const { organizations } = useOrganizations();
@@ -155,19 +168,28 @@ export function MetricsPage() {
       <div className="mtr-kpis">
         <div className="mtr-kpi">
           <span className="mtr-kpi-value mtr-blue">
-            {formatNumber(totals.views)}
+            <KpiValue
+              value={totals.views}
+              formatter={(v) => formatNumber(Math.round(v))}
+            />
           </span>
           <span className="mtr-kpi-label">Vistas totales</span>
         </div>
         <div className="mtr-kpi">
           <span className="mtr-kpi-value mtr-green">
-            {formatNumber(totals.ar)}
+            <KpiValue
+              value={totals.ar}
+              formatter={(v) => formatNumber(Math.round(v))}
+            />
           </span>
           <span className="mtr-kpi-label">Activaciones AR</span>
         </div>
         <div className="mtr-kpi">
           <span className="mtr-kpi-value mtr-orange">
-            {formatNumber(totals.cta)}
+            <KpiValue
+              value={totals.cta}
+              formatter={(v) => formatNumber(Math.round(v))}
+            />
           </span>
           <span className="mtr-kpi-label">
             {org?.ctaLabel ?? 'Clicks al CTA'}
@@ -175,9 +197,10 @@ export function MetricsPage() {
         </div>
         <div className="mtr-kpi">
           <span className="mtr-kpi-value mtr-purple">
-            {totals.views > 0
-              ? `${((totals.ar / totals.views) * 100).toFixed(1)}%`
-              : '0%'}
+            <KpiValue
+              value={totals.views > 0 ? (totals.ar / totals.views) * 100 : 0}
+              formatter={(v) => `${v.toFixed(1)}%`}
+            />
           </span>
           <span className="mtr-kpi-label">Tasa AR</span>
         </div>

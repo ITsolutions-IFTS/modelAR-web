@@ -835,27 +835,26 @@ Sistema genera automáticamente:
 
 ### ITS-REF05 — HomePage: filtro por sector + badge | ⏳ Backlog — Micaela
 
-*Derivado de:* ITS-REF02 (badge de sector nunca implementado en catálogo público)
+_Derivado de:_ ITS-REF02 (badge de sector nunca implementado en catálogo público)
 
-> ⛔ *Bloqueado por ITS-REF12 + ITS-REF13.* Hoy HomePage lee las campañas de CampaignsContext, que solo hace fetch if (user) (CampaignsContext.tsx:54-60) y se alimenta de GET /api/campaigns, endpoint *protegido. Como visitante deslogueado en /catalogo no hay campañas → no hay sectores que derivar ni nada que filtrar. Este ticket asume que **ITS-REF13* ya migró HomePage a consumir el endpoint público (apiGetPublicCampaigns()), que a su vez depende de *ITS-REF12* (endpoint en core). No empezar REF05 hasta que ambos estén mergeados.
+> ⛔ _Bloqueado por ITS-REF12 + ITS-REF13._ Hoy HomePage lee las campañas de CampaignsContext, que solo hace fetch if (user) (CampaignsContext.tsx:54-60) y se alimenta de GET /api/campaigns, endpoint _protegido. Como visitante deslogueado en /catalogo no hay campañas → no hay sectores que derivar ni nada que filtrar. Este ticket asume que \*\*ITS-REF13_ ya migró HomePage a consumir el endpoint público (apiGetPublicCampaigns()), que a su vez depende de _ITS-REF12_ (endpoint en core). No empezar REF05 hasta que ambos estén mergeados.
 
-*Contexto:*
-El campo sector ya existe en CampaignEntity (core) y en el tipo Campaign del web (src/admin/types.ts:44, como tipo Sector — *no* CampaignSector, ese es el nombre del enum en core). Tras ITS-REF13, HomePage tiene un estado local campaigns: Campaign[] (cada uno con sector + sketchfabUid) traído del endpoint público. Los estilos .sector-badge y .sector-badge--{sector} ya existen en styles.css (líneas 520-533).
+_Contexto:_
+El campo sector ya existe en CampaignEntity (core) y en el tipo Campaign del web (src/admin/types.ts:44, como tipo Sector — _no_ CampaignSector, ese es el nombre del enum en core). Tras ITS-REF13, HomePage tiene un estado local campaigns: Campaign[] (cada uno con sector + sketchfabUid) traído del endpoint público. Los estilos .sector-badge y .sector-badge--{sector} ya existen en styles.css (líneas 520-533).
 
-
-*Lo que falta:*
+_Lo que falta:_
 
 En src/pages/HomePage.tsx:
 
 - [ ] Derivar los sectores únicos desde campaigns: [...new Set(campaigns.map(c => c.sector))]
 - - [ ] Agregar estado tab: 'all' | Sector (default 'all') — importar Sector de @/admin/types
 - [ ] Renderizar tabs de filtro encima del grid: uno por sector presente + "Todos"
-- - [ ] Filtrar las campañas por sector (campaigns.filter(c => tab === 'all' || c.sector === tab)) y derivar los uids de ese subconjunto *antes* de llamar a Sketchfab (el sector vive en campaign, no en el SketchfabModel)
+- - [ ] Filtrar las campañas por sector (campaigns.filter(c => tab === 'all' || c.sector === tab)) y derivar los uids de ese subconjunto _antes_ de llamar a Sketchfab (el sector vive en campaign, no en el SketchfabModel)
 - [ ] En cada tarjeta, cuando tab !== 'all', mostrar <span className={`sector-badge sector-badge--${tab}}>{tab}</span>` (el badge usa el tab activo, no requiere el sector por-card)
-- *Sectores disponibles* (Sector en web = CampaignSector en core):
-ecommerce · turismo · educacion · inmobiliario · museo
+- _Sectores disponibles_ (Sector en web = CampaignSector en core):
+  ecommerce · turismo · educacion · inmobiliario · museo
 
-*Archivos a tocar:*
+_Archivos a tocar:_
 
 - src/pages/HomePage.tsx
 - src/styles.css (solo si falta algún sector en las clases existentes)
@@ -1014,29 +1013,81 @@ En `MetricsPage.css` (o donde se definen `.mtr-top-bar`, `.mtr-subject-bar`, `.m
 
 ---
 
-### ITS-REF10 — MetricsPage: count-up animado en KPIs | ⏳ Backlog
+### ITS-REF10 — MetricsPage: count-up animado en KPIs | ✅ Matías
 
-**Contexto:**
-Los números grandes de vistas, activaciones AR, clicks al CTA y tasa AR aparecen estáticos al cargar. Un count-up desde 0 hasta el valor final al montar la página le da vida a la sección de métricas.
+**Estado: ✅ Implementado** — 2026-06-14
 
-**Lo que falta:**
+**Responsable:** Matías
 
-`src/admin/hooks/useCountUp.ts` — nuevo hook:
+**Contexto:** Los KPIs principales de MetricsPage (vistas, activaciones AR, clics CTA y tasa AR) aparecen con su valor final de forma instantánea al cargar la página. Se requiere una animación "count-up" desde 0 hasta el valor final para mejorar la percepción visual durante demostraciones y presentaciones.
 
-- [ ] `useCountUp(target: number, duration = 800): number` — retorna el valor animado actual
-- [ ] Usa `requestAnimationFrame` internamente, sin dependencias externas
-- [ ] Si `target === 0`, retorna 0 directamente sin animar
+**Nota de implementación:** Se implementó un sistema de animación de números ("count-up") fluido a 60fps utilizando la API nativa requestAnimationFrame, evitando la inclusión de librerías externas.
 
-En `src/admin/pages/MetricsPage.tsx`:
+- **Arquitectura y Hook:** Se creó el hook useCountUp que gestiona el ciclo de vida de la animación matemática. Se le aplicó una curva de aceleración (easeOutQuart) para un frenado suave al acercarse al valor objetivo. Incluye limpieza automática (cancelAnimationFrame) para prevenir fugas de memoria si el componente se desmonta prematuramente o si el usuario cambia los filtros rápidamente.
 
-- [ ] Crear un sub-componente `KpiValue({ value, formatter })` que use `useCountUp(value)` internamente
-- [ ] Reemplazar los cuatro `{formatNumber(totals.x)}` de `.mtr-kpi-value` por `<KpiValue>`
-- [ ] La tasa AR (`toFixed(1)%`) también anima, formateando el número durante la animación
+- **Performance (Aislamiento):** Para evitar que toda la vista principal de MetricsPage se re-renderice 60 veces por segundo, se aisló la suscripción al hook dentro de un nuevo subcomponente puro llamado <KpiValue>. Esto asegura que únicamente los nodos de texto específicos se actualicen en el DOM.
 
-**Archivos a tocar:**
+- **Manejo de Formato y Decimales:** Como la interpolación matemática genera múltiples decimales en cada frame, se adaptó el prop formatter del subcomponente. Para los KPIs enteros (Vistas, Activaciones, Clics) se envolvió el valor interpolado con Math.round(v) antes de pasarlo a formatNumber. Para la Tasa AR se mantuvo .toFixed(1) permitiendo que el porcentaje suba progresivamente mostrando sus décimas de forma fluida.
 
-- `src/admin/hooks/useCountUp.ts` (nuevo)
-- `src/admin/pages/MetricsPage.tsx`
+**Archivos nuevos:**
+
+- src/admin/hooks/useCountUp.ts
+
+**Archivos modificados:**
+
+- src/admin/pages/MetricsPage.tsx
+
+**Implementación en código:**
+
+// src/admin/hooks/useCountUp.ts (Estructura base) export function useCountUp(target: number, duration: number = 800): number { const [currentValue, setCurrentValue] = useState(0);
+
+useEffect(() => { if (target === 0) {
+
+setCurrentValue(0); return; }
+
+// ... loop con requestAnimationFrame y easeOutQuart ... return () => cancelAnimationFrame(animationFrameId);
+
+}, [target, duration]);
+
+return currentValue; }
+
+// src/admin/pages/MetricsPage.tsx (Fragmento de uso) interface KpiValueProps { value: number; formatter: (val: number) => React.ReactNode; }
+
+function KpiValue({ value, formatter }: KpiValueProps) { const animatedValue = useCountUp(value, 800); return <>{formatter(animatedValue)}</>; }
+
+// Implementación en métrica de enteros (ej. Vistas):
+
+<span className="mtr-kpi-value mtr-blue">
+
+<KpiValue value={totals.views} formatter={(v) => formatNumber(Math.round(v))} />
+
+- </span>
+
+// Implementación en métrica porcentual (ej. Tasa AR):
+
+<span className="mtr-kpi-value mtr-purple"> <KpiValue value={totals.views > 0 ? (totals.ar / totals.views) \* 100 : 0} formatter={(v) => `${v.toFixed(1)}%`}
+
+- />
+
+</span>
+
+**Checklist:**
+
+- [x] Crear el hook useCountUp en src/admin/hooks/useCountUp.ts.
+
+- [x] Animar los valores numéricos de 0 a target utilizando requestAnimationFrame.
+
+- [x] Retornar 0 inmediatamente (corte rápido) si target === 0 para ahorrar recursos.
+
+- [x] Crear el subcomponente <KpiValue> en MetricsPage.tsx aislando el rerenderizado del hook.
+
+- [x] Reemplazar los valores de Total de vistas, Activaciones AR y Clicks CTA aplicando redondeo (Math.round(v)) para evitar decimales residuales en la animación.
+
+- [x] Reemplazar el valor de Tasa AR (%) preservando los decimales durante la progresión (.toFixed(1)).
+
+- [x] Preservar estrictamente el formato visual y clases CSS originales (mtr-blue, mtrgreen, etc.).
+
+- [x] Incluir función de limpieza (cancelAnimationFrame) para prevenir memory leaks y superposición de animaciones al cambiar de contexto.
 
 ---
 
@@ -1104,6 +1155,7 @@ Arquitectura hexagonal: `controller` → `use-case` (`application/campaigns/`) �
    - [ ] Mapear el resultado con `PublicCampaignDto` antes de devolver
 
 **Notas:**
+
 - `@Public()` (de `common/decorators/public.decorator.ts`) basta para auth: `JwtAuthGuard` y `RolesGuard` respetan `IS_PUBLIC_KEY`. **No hace falta tocar guards.**
 - ⚠️ El `ThrottlerGuard` global **no** respeta `@Public()`, así que el endpoint hereda el rate limit global (`RATE_LIMIT_TTL`/`RATE_LIMIT_MAX`). Aceptable; mencionarlo en el PR.
 - El campo `views` **no** existe en la campaña (vive en analytics) — fuera de scope.
@@ -1208,6 +1260,7 @@ useEffect(() => {
 ```
 
 > ⚠️ Caso borde: si el fetch público devuelve `data: []` (no hay campañas activas), el Efecto 2 hace `return` temprano y `loading` queda en `true`. Para que muestre el empty-state, en el Efecto 1 setear `setLoading(false)` también cuando `data.length === 0`:
+>
 > ```ts
 > .then(({ data }) => {
 >   setCampaigns(data);
