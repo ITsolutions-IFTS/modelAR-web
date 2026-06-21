@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useOrganizations } from '../context/OrganizationsContext';
 import { useOrgResources } from '../hooks/useOrgResources';
 import { aggregateCampaignStats } from '../utils/campaignStats';
+// DEMO breakdowns — temporal, quitar con el tracking real (ver demoBreakdowns.ts)
+import { buildDemoBreakdowns } from '../utils/demoBreakdowns';
 import { SECTOR_LABELS } from '../types';
 import type { Sector } from '../types';
 import { formatNumber } from '../utils/format';
@@ -32,27 +34,23 @@ export function MetricsPage() {
   );
 
   const organizationOptions = useMemo(() => {
+    // El filtro se deriva EXCLUSIVAMENTE de la lista real de organizaciones
+    // (misma fuente que OrganizationsPage: GET /api/organizations, que excluye
+    // las soft-deleted). Antes se agregaba un fallback con los orgSlug de las
+    // campañas; como el orgSlug está denormalizado y sobrevive al borrado de la
+    // org, eso reinyectaba orgs ya borradas SOLO en este select.
     const baseOptions = sortedOrganizations.map((organization) => ({
       slug: organization.slug,
       label: organization.name,
     }));
-    const knownSlugs = new Set(
-      baseOptions.map((organization) => organization.slug)
-    );
-    const fallbackOptions = [
-      ...new Set(orgCampaigns.map((campaign) => campaign.orgSlug)),
-    ]
-      .filter((slug) => !knownSlugs.has(slug))
-      .map((slug) => ({ slug, label: slug }));
-    const combinedOptions = [...baseOptions, ...fallbackOptions];
-    const nameCounts = combinedOptions.reduce<Record<string, number>>(
+    const nameCounts = baseOptions.reduce<Record<string, number>>(
       (acc, organization) => {
         acc[organization.label] = (acc[organization.label] ?? 0) + 1;
         return acc;
       },
       {}
     );
-    return combinedOptions
+    return baseOptions
       .map((organization) => ({
         ...organization,
         label:
@@ -61,7 +59,7 @@ export function MetricsPage() {
             : organization.label,
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [sortedOrganizations, orgCampaigns]);
+  }, [sortedOrganizations]);
 
   useEffect(() => {
     if (!isSuperadmin) return;
@@ -95,6 +93,24 @@ export function MetricsPage() {
   const totals = useMemo(
     () => aggregateCampaignStats(visibleCampaigns),
     [visibleCampaigns]
+  );
+
+  // DEMO breakdowns (Vistas por semana / Dispositivos / Horarios pico).
+  // Determinístico a partir de los totales demo ya presentes. Sembrado por la
+  // org seleccionada (o 'self' para client) para que sea estable entre renders.
+  // TEMPORAL: quitar cuando exista tracking real.
+  const demo = useMemo(
+    () =>
+      buildDemoBreakdowns(
+        isSuperadmin ? selectedOrg || 'demo' : (org?.slug ?? 'self'),
+        totals
+      ),
+    [isSuperadmin, selectedOrg, org?.slug, totals]
+  );
+  const hasData = totals.views > 0;
+  const weeklyMax = useMemo(
+    () => Math.max(1, ...demo.weekly.map((w) => w.views)),
+    [demo]
   );
 
   const sectorTotals = useMemo(() => {
@@ -209,7 +225,43 @@ export function MetricsPage() {
       <div className="mtr-grid">
         <div className="mtr-card mtr-card--wide">
           <h2 className="mtr-card-title">Vistas por semana</h2>
-          <div className="mtr-chart-empty">Sin datos disponibles aún.</div>
+          {hasData ? (
+            <div className="mtr-bar-chart">
+              <div className="mtr-bars">
+                {demo.weekly.map((w) => (
+                  <div key={w.label} className="mtr-bar-col">
+                    <div className="mtr-bar-wrap">
+                      <div
+                        className="mtr-bar mtr-bar--views"
+                        style={{
+                          height: `${Math.round((w.views / weeklyMax) * 100)}%`,
+                        }}
+                        title={`${formatNumber(w.views)} vistas`}
+                      />
+                      <div
+                        className="mtr-bar mtr-bar--ar"
+                        style={{
+                          height: `${Math.round((w.ar / weeklyMax) * 100)}%`,
+                        }}
+                        title={`${formatNumber(w.ar)} activaciones AR`}
+                      />
+                    </div>
+                    <span className="mtr-bar-label">{w.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mtr-chart-legend">
+                <span className="mtr-legend-item mtr-legend--views">
+                  Vistas
+                </span>
+                <span className="mtr-legend-item mtr-legend--ar">
+                  Activaciones AR
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="mtr-chart-empty">Sin datos disponibles aún.</div>
+          )}
         </div>
 
         <div className="mtr-card">
@@ -318,7 +370,24 @@ export function MetricsPage() {
             Optimizá la experiencia según el dispositivo más frecuente de tus
             usuarios.
           </p>
-          <div className="mtr-chart-empty">Sin datos disponibles aún.</div>
+          {hasData ? (
+            <div className="mtr-devices">
+              {demo.devices.map((device) => (
+                <div key={device.label} className="mtr-device-row">
+                  <span className="mtr-device-label">{device.label}</span>
+                  <div className="mtr-device-bar-wrap">
+                    <DynamicBar
+                      className={`mtr-device-bar ${device.className}`}
+                      percent={device.pct}
+                    />
+                  </div>
+                  <span className="mtr-device-pct">{device.pct}%</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mtr-chart-empty">Sin datos disponibles aún.</div>
+          )}
         </div>
 
         <div className="mtr-card mtr-card--wide">
@@ -327,7 +396,24 @@ export function MetricsPage() {
             Programá notificaciones y activaciones en los horarios donde tus
             usuarios están más activos.
           </p>
-          <div className="mtr-chart-empty">Sin datos disponibles aún.</div>
+          {hasData ? (
+            <div className="mtr-hourly">
+              {demo.hourly.map((point) => (
+                <div key={point.hour} className="mtr-hourly-col">
+                  <div className="mtr-hourly-bar-wrap">
+                    <div
+                      className="mtr-hourly-bar"
+                      style={{ height: `${point.pct}%` }}
+                      title={`${point.hour}:00 · ${formatNumber(point.value)} escaneos`}
+                    />
+                  </div>
+                  <span className="mtr-hourly-label">{point.label}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mtr-chart-empty">Sin datos disponibles aún.</div>
+          )}
         </div>
       </div>
     </div>
