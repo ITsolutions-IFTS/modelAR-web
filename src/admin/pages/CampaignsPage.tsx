@@ -202,11 +202,17 @@ export function CampaignsPage() {
                 return (
                   <tr key={campaign.id}>
                     {isSuperadmin && (
-                      <td>{getOrganizationLabel(campaign.orgSlug)}</td>
+                      <td data-label="Organización">
+                        {getOrganizationLabel(campaign.orgSlug)}
+                      </td>
                     )}
-                    <td className="cell-title">{campaign.title}</td>
-                    <td>{campaign.createdBy?.name ?? '—'}</td>
-                    <td>
+                    <td className="cell-title" data-label="Título">
+                      {campaign.title}
+                    </td>
+                    <td data-label="Creada por">
+                      {campaign.createdBy?.name ?? '—'}
+                    </td>
+                    <td data-label="Materia">
                       <span
                         className={`sector-badge sector-badge--${campaign.sector}`}
                       >
@@ -214,7 +220,7 @@ export function CampaignsPage() {
                       </span>
                     </td>
                     {!isSuperadmin && (
-                      <td className="cell-collection">
+                      <td className="cell-collection" data-label="Colección">
                         {col ? (
                           <span className="camps-col-badge">{col.name}</span>
                         ) : (
@@ -222,7 +228,7 @@ export function CampaignsPage() {
                         )}
                       </td>
                     )}
-                    <td>
+                    <td data-label="Estado">
                       <span
                         className={`campaign-status campaign-status--${campaign.status ?? 'draft'}`}
                       >
@@ -233,16 +239,16 @@ export function CampaignsPage() {
                             : 'Borrador'}
                       </span>
                     </td>
-                    <td className="cell-num">
+                    <td className="cell-num" data-label="Vistas">
                       {formatNumber(campaign.views ?? 0)}
                     </td>
-                    <td className="cell-num">
+                    <td className="cell-num" data-label="AR">
                       {formatNumber(campaign.arActivations ?? 0)}
                     </td>
-                    <td className="cell-num">
+                    <td className="cell-num" data-label="Clicks">
                       {formatNumber(campaign.ctaClicks ?? 0)}
                     </td>
-                    <td className="cell-actions">
+                    <td className="cell-actions" data-label="Acciones">
                       {campaign.status === 'active' ? (
                         <button
                           className="btn-pause"

@@ -282,14 +282,105 @@
   .admin-page-header-text h1 { font-size: 1.4rem; }
   .admin-btn-primary { width: 100%; justify-content: center; padding: 12px 18px; }
 
-  /* La tabla nunca se recorta: scrollea horizontal dentro del wrapper */
-  .admin-table { min-width: 720px; }
-  .cell-actions { white-space: nowrap; }
+  /* ── Card-stacking: cada fila se vuelve una tarjeta full-width ── */
+  /* El wrapper deja de scrollear: las cards entran en pantalla */
+  .admin-table-wrapper {
+    overflow-x: visible;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
 
-  /* Touch targets >=40px para las acciones de fila */
-  .btn-qr, .btn-edit, .btn-delete,
-  .btn-activate, .btn-pause {
+  .admin-table {
+    min-width: 0;
+    width: 100%;
+    font-size: 0.9rem;
+    display: block;
+  }
+
+  /* Ocultar encabezados: cada td muestra su propia etiqueta */
+  .admin-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .admin-table tbody { display: block; }
+
+  /* Cada fila = tarjeta */
+  .admin-table tbody tr {
+    display: block;
+    background: var(--sm-bg-elev);
+    border: 1px solid var(--sm-line);
+    border-radius: var(--sm-r-lg);
+    box-shadow: var(--sm-shadow);
+    padding: 6px 14px;
+    margin-bottom: 14px;
+  }
+  .admin-table tbody tr:last-child { margin-bottom: 0; }
+  .admin-table tbody tr:hover td { background-color: transparent; }
+
+  /* Cada celda = fila label:valor */
+  .admin-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--sm-line-soft);
+    text-align: right;
+    white-space: normal;
+  }
+  .admin-table tbody tr td:last-child { border-bottom: none; }
+
+  /* Etiqueta de columna a la izquierda */
+  .admin-table td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    margin-right: auto;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--sm-fg-3);
+  }
+  .admin-table td.cell-num { text-align: right; }
+
+  /* Conversión (dashboard): la barra ocupa el ancho disponible */
+  .admin-table td.cell-conv {
+    align-items: stretch;
+    flex-direction: column;
+    text-align: left;
+    gap: 6px;
+  }
+  .admin-table td.cell-conv::before { margin-right: 0; }
+
+  /* Celda de acciones: fila propia, botones a 2 columnas, sin label */
+  .admin-table td.cell-actions {
+    flex-wrap: wrap;
+    justify-content: stretch;
+    gap: 8px;
+    padding-top: 12px;
+  }
+  .admin-table td.cell-actions::before { display: none; }
+
+  .admin-table .cell-actions .btn-qr,
+  .admin-table .cell-actions .btn-edit,
+  .admin-table .cell-actions .btn-delete,
+  .admin-table .cell-actions .btn-activate,
+  .admin-table .cell-actions .btn-pause {
+    flex: 1 1 calc(50% - 8px);
     min-height: 40px;
-    padding: 8px 12px;
+    justify-content: center;
+    margin: 0;
+    padding: 9px 12px;
   }
 }

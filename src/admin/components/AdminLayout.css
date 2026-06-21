@@ -452,51 +452,148 @@
   min-width: 0;
 }
 
-/* ── Responsive: el sidebar colapsa en una barra superior horizontal ── */
-@media (max-width: 860px) {
-  .admin-layout { flex-direction: column; }
+/* Topbar + hamburguesa + backdrop: SOLO mobile, ocultos en desktop */
+.admin-topbar,
+.admin-hamburger,
+.admin-sidebar-backdrop {
+  display: none;
+}
 
-  .admin-sidebar {
+/* ── Responsive ≤860px: sidebar → drawer detrás de hamburguesa ── */
+@media (max-width: 860px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  /* Barra superior fija: marca (izq) + hamburguesa (der) */
+  .admin-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
-    height: auto;
+    padding: 10px 16px;
+    background-color: var(--sm-bg-elev);
+    border-bottom: 1px solid var(--sm-line);
     position: sticky;
     top: 0;
-    z-index: 40;
-    flex-direction: row;
+    z-index: 50;
+  }
+
+  .admin-topbar-brand h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--sm-fg);
+    letter-spacing: -0.01em;
+  }
+
+  .admin-hamburger {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: var(--sm-r-md);
+    background: transparent;
+    color: var(--sm-fg);
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .admin-hamburger:hover {
+    background-color: var(--sm-bg-soft);
+  }
+
+  /* Backdrop cuando el drawer está abierto */
+  .admin-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: oklch(0 0 0 / 0.4);
+  }
+
+  /* El sidebar pasa a ser un panel desplegable full-width bajo la topbar */
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+    max-height: 100vh;
+    z-index: 48;
+    flex-direction: column;
     border-right: none;
     border-bottom: 1px solid var(--sm-line);
-    overflow-x: auto;
+    box-shadow: var(--sm-shadow, 0 8px 24px oklch(0 0 0 / 0.18));
+    transform: translateY(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.22s ease,
+      visibility 0.22s ease;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  .admin-sidebar-brand {
-    padding: 12px 16px;
-    border-bottom: none;
-    border-right: 1px solid var(--sm-line);
-    flex-shrink: 0;
+  .admin-sidebar--open {
+    transform: translateY(0);
+    visibility: visible;
   }
-  .admin-sidebar-brand h2 { margin: 0; }
+
+  /* La marca interna del aside se oculta (ya está en la topbar) */
+  .admin-sidebar-brand {
+    display: none;
+  }
 
   .admin-sidebar-nav {
-    flex-direction: row;
-    flex: 1;
-    padding: 8px;
+    flex-direction: column;
+    flex: 0 1 auto;
+    padding: 68px 12px 12px; /* 68px ≈ alto de la topbar fija */
     gap: 4px;
-    overflow-x: auto;
-  }
-  .admin-nav-link {
-    white-space: nowrap;
-    min-height: 40px;
-    padding: 8px 12px;
+    overflow-x: visible;
   }
 
+  .admin-nav-link {
+    white-space: normal;
+    min-height: 44px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+
+  /* Footer: botones COMPACTOS de SOLO ICONO, alineados a la derecha */
   .admin-sidebar-footer {
     flex-direction: row;
-    border-top: none;
-    border-left: 1px solid var(--sm-line);
-    padding: 8px;
-    flex-shrink: 0;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--sm-line);
+    border-left: none;
+    padding: 12px;
   }
-  .admin-theme-btn, .admin-logout-btn { width: auto; min-height: 40px; padding: 8px 10px; }
+
+  .admin-theme-btn,
+  .admin-logout-btn {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    flex: 0 0 auto;
+    justify-content: center;
+    border: 1px solid var(--sm-line);
+    border-radius: var(--sm-r-md);
+    background: var(--sm-bg-soft);
+  }
+
+  /* Ocultar SOLO el texto: quedan botones de icono puro */
+  .admin-theme-btn .admin-btn-label,
+  .admin-logout-btn .admin-btn-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar {
+    transition: none;
+  }
 }
