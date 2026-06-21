@@ -105,3 +105,33 @@
 .camps-btn-new {
   /* handled by .admin-btn-primary */
 }
+
+/* Filtro de organización (superadmin) — estilado con los tokens del tema */
+.camps-filter-tabs select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 10px 36px 10px 12px;
+  min-height: 40px;
+  border: 1px solid var(--sm-line);
+  border-radius: var(--sm-r-md);
+  background-color: var(--sm-bg-elev);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M3 4.5 6 8l3-3.5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  color: var(--sm-fg);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.camps-filter-tabs select:focus {
+  outline: none;
+  border-color: var(--sm-accent);
+  box-shadow: 0 0 0 3px var(--sm-accent-soft);
+}
+
+@media (max-width: 768px) {
+  .camps-filter-tabs { align-items: stretch; }
+  .camps-filter-tabs select { width: 100%; }
+  .camps-filter-tab { min-height: 36px; }
+}

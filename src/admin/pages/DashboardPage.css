@@ -106,3 +106,16 @@
   color: var(--sm-accent-deep);
   white-space: nowrap;
 }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .dashboard-stats { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .dashboard-header { margin-bottom: 20px; }
+  .admin-page-select { min-width: 0; width: 100%; }
+  .admin-page-select select { min-height: 40px; }
+}
+@media (max-width: 520px) {
+  .dashboard-stats { grid-template-columns: 1fr; }
+  .dashboard-table-header { flex-direction: column; align-items: stretch; gap: 10px; }
+  .dashboard-btn-new { justify-content: center; min-height: 40px; }
+}

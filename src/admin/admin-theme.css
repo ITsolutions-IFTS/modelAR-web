@@ -154,7 +154,8 @@
   background: var(--sm-bg-elev);
   border: 1px solid var(--sm-line);
   border-radius: var(--sm-r-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--sm-shadow);
 }
 
@@ -272,3 +273,23 @@
 .badge-lengua     { background-color: oklch(0.94 0.04 300); color: oklch(0.38 0.14 300); }
 .badge-producto   { background-color: oklch(0.94 0.04 25);  color: oklch(0.40 0.14 25); }
 .badge-espacio    { background-color: oklch(0.93 0.04 155); color: oklch(0.36 0.14 155); }
+
+/* ── Responsive: admin ── */
+@media (max-width: 768px) {
+  .admin-page { padding: 20px 16px; max-width: 100%; }
+
+  .admin-page-header { flex-direction: column; align-items: stretch; gap: 12px; }
+  .admin-page-header-text h1 { font-size: 1.4rem; }
+  .admin-btn-primary { width: 100%; justify-content: center; padding: 12px 18px; }
+
+  /* La tabla nunca se recorta: scrollea horizontal dentro del wrapper */
+  .admin-table { min-width: 720px; }
+  .cell-actions { white-space: nowrap; }
+
+  /* Touch targets >=40px para las acciones de fila */
+  .btn-qr, .btn-edit, .btn-delete,
+  .btn-activate, .btn-pause {
+    min-height: 40px;
+    padding: 8px 12px;
+  }
+}

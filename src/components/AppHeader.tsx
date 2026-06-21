@@ -1,11 +1,23 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 export const AppHeader = () => {
+  const navigate = useNavigate();
+
   return (
     <header className="app-header">
-      <NavLink to="/" className="app-header__logo">
-        <span className="app-header__logo-accent">IT</span>Solutions AR
-      </NavLink>
+      <div className="app-header__left">
+        <button
+          type="button"
+          className="app-header__back"
+          onClick={() => navigate(-1)}
+          aria-label="Volver atrás"
+        >
+          ←
+        </button>
+        <NavLink to="/" className="app-header__logo">
+          <span className="app-header__logo-accent">IT</span>Solutions AR
+        </NavLink>
+      </div>
 
       <nav className="app-header__nav">
         <NavLink
@@ -27,6 +39,9 @@ export const AppHeader = () => {
           }
         >
           Escanear
+        </NavLink>
+        <NavLink to="/admin" className="app-header__link app-header__link--cta">
+          Backoffice
         </NavLink>
       </nav>
     </header>

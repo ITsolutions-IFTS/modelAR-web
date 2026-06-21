@@ -451,3 +451,52 @@
   overflow: auto;
   min-width: 0;
 }
+
+/* ── Responsive: el sidebar colapsa en una barra superior horizontal ── */
+@media (max-width: 860px) {
+  .admin-layout { flex-direction: column; }
+
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    flex-direction: row;
+    align-items: center;
+    border-right: none;
+    border-bottom: 1px solid var(--sm-line);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-sidebar-brand {
+    padding: 12px 16px;
+    border-bottom: none;
+    border-right: 1px solid var(--sm-line);
+    flex-shrink: 0;
+  }
+  .admin-sidebar-brand h2 { margin: 0; }
+
+  .admin-sidebar-nav {
+    flex-direction: row;
+    flex: 1;
+    padding: 8px;
+    gap: 4px;
+    overflow-x: auto;
+  }
+  .admin-nav-link {
+    white-space: nowrap;
+    min-height: 40px;
+    padding: 8px 12px;
+  }
+
+  .admin-sidebar-footer {
+    flex-direction: row;
+    border-top: none;
+    border-left: 1px solid var(--sm-line);
+    padding: 8px;
+    flex-shrink: 0;
+  }
+  .admin-theme-btn, .admin-logout-btn { width: auto; min-height: 40px; padding: 8px 10px; }
+}
