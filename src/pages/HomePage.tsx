@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { getModel } from '@/services/sketchfab';
+import { getFeaturedModels } from '@/services/catalog';
 import { getBestThumbnail } from '@/types/sketchfab';
 import type { SketchfabModel } from '@/types/sketchfab';
 import { useCampaigns } from '@/admin/context/CampaignsContext';
@@ -17,20 +18,61 @@ export const HomePage = () => {
 
   // Derive unique UIDs from all campaigns
   const uids = [...new Set(campaigns.map((c) => c.sketchfabUid))];
+  // Clave estable para el efecto: cambia si cambia el SET de uids, no el length
+  const uidsKey = uids.join(',');
 
   useEffect(() => {
-    if (uids.length === 0) {
-      setLoading(false);
-      return;
-    }
     setLoading(true);
     setError(null);
-    Promise.all(uids.map((uid) => getModel(uid)))
-      .then((results) => setModels(results))
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false));
+
+    let cancelled = false;
+
+    Promise.all([
+      // Campañas: tolerante a fallos individuales (un uid roto NO vacía el resto)
+      Promise.allSettled(uids.map((uid) => getModel(uid))),
+      // Destacados del core: nunca lanza, devuelve [] ante error
+      getFeaturedModels(),
+    ])
+      .then(([campaignResults, featured]) => {
+        if (cancelled) return;
+
+        const campaignModels = campaignResults
+          .filter(
+            (r): r is PromiseFulfilledResult<SketchfabModel> =>
+              r.status === 'fulfilled'
+          )
+          .map((r) => r.value);
+
+        // Merge + dedupe por uid: campañas primero, luego destacados nuevos
+        const byUid = new Map<string, SketchfabModel>();
+        for (const m of campaignModels) byUid.set(m.uid, m);
+        for (const m of featured) if (!byUid.has(m.uid)) byUid.set(m.uid, m);
+
+        const merged = [...byUid.values()];
+        setModels(merged);
+
+        // Solo es error si NO hay absolutamente nada que mostrar y además
+        // había campañas que se esperaba resolver.
+        if (
+          merged.length === 0 &&
+          uids.length > 0 &&
+          campaignModels.length === 0
+        ) {
+          setError('No se pudieron cargar los modelos.');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setError('No se pudieron cargar los modelos.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaigns.length]);
+  }, [uidsKey]);
 
   const filtered = keyword.trim()
     ? models.filter((m) => m.name.toLowerCase().includes(keyword.toLowerCase()))
@@ -50,8 +92,14 @@ export const HomePage = () => {
         </div>
 
         {error && <div className="state-error">{error}</div>}
-        {!error && filtered.length === 0 && !loading && (
-          <div className="state-empty">Sin resultados</div>
+        {!error && !loading && filtered.length === 0 && (
+          <div className="state-empty">
+            {keyword.trim()
+              ? `Sin resultados para "${keyword.trim()}"`
+              : models.length > 0
+                ? 'Sin resultados'
+                : 'Todavía no hay modelos en el catálogo'}
+          </div>
         )}
 
         <div className="catalog-grid">
