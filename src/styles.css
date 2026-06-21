@@ -706,3 +706,15 @@ code, pre {
   background: color-mix(in oklch, var(--accent) 15%, transparent);
   border-color: color-mix(in oklch, var(--accent) 40%, transparent);
 }
+
+/* ── Responsive: sitio público ── */
+@media (max-width: 640px) {
+  .page { padding: 1.25rem 0.875rem 2.5rem; }
+  .app-header { padding: 0 1rem; }
+  .app-header__link { padding: 0.4rem 0.7rem; }
+  .search-bar__input { min-height: 44px; font-size: 1rem; }
+  .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
+}
+@media (max-width: 380px) {
+  .catalog-grid { grid-template-columns: 1fr 1fr; }
+}

@@ -534,3 +534,18 @@
 .cfp-btn-copy:hover {
   background: var(--sm-accent-deep);
 }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .cfp-page { padding: 20px 16px; }
+  .cfp-header-text h1 { font-size: 1.4rem; }
+  .cfp-layout { grid-template-columns: 1fr; gap: 20px; }
+  .cfp-preview { position: static; }
+  .cfp-form-footer { flex-direction: column-reverse; }
+  .cfp-form-footer .cfp-btn { width: 100%; min-height: 44px; }
+}
+@media (max-width: 520px) {
+  .cfp-search-row { flex-direction: column; }
+  .cfp-btn-search { width: 100%; min-height: 44px; }
+  .cfp-field input, .cfp-field textarea, .cfp-field select { min-height: 44px; }
+}
