@@ -5,6 +5,7 @@ import { ARViewer } from '@/lib/ar-viewer';
 import type { ARTrackingStatus } from '@/lib/ar-viewer';
 import { getModel, getDownloadUrl } from '@/services/sketchfab';
 import type { SketchfabModel } from '@/types/sketchfab';
+import { buildArQrUrl } from '@/admin/constants/urls';
 
 type LoadPhase = 'loading' | 'ready' | 'error';
 
@@ -43,7 +44,7 @@ export const ARPage = () => {
       });
   }, [uid]);
 
-  const shareUrl = `${window.location.origin}${window.location.pathname}#/ar/${uid}`;
+  const shareUrl = buildArQrUrl(uid ?? '');
 
   if (phase === 'loading') {
     return (
