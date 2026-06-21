@@ -116,6 +116,7 @@ export function CampaignFormPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const selectedUid = selectedModel?.uid ?? editCampaign?.sketchfabUid ?? null;
 
@@ -178,8 +179,10 @@ export function CampaignFormPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (submitting) return;
     if (!validate()) return;
     setSubmitError(null);
+    setSubmitting(true);
     try {
       const collectionId = shouldSkipCollectionOnCreate
         ? undefined
@@ -226,6 +229,8 @@ export function CampaignFormPage() {
         (err as Error).message || 'Error al guardar la campaña',
         'error'
       );
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -456,7 +461,7 @@ export function CampaignFormPage() {
                 type="button"
                 className="cfp-btn cfp-btn-search"
                 onClick={handleSearch}
-                disabled={searching}
+                disabled={searching || submitting}
               >
                 {searching ? 'Buscando...' : 'Buscar'}
               </button>
@@ -510,14 +515,19 @@ export function CampaignFormPage() {
               type="button"
               className="cfp-btn cfp-btn-secondary"
               onClick={() => navigate('/admin/campanas')}
+              disabled={submitting}
             >
               Cancelar
             </button>
             {submitError && (
               <span className="cfp-error-msg">{submitError}</span>
             )}
-            <button type="submit" className="cfp-btn cfp-btn-primary">
-              Guardar campaña
+            <button
+              type="submit"
+              className="cfp-btn cfp-btn-primary"
+              disabled={submitting}
+            >
+              {submitting ? 'Guardando...' : 'Guardar campaña'}
             </button>
           </div>
         </form>

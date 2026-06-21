@@ -969,22 +969,78 @@ En `src/pages/HomePage.tsx`:
 
 ---
 
-### ITS-REF08 — Submit button: estado loading en formularios | ⏳ Backlog
+### **ITS-REF08 — Submit button: estado loading en formularios | ✅ Matías**
 
-**Contexto:**
-`CampaignFormPage.tsx` no deshabilita el botón de submit mientras se procesa la request. El usuario puede hacer doble click y generar requests duplicadas, y no hay feedback de que algo está pasando.
+**Estado: ✅ Implementado** — 2026-06-14
 
-**Lo que falta:**
+**Responsable:** Matías
 
-En `src/admin/pages/CampaignFormPage.tsx`:
+**Contexto:** CampaignFormPage.tsx no deshabilita el botón de submit mientras se procesa la request. El usuario puede hacer doble click y generar requests duplicadas, y no hay feedback visual de que algo está pasando.
 
-- [ ] Agregar estado `submitting: boolean` (default `false`)
-- [ ] Al iniciar el submit: `setSubmitting(true)`, al finalizar (finally): `setSubmitting(false)`
-- [ ] El botón de submit debe tener `disabled={submitting}` y mostrar `"Guardando..."` mientras `submitting === true`
+**Nota de implementación:** Se agregó un estado local booleano submitting en CampaignFormPage.tsx para bloquear la interfaz de usuario durante la resolución de las promesas addCampaign o updateCampaign. Se implementó un "guard" (if (submitting) return;) al inicio de la función handleSubmit para prevenir de forma estricta la doble sumisión por clics consecutivos rápidos. El reseteo del estado se garantizó colocándolo dentro de un bloque finally, lo que asegura el desbloqueo del formulario tanto en flujos de éxito como en caídas por error. Como mejora adicional de UX, se inhabilitó temporalmente el botón "Cancelar" mientras la petición está en vuelo para evitar navegaciones con requests huérfanas en el background.
 
-**Archivos a tocar:**
+**Implementación en código:**
 
-- `src/admin/pages/CampaignFormPage.tsx`
+// src/admin/pages/CampaignFormPage.tsx
+
+// 1. Declaración del estado
+const [submitting, setSubmitting] = useState(false);
+
+// 2. Modificación del handler
+async function handleSubmit(e: React.FormEvent) {
+e.preventDefault();
+
+if (submitting) return; // Barrera contra doble click rápido
+if (!validate()) return;
+
+setSubmitError(null);
+setSubmitting(true);
+
+try {
+// ... payload y llamadas a addCampaign / updateCampaign
+} catch (err) {
+// ... manejo de errores (y disparador del Toast)
+} finally {
+setSubmitting(false); // Garantiza que siempre se desbloquee la UI
+}
+}
+
+// 3. Render de los botones de acción
+
+<div className="cfp-form-footer">
+  <button
+    type="button"
+    className="cfp-btn cfp-btn-secondary"
+    onClick={() => navigate('/admin/campanas')}
+    disabled={submitting}
+  >
+    Cancelar
+  </button>
+  {submitError && (
+    <span className="cfp-error-msg">{submitError}</span>
+  )}
+  <button 
+    type="submit" 
+    className="cfp-btn cfp-btn-primary"
+    disabled={submitting}
+  >
+    {submitting ? 'Guardando...' : 'Guardar campaña'}
+  </button>
+</div>
+
+**Checklist:**
+
+- [x] Agregar estado submitting: boolean (default false) en CampaignFormPage.tsx.
+
+- [x] Al iniciar el submit: se ejecuta setSubmitting(true).
+
+- [x] Al finalizar (finally): se ejecuta setSubmitting(false), independientemente de si hay éxito o error.
+
+- [x] El botón de submit debe tener disabled={submitting} (y se extendió también al botón Cancelar).
+
+- [x] Mostrar "Guardando..." en el botón principal mientras submitting === true.
+
+- [x] Protección extra contra encolamiento de eventos múltiples si el usuario hace doble click antes del re-render.
 
 ---
 
