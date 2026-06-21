@@ -1062,51 +1062,139 @@ En `MetricsPage.css` (o donde se definen `.mtr-top-bar`, `.mtr-subject-bar`, `.m
 
 ---
 
-### ITS-REF10 — MetricsPage: count-up animado en KPIs | ⏳ Backlog
+### ITS-REF10 — MetricsPage: count-up animado en KPIs | ✅ Matías
 
-**Contexto:**
-Los números grandes de vistas, activaciones AR, clicks al CTA y tasa AR aparecen estáticos al cargar. Un count-up desde 0 hasta el valor final al montar la página le da vida a la sección de métricas.
+**Estado: ✅ Implementado** — 2026-06-14
 
-**Lo que falta:**
+**Responsable:** Matías
 
-`src/admin/hooks/useCountUp.ts` — nuevo hook:
+**Contexto:** Los KPIs principales de MetricsPage (vistas, activaciones AR, clics CTA y tasa AR) aparecen con su valor final de forma instantánea al cargar la página. Se requiere una animación "count-up" desde 0 hasta el valor final para mejorar la percepción visual durante demostraciones y presentaciones.
 
-- [ ] `useCountUp(target: number, duration = 800): number` — retorna el valor animado actual
-- [ ] Usa `requestAnimationFrame` internamente, sin dependencias externas
-- [ ] Si `target === 0`, retorna 0 directamente sin animar
+**Nota de implementación:** Se implementó un sistema de animación de números ("count-up") fluido a 60fps utilizando la API nativa requestAnimationFrame, evitando la inclusión de librerías externas.
 
-En `src/admin/pages/MetricsPage.tsx`:
+- **Arquitectura y Hook:** Se creó el hook useCountUp que gestiona el ciclo de vida de la animación matemática. Se le aplicó una curva de aceleración (easeOutQuart) para un frenado suave al acercarse al valor objetivo. Incluye limpieza automática (cancelAnimationFrame) para prevenir fugas de memoria si el componente se desmonta prematuramente o si el usuario cambia los filtros rápidamente.
 
-- [ ] Crear un sub-componente `KpiValue({ value, formatter })` que use `useCountUp(value)` internamente
-- [ ] Reemplazar los cuatro `{formatNumber(totals.x)}` de `.mtr-kpi-value` por `<KpiValue>`
-- [ ] La tasa AR (`toFixed(1)%`) también anima, formateando el número durante la animación
+- **Performance (Aislamiento):** Para evitar que toda la vista principal de MetricsPage se re-renderice 60 veces por segundo, se aisló la suscripción al hook dentro de un nuevo subcomponente puro llamado <KpiValue>. Esto asegura que únicamente los nodos de texto específicos se actualicen en el DOM.
 
-**Archivos a tocar:**
+- **Manejo de Formato y Decimales:** Como la interpolación matemática genera múltiples decimales en cada frame, se adaptó el prop formatter del subcomponente. Para los KPIs enteros (Vistas, Activaciones, Clics) se envolvió el valor interpolado con Math.round(v) antes de pasarlo a formatNumber. Para la Tasa AR se mantuvo .toFixed(1) permitiendo que el porcentaje suba progresivamente mostrando sus décimas de forma fluida.
 
-- `src/admin/hooks/useCountUp.ts` (nuevo)
-- `src/admin/pages/MetricsPage.tsx`
+**Archivos nuevos:**
+
+- src/admin/hooks/useCountUp.ts
+
+**Archivos modificados:**
+
+- src/admin/pages/MetricsPage.tsx
+
+**Implementación en código:**
+
+// src/admin/hooks/useCountUp.ts (Estructura base) export function useCountUp(target: number, duration: number = 800): number { const [currentValue, setCurrentValue] = useState(0);
+
+useEffect(() => { if (target === 0) {
+
+setCurrentValue(0); return; }
+
+// ... loop con requestAnimationFrame y easeOutQuart ... return () => cancelAnimationFrame(animationFrameId);
+
+}, [target, duration]);
+
+return currentValue; }
+
+// src/admin/pages/MetricsPage.tsx (Fragmento de uso) interface KpiValueProps { value: number; formatter: (val: number) => React.ReactNode; }
+
+function KpiValue({ value, formatter }: KpiValueProps) { const animatedValue = useCountUp(value, 800); return <>{formatter(animatedValue)}</>; }
+
+// Implementación en métrica de enteros (ej. Vistas):
+
+<span className="mtr-kpi-value mtr-blue">
+
+<KpiValue value={totals.views} formatter={(v) => formatNumber(Math.round(v))} />
+
+- </span>
+
+// Implementación en métrica porcentual (ej. Tasa AR):
+
+<span className="mtr-kpi-value mtr-purple"> <KpiValue value={totals.views > 0 ? (totals.ar / totals.views) \* 100 : 0} formatter={(v) => `${v.toFixed(1)}%`}
+
+- />
+
+</span>
+
+**Checklist:**
+
+- [x] Crear el hook useCountUp en src/admin/hooks/useCountUp.ts.
+
+- [x] Animar los valores numéricos de 0 a target utilizando requestAnimationFrame.
+
+- [x] Retornar 0 inmediatamente (corte rápido) si target === 0 para ahorrar recursos.
+
+- [x] Crear el subcomponente <KpiValue> en MetricsPage.tsx aislando el rerenderizado del hook.
+
+- [x] Reemplazar los valores de Total de vistas, Activaciones AR y Clicks CTA aplicando redondeo (Math.round(v)) para evitar decimales residuales en la animación.
+
+- [x] Reemplazar el valor de Tasa AR (%) preservando los decimales durante la progresión (.toFixed(1)).
+
+- [x] Preservar estrictamente el formato visual y clases CSS originales (mtr-blue, mtrgreen, etc.).
+
+- [x] Incluir función de limpieza (cancelAnimationFrame) para prevenir memory leaks y superposición de animaciones al cambiar de contexto.
 
 ---
 
-### ITS-REF11 — ARViewer: botón de reintento en estado error | ⏳ Backlog — Betania
+### **ITS-REF11 — ARViewer: botón de reintento en estado error | ✅ Matías**
+
+**Estado: ✅ Implementado** — 2026-06-15
+
+**Responsable:** Matías
 
 **Derivado de:** ITS-C07 (sprint 2) — error recovery no implementado
 
-**Contexto:**
-Si la sesión WebXR falla, `ARViewer.tsx` queda en estado `error` sin forma de reintentar salvo recargar la página. El componente monta `ThreeARSurface` y si este lanza error setea `trackingStatus = 'error'`. Desmontar y remontar el componente reinicia el flujo desde cero.
+**Contexto:** Si la sesión WebXR / la carga del modelo falla, el panel de ARPage.tsx muestra "Estado: error-…" sin forma de reintentar salvo recargar la página. Desmontar y remontar <ARViewer> reinicia el flujo desde cero (nueva sesión WebXR, recarga del modelo). Se fuerza el remonte cambiando su key.
 
-**Lo que falta:**
+**⚠️� Corrección sobre el supuesto original:** El contexto inicial asumía que ThreeARSurface setea trackingStatus = 'error' (pelado). **No es así.** Los estados de error reales que emite ThreeARSurface son 'error-carga-modelo', 'error-hit-test-source' y 'error-reference-space' (src/lib/ar-viewer/ThreeARSurface.tsx). Por eso la condición del botón usa trackingStatus.startsWith('error'), NO === 'error' (que nunca matchearía y dejaría el botón inerte).
 
-En `src/pages/ARPage.tsx`:
+**Nota de implementación:** Se implementó un mecanismo de recuperación de errores (error recovery) para el visor 3D, permitiendo reiniciar el flujo de carga sin necesidad de recargar la página completa.
 
-- [ ] Agregar estado `retryKey: number` (default `0`)
-- [ ] Cuando `trackingStatus === 'error'`, mostrar botón "Reintentar" en el panel lateral
-- [ ] Al hacer click: `setRetryKey(k => k + 1)`
-- [ ] Pasar `key={retryKey}` al componente `<ARViewer>` para forzar desmonte y remonte
+- **Decisión técnica (Remonte por key):** Se agregó un estado numérico retryKey en ARPage.tsx que se pasa como prop key a <ARViewer>. Al incrementar la key, React fuerza la destrucción y recreación del componente. Esto garantiza un reinicio limpio y delega la recolección de basura (memoria de Three.js, cancelación de loops de animación, cierre de sesión WebXR) al useEffect de limpieza interno de la librería, previniendo _memory leaks_ .
 
-**Archivos a tocar:**
+- **Renderizado dinámico:** Se utilizó .startsWith('error') para el renderizado condicional del botón. Esto asegura compatibilidad futura si se agregan nuevos sufijos de error en el componente subyacente.
 
-- `src/pages/ARPage.tsx`
+- **Consideraciones de entorno (Testing):** Se documentó que en navegadores de PC (sin hardware WebXR), la app utiliza el visor de fallback de Google (<model-viewer>). Este fallback maneja los errores de red de manera interna (quedando perpetuamente en loading-model) y no emite los eventos custom de Three.js. Para pruebas en escritorio se requiere inyectar manualmente el estado de error, pero el comportamiento es nativo y automático en dispositivos móviles reales.
+
+- **Archivos modificados:** src/pages/ARPage.tsx.
+
+**Implementación en código:**
+
+// src/pages/ARPage.tsx
+
+// 1. Declaración del estado para forzar el remonte const [retryKey, setRetryKey] = useState(0);
+
+// 2. Inyección de la key en el componente visor
+
+<ARViewer
+
+key={retryKey} modelUrl={downloadUrl} modelLabel={model.name} description={model.description ?? undefined} onStatusChange={setTrackingStatus} />
+
+// 3. Componente condicional en el panel lateral (ar-layout\_\_panel)
+
+{trackingStatus.startsWith('error') && (
+
+<button
+
+className="btn btn-primary ar-panel\_\_retry" onClick={() => setRetryKey((k) => k + 1)}
+
+>
+
+Reintentar </button> )}
+
+**Checklist:**
+
+- [x] Agregar estado retryKey: number inicializado en 0 en ARPage.tsx.
+
+- [x] Pasar key={retryKey} al componente <ARViewer> para habilitar el control forzado de su ciclo de vida.
+
+- [x] Mostrar botón "Reintentar" de forma condicional evaluando si el estado de tracking comienza con el prefijo "error".
+
+- [x] Asociar al evento onClick del botón la función setRetryKey((k) => k + 1) para gatillar el desmonte y re-montaje limpio del visor.
 
 ---
 

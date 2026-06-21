@@ -1,5 +1,15 @@
 @import '../admin-theme.css';
 
+@keyframes mtr-grow-bar {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: var(--bar-width, 0%);
+  }
+}
+
 .mtr-page {
   padding: 32px 40px;
   max-width: 1100px;
@@ -239,6 +249,7 @@
   background: var(--sm-accent);
   border-radius: 999px;
   max-width: 100%;
+  animation: mtr-grow-bar 0.6s ease-out both;
 }
 
 .mtr-top-rate {
@@ -280,6 +291,7 @@
   width: var(--bar-width, 0%);
   background: var(--sm-accent);
   border-radius: 999px;
+  animation: mtr-grow-bar 0.6s ease-out both;
 }
 
 .mtr-subject-value {
@@ -331,8 +343,8 @@
   height: 100%;
   width: var(--bar-width, 0%);
   border-radius: 999px;
-  transition: width 0.4s ease;
   min-width: 3px;
+  animation: mtr-grow-bar 0.6s ease-out both;
 }
 
 .mtr-funnel--views { background: oklch(0.60 0.14 240); }
@@ -383,8 +395,10 @@
 
 .mtr-device-bar {
   height: 100%;
+  width: var(--bar-width, 0%);
   border-radius: 999px;
   min-width: 3px;
+  animation: mtr-grow-bar 0.6s ease-out both;
 }
 
 .mtr-device--android { background: oklch(0.58 0.16 145); }
@@ -446,4 +460,20 @@
   text-align: center;
   color: var(--sm-fg-3);
   font-size: 0.85rem;
+}
+
+/* Respeta la preferencia de movimiento reducido: las barras aparecen
+   directamente en su valor final, sin animación de entrada. */
+@media (prefers-reduced-motion: reduce) {
+  .mtr-top-bar,
+  .mtr-subject-bar,
+  .mtr-funnel-bar,
+  .mtr-device-bar {
+    animation: none;
+  }
+
+  .mtr-bar,
+  .mtr-hourly-bar {
+    transition: none;
+  }
 }

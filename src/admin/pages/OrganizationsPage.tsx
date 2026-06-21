@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon } from '@phosphor-icons/react';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import { useCampaigns } from '../context/CampaignsContext';
 import { useAuth } from '../context/AuthContext';
 import { useOrganizations } from '../context/OrganizationsContext';
@@ -74,6 +76,79 @@ interface OrgCardProps {
   campaignCount: number;
   totalViews: number;
   isSuperadmin: boolean;
+}
+
+function OrgCardSkeleton() {
+  return (
+    <div className="org-card">
+      <div className="org-card-header">
+        <Skeleton
+          circle
+          width={44}
+          height={44}
+          baseColor="var(--surface-2)"
+          highlightColor="var(--line)"
+        />
+        <div className="org-header-meta">
+          <h3 className="org-name">
+            <Skeleton
+              width={140}
+              height={18}
+              baseColor="var(--surface-2)"
+              highlightColor="var(--line)"
+            />
+          </h3>
+          <div className="org-header-badges">
+            <Skeleton
+              width={72}
+              height={20}
+              borderRadius={999}
+              baseColor="var(--surface-2)"
+              highlightColor="var(--line)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <p className="org-description">
+        <Skeleton
+          count={2}
+          baseColor="var(--surface-2)"
+          highlightColor="var(--line)"
+        />
+      </p>
+
+      <div className="org-stats">
+        {Array.from({ length: 2 }).map((_, index) => (
+          <div key={index} className="org-stat">
+            <span className="org-stat-value">
+              <Skeleton
+                width={48}
+                height={24}
+                baseColor="var(--surface-2)"
+                highlightColor="var(--line)"
+              />
+            </span>
+            <span className="org-stat-label">
+              <Skeleton
+                width={84}
+                height={12}
+                baseColor="var(--surface-2)"
+                highlightColor="var(--line)"
+              />
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <Skeleton
+        height={40}
+        borderRadius={12}
+        baseColor="var(--surface-2)"
+        highlightColor="var(--line)"
+      />
+    </div>
+  );
 }
 
 function OrgCard({
@@ -328,7 +403,11 @@ export function OrganizationsPage() {
       )}
 
       {loading && organizations.length === 0 && (
-        <p className="orgs-empty">Cargando organizaciones…</p>
+        <div className="orgs-grid" aria-label="Cargando organizaciones">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <OrgCardSkeleton key={index} />
+          ))}
+        </div>
       )}
       {error && (
         <p className="orgs-empty orgs-empty--error">
