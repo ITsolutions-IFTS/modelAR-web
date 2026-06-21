@@ -53,6 +53,32 @@ export interface PaginatedResponse<T> {
   };
 }
 
+// ── Campaign analytics (real tracking) ──────────────────────────────────────
+
+export interface CampaignAnalyticsStats {
+  views: number;
+  arActivations: number;
+  ctaClicks: number;
+}
+
+export interface CampaignAnalyticsTimelinePoint {
+  date: string; // 'YYYY-MM-DD' UTC
+  views: number;
+  ar: number;
+  clicks: number;
+}
+
+export interface CampaignAnalyticsResponse {
+  campaign: { id: string; title: string; sector: Sector };
+  stats: CampaignAnalyticsStats;
+  breakdown: {
+    views: { count: number; pct: number };
+    arActivations: { count: number; pct: number };
+    ctaClicks: { count: number; pct: number };
+  };
+  timeline: CampaignAnalyticsTimelinePoint[];
+}
+
 interface ErrorBody {
   error?:
     | string
@@ -168,6 +194,9 @@ export const apiUpdateCampaign = (id: string, data: UpdateCampaignInput) =>
 
 export const apiDeleteCampaign = (id: string) =>
   apiFetch<void>(`/api/campaigns/${id}`, { method: 'DELETE' });
+
+export const apiGetCampaignAnalytics = (id: string) =>
+  apiFetch<CampaignAnalyticsResponse>(`/api/campaigns/${id}/analytics`);
 
 // ── Collections ────────────────────────────────────────────────────────────
 

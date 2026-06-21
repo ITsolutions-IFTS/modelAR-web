@@ -9,6 +9,7 @@ import type { Sector } from '../types';
 import { formatNumber } from '../utils/format';
 import { useCountUp } from '../hooks/useCountUp';
 import { DynamicBar } from '../components/DynamicBar';
+import { useCampaignAnalytics } from '../hooks/useCampaignAnalytics';
 import './MetricsPage.css';
 
 interface KpiValueProps {
@@ -90,10 +91,34 @@ export function MetricsPage() {
     [orgCampaigns, isSuperadmin, selectedOrg]
   );
 
-  const totals = useMemo(
-    () => aggregateCampaignStats(visibleCampaigns),
+  // ── Capa de tracking REAL (con fallback a demo) ──
+  const visibleIds = useMemo(
+    () => visibleCampaigns.map((c) => c.id),
     [visibleCampaigns]
   );
+  const { analytics } = useCampaignAnalytics(visibleIds);
+  // Campañas visibles que TIENEN analytics real. Si hay ≥1, la capa real
+  // gobierna totals/sector/top/weekly (las sin respuesta cuentan 0, para no
+  // sumar demo+real). Si no hay ninguna → demo puro.
+  const realRows = useMemo(
+    () => visibleCampaigns.map((c) => analytics[c.id]).filter(Boolean),
+    [visibleCampaigns, analytics]
+  );
+  const hasReal = realRows.length > 0;
+
+  const totals = useMemo(() => {
+    if (hasReal) {
+      return realRows.reduce(
+        (acc, r) => ({
+          views: acc.views + r.stats.views,
+          ar: acc.ar + r.stats.arActivations,
+          cta: acc.cta + r.stats.ctaClicks,
+        }),
+        { views: 0, ar: 0, cta: 0 }
+      );
+    }
+    return aggregateCampaignStats(visibleCampaigns);
+  }, [hasReal, realRows, visibleCampaigns]);
 
   // DEMO breakdowns (Vistas por semana / Dispositivos / Horarios pico).
   // Determinístico a partir de los totales demo ya presentes. Sembrado por la
@@ -108,17 +133,65 @@ export function MetricsPage() {
     [isSuperadmin, selectedOrg, org?.slug, totals]
   );
   const hasData = totals.views > 0;
+
+  // Vistas por semana desde el timeline REAL (agrega 30 días en buckets de 7).
+  // Si no hay real → demo.weekly. Dispositivos/Horarios no tienen tracking real.
+  const realWeekly = useMemo(() => {
+    if (!hasReal) return null;
+    const byDate = new Map<string, { views: number; ar: number }>();
+    realRows.forEach((r) =>
+      r.timeline.forEach((p) => {
+        const cur = byDate.get(p.date) ?? { views: 0, ar: 0 };
+        cur.views += p.views;
+        cur.ar += p.ar;
+        byDate.set(p.date, cur);
+      })
+    );
+    if (byDate.size === 0) return null;
+    const WEEKS = 8;
+    const MS_DAY = 86_400_000;
+    const now = new Date();
+    const todayUTC = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate()
+    );
+    const buckets = Array.from({ length: WEEKS }, () => ({ views: 0, ar: 0 }));
+    byDate.forEach((v, date) => {
+      const t = Date.parse(`${date}T00:00:00Z`);
+      if (Number.isNaN(t)) return;
+      const daysAgo = Math.floor((todayUTC - t) / MS_DAY);
+      if (daysAgo < 0 || daysAgo >= WEEKS * 7) return;
+      const idx = WEEKS - 1 - Math.floor(daysAgo / 7); // semana vieja → S1
+      buckets[idx].views += v.views;
+      buckets[idx].ar += v.ar;
+    });
+    return buckets.map((b, i) => ({
+      label: `S${i + 1}`,
+      views: b.views,
+      ar: b.ar,
+    }));
+  }, [hasReal, realRows]);
+
+  const weekly = realWeekly ?? demo.weekly;
   const weeklyMax = useMemo(
-    () => Math.max(1, ...demo.weekly.map((w) => w.views)),
-    [demo]
+    () => Math.max(1, ...weekly.map((w) => w.views)),
+    [weekly]
   );
 
   const sectorTotals = useMemo(() => {
     const map: Partial<Record<Sector, number>> = {};
-    visibleCampaigns.forEach((campaign) => {
-      map[campaign.sector] =
-        (map[campaign.sector] ?? 0) + (campaign.arActivations ?? 0);
-    });
+    if (hasReal) {
+      realRows.forEach((r) => {
+        map[r.campaign.sector] =
+          (map[r.campaign.sector] ?? 0) + r.stats.arActivations;
+      });
+    } else {
+      visibleCampaigns.forEach((campaign) => {
+        map[campaign.sector] =
+          (map[campaign.sector] ?? 0) + (campaign.arActivations ?? 0);
+      });
+    }
     const values = Object.values(map).filter(
       (value): value is number => typeof value === 'number' && value > 0
     );
@@ -131,20 +204,30 @@ export function MetricsPage() {
         pct: max > 0 ? Math.round(((value ?? 0) / max) * 100) : 0,
       }))
       .sort((a, b) => b.value - a.value);
-  }, [visibleCampaigns]);
+  }, [hasReal, realRows, visibleCampaigns]);
 
-  const topCampaigns = useMemo(
-    () =>
-      [...visibleCampaigns]
-        .filter((campaign) => (campaign.views ?? 0) > 0)
-        .map((campaign) => ({
-          ...campaign,
-          rate: ((campaign.arActivations ?? 0) / (campaign.views ?? 1)) * 100,
+  const topCampaigns = useMemo(() => {
+    if (hasReal) {
+      return realRows
+        .filter((r) => r.stats.views > 0)
+        .map((r) => ({
+          id: r.campaign.id,
+          title: r.campaign.title,
+          rate: (r.stats.arActivations / r.stats.views) * 100,
         }))
         .sort((a, b) => b.rate - a.rate)
-        .slice(0, 4),
-    [visibleCampaigns]
-  );
+        .slice(0, 4);
+    }
+    return [...visibleCampaigns]
+      .filter((campaign) => (campaign.views ?? 0) > 0)
+      .map((campaign) => ({
+        id: campaign.id,
+        title: campaign.title,
+        rate: ((campaign.arActivations ?? 0) / (campaign.views ?? 1)) * 100,
+      }))
+      .sort((a, b) => b.rate - a.rate)
+      .slice(0, 4);
+  }, [hasReal, realRows, visibleCampaigns]);
 
   const subtitle = isSuperadmin
     ? (selectedOrganization?.label ?? 'Sin organizaciones')
@@ -228,7 +311,7 @@ export function MetricsPage() {
           {hasData ? (
             <div className="mtr-bar-chart">
               <div className="mtr-bars">
-                {demo.weekly.map((w) => (
+                {weekly.map((w) => (
                   <div key={w.label} className="mtr-bar-col">
                     <div className="mtr-bar-wrap">
                       <div

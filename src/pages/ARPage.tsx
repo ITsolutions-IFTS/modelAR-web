@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { ARViewer } from '@/lib/ar-viewer';
 import type { ARTrackingStatus } from '@/lib/ar-viewer';
 import { getModel, getDownloadUrl } from '@/services/sketchfab';
+import { apiResolveCampaignByUid, trackEvent } from '@/services/analytics';
+import { getAnalyticsSessionId } from '@/services/sessionId';
 import type { SketchfabModel } from '@/types/sketchfab';
 import { buildArQrUrl } from '@/admin/constants/urls';
 
@@ -21,6 +23,13 @@ export const ARPage = () => {
     useState<ARTrackingStatus>('idle');
   const [retryKey, setRetryKey] = useState(0);
 
+  // Campaña resuelta (null = curado/catálogo sin campaña → no se trackea).
+  const [campaignId, setCampaignId] = useState<string | null>(null);
+  const [ctaUrl, setCtaUrl] = useState<string | null>(null);
+  // Guards anti-doble-conteo (StrictMode dev monta el effect 2 veces).
+  const viewTrackedRef = useRef(false);
+  const arActivationTrackedRef = useRef(false);
+
   useEffect(() => {
     if (!uid) {
       setPhase('error');
@@ -31,12 +40,32 @@ export const ARPage = () => {
     setPhase('loading');
     setModel(null);
     setDownloadUrl(null);
+    setCampaignId(null);
+    setCtaUrl(null);
+    viewTrackedRef.current = false;
+    arActivationTrackedRef.current = false;
 
     Promise.all([getModel(uid), getDownloadUrl(uid)])
       .then(([meta, dlUrl]) => {
         setModel(meta);
         setDownloadUrl(dlUrl);
         setPhase('ready');
+
+        // Tracking best-effort: si no hay campaña ACTIVE (404) o falla la
+        // resolución, NO se emite nada y el visor sigue igual. Curados/'local:'
+        // caen acá → 404 → no-op.
+        apiResolveCampaignByUid(uid)
+          .then((campaign) => {
+            setCampaignId(campaign.id);
+            setCtaUrl(campaign.ctaUrl);
+            if (!viewTrackedRef.current) {
+              viewTrackedRef.current = true;
+              trackEvent(campaign.id, 'view', getAnalyticsSessionId());
+            }
+          })
+          .catch(() => {
+            /* sin campaña: best-effort, no trackear */
+          });
       })
       .catch((err: Error) => {
         setErrorMsg(err.message);
@@ -45,6 +74,19 @@ export const ARPage = () => {
   }, [uid]);
 
   const shareUrl = buildArQrUrl(uid ?? '');
+
+  // 'model-placed' = modelo anclado en superficie real → activación AR efectiva.
+  const handleStatusChange = (status: ARTrackingStatus) => {
+    setTrackingStatus(status);
+    if (
+      status === 'model-placed' &&
+      campaignId &&
+      !arActivationTrackedRef.current
+    ) {
+      arActivationTrackedRef.current = true;
+      trackEvent(campaignId, 'ar_activation', getAnalyticsSessionId());
+    }
+  };
 
   if (phase === 'loading') {
     return (
@@ -74,7 +116,7 @@ export const ARPage = () => {
             modelUrl={downloadUrl}
             modelLabel={model.name}
             description={model.description ?? undefined}
-            onStatusChange={setTrackingStatus}
+            onStatusChange={handleStatusChange}
           />
         </div>
       </section>
@@ -115,6 +157,20 @@ export const ARPage = () => {
             {model.description.slice(0, 200)}
             {model.description.length > 200 ? '...' : ''}
           </p>
+        )}
+
+        {campaignId && ctaUrl && (
+          <a
+            className="btn btn-primary ar-panel__cta"
+            href={ctaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() =>
+              trackEvent(campaignId, 'cta_click', getAnalyticsSessionId())
+            }
+          >
+            Ver más
+          </a>
         )}
 
         <div className="ar-panel__share">
