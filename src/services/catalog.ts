@@ -19,8 +19,12 @@ interface CoreFeaturedModel {
   embedUrl: string;
   user: { username: string; displayName: string; profileUrl?: string };
   sector?: string;
+  category?: string;
   isCurated: boolean;
 }
+
+/** SketchfabModel + la categoría temática del catálogo (null si no viene). */
+export type FeaturedModel = SketchfabModel & { category: string | null };
 
 interface CoreFeaturedResponse {
   data: CoreFeaturedModel[];
@@ -31,8 +35,9 @@ interface CoreFeaturedResponse {
  * adaptModel() de sketchfab.ts), para que campañas y destacados rendericen
  * idénticos en el catálogo.
  */
-function adaptFeatured(m: CoreFeaturedModel): SketchfabModel {
+function adaptFeatured(m: CoreFeaturedModel): FeaturedModel {
   return {
+    category: m.category ?? null,
     uid: m.uid,
     name: m.name,
     description: null,
@@ -73,7 +78,7 @@ function adaptFeatured(m: CoreFeaturedModel): SketchfabModel {
  * ante cualquier error (red, status !=2xx, JSON inválido, body sin .data)
  * devuelve [] para que el HOME no se vacíe por un fallo del endpoint.
  */
-export const getFeaturedModels = async (): Promise<SketchfabModel[]> => {
+export const getFeaturedModels = async (): Promise<FeaturedModel[]> => {
   try {
     const res = await fetch(FEATURED_URL);
     if (!res.ok) return [];

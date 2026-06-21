@@ -420,6 +420,24 @@ code, pre {
   gap: 0.875rem;
 }
 
+/* Secciones de catálogo por categoría temática */
+.catalog-section {
+  margin-bottom: 2.25rem;
+}
+
+.catalog-section:last-child {
+  margin-bottom: 0;
+}
+
+.catalog-section__title {
+  margin: 0 0 0.875rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+  font-weight: 600;
+  color: var(--text);
+}
+
 /* ---- Search bar ----------------------------------------------------------- */
 .search-bar {
   display: flex;
@@ -681,6 +699,19 @@ code, pre {
   color: var(--accent);
 }
 
+/* Wrapper que ancla el dropdown mobile y el botón hamburguesa */
+.app-header__nav-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Botón hamburguesa: oculto en desktop, visible en mobile */
+.app-header__menu-btn {
+  display: none;
+  font-size: 1.15rem;
+}
+
 .app-header__nav {
   display: flex;
   gap: 0.25rem;
@@ -751,10 +782,53 @@ code, pre {
   .app-header { padding: 0 1rem; }
   .app-header__left { gap: 0.5rem; }
   .app-header__back { width: 32px; height: 32px; }
-  .app-header__nav { gap: 0.15rem; }
-  .app-header__link { padding: 0.4rem 0.7rem; }
   .search-bar__input { min-height: 44px; font-size: 1rem; }
   .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
+
+  /* Mostrar hamburguesa, ocultar links en fila por defecto */
+  .app-header__menu-btn { display: inline-flex; }
+
+  .app-header__nav {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 11rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.45);
+    z-index: 60;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition:
+      opacity var(--duration-fast),
+      transform var(--duration-fast),
+      visibility var(--duration-fast);
+  }
+
+  .app-header__nav--open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .app-header__nav .app-header__link {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.6rem 0.75rem;
+  }
+}
+
+@media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+  .app-header__nav { transition: none; transform: none; }
+  .app-header__nav--open { transform: none; }
 }
 @media (max-width: 380px) {
   .catalog-grid { grid-template-columns: 1fr 1fr; }

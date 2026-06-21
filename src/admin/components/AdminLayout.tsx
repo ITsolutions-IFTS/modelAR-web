@@ -9,6 +9,8 @@ import {
   MoonIcon,
   SunIcon,
   SignOutIcon,
+  ListIcon,
+  XIcon,
 } from '@phosphor-icons/react';
 import { useAuth } from '../context/AuthContext';
 import { STORAGE_KEYS } from '../constants/storageKeys';
@@ -20,6 +22,7 @@ export function AdminLayout() {
   const [dark, setDark] = useState(
     () => localStorage.getItem(STORAGE_KEYS.DARK_MODE) === '1'
   );
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleDark = () => {
     setDark((prev) => {
@@ -29,9 +32,49 @@ export function AdminLayout() {
     });
   };
 
+  const closeMenu = () => setMenuOpen(false);
+
+  const handleLogout = () => {
+    setMenuOpen(false);
+    logout();
+  };
+
   return (
     <div className={`admin-layout admin-root${dark ? ' dark' : ''}`}>
-      <aside className="admin-sidebar">
+      {/* Barra superior — SOLO mobile (≤860px) */}
+      <header className="admin-topbar">
+        <div className="admin-topbar-brand">
+          <h2>model.ar</h2>
+        </div>
+        <button
+          type="button"
+          className="admin-hamburger"
+          aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-expanded={menuOpen}
+          aria-controls="admin-sidebar"
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          {menuOpen ? (
+            <XIcon weight="bold" size={22} />
+          ) : (
+            <ListIcon weight="bold" size={22} />
+          )}
+        </button>
+      </header>
+
+      {/* Backdrop — SOLO mobile, cierra al tocar fuera */}
+      {menuOpen && (
+        <div
+          className="admin-sidebar-backdrop"
+          onClick={closeMenu}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        id="admin-sidebar"
+        className={`admin-sidebar${menuOpen ? ' admin-sidebar--open' : ''}`}
+      >
         <div className="admin-sidebar-brand">
           <h2>model.ar</h2>
         </div>
@@ -41,6 +84,7 @@ export function AdminLayout() {
             <NavLink
               to="/admin/organizaciones"
               end
+              onClick={closeMenu}
               className={({ isActive }) =>
                 `admin-nav-link${isActive ? ' active' : ''}`
               }
@@ -56,6 +100,7 @@ export function AdminLayout() {
 
           <NavLink
             to="/admin/dashboard"
+            onClick={closeMenu}
             className={({ isActive }) =>
               `admin-nav-link${isActive ? ' active' : ''}`
             }
@@ -69,6 +114,7 @@ export function AdminLayout() {
           </NavLink>
           <NavLink
             to="/admin/metricas"
+            onClick={closeMenu}
             className={({ isActive }) =>
               `admin-nav-link${isActive ? ' active' : ''}`
             }
@@ -83,6 +129,7 @@ export function AdminLayout() {
           <NavLink
             to="/admin/campanas"
             end
+            onClick={closeMenu}
             className={({ isActive }) =>
               `admin-nav-link${isActive ? ' active' : ''}`
             }
@@ -97,6 +144,7 @@ export function AdminLayout() {
           {!isSuperadmin && (
             <NavLink
               to="/admin/colecciones"
+              onClick={closeMenu}
               className={({ isActive }) =>
                 `admin-nav-link${isActive ? ' active' : ''}`
               }
@@ -116,21 +164,29 @@ export function AdminLayout() {
             className="admin-theme-btn"
             onClick={toggleDark}
             type="button"
+            aria-label={dark ? 'Activar modo claro' : 'Activar modo oscuro'}
           >
             {dark ? (
               <SunIcon className="admin-nav-icon" weight="regular" size={18} />
             ) : (
               <MoonIcon className="admin-nav-icon" weight="regular" size={18} />
             )}
-            {dark ? 'Modo claro' : 'Modo oscuro'}
+            <span className="admin-btn-label">
+              {dark ? 'Modo claro' : 'Modo oscuro'}
+            </span>
           </button>
-          <button className="admin-logout-btn" onClick={logout}>
+          <button
+            className="admin-logout-btn"
+            onClick={handleLogout}
+            type="button"
+            aria-label="Cerrar sesión"
+          >
             <SignOutIcon
               className="admin-nav-icon"
               weight="regular"
               size={18}
             />
-            Cerrar sesión
+            <span className="admin-btn-label">Cerrar sesión</span>
           </button>
         </div>
       </aside>

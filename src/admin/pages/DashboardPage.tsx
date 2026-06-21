@@ -217,25 +217,31 @@ export function DashboardPage() {
                     : 0;
                 return (
                   <tr key={c.id}>
-                    <td className="cell-title">{c.title}</td>
-                    <td>
+                    <td className="cell-title" data-label="Título">
+                      {c.title}
+                    </td>
+                    <td data-label="Materia">
                       <span
                         className={`sector-badge sector-badge--${c.sector}`}
                       >
                         {SECTOR_LABELS[c.sector]}
                       </span>
                     </td>
-                    <td className="cell-num">{formatNumber(c.views ?? 0)}</td>
-                    <td className="cell-num">
+                    <td className="cell-num" data-label="Vistas">
+                      {formatNumber(c.views ?? 0)}
+                    </td>
+                    <td className="cell-num" data-label="AR">
                       {formatNumber(c.arActivations ?? 0)}
                     </td>
-                    <td className="cell-num">
+                    <td className="cell-num" data-label="Clicks">
                       {formatNumber(c.ctaClicks ?? 0)}
                     </td>
-                    <td className="cell-conv">
+                    <td className="cell-conv" data-label="Conversión AR">
                       <ConvBar rate={rate} />
                     </td>
-                    <td className="cell-date">{formatDate(c.createdAt)}</td>
+                    <td className="cell-date" data-label="Creada">
+                      {formatDate(c.createdAt)}
+                    </td>
                   </tr>
                 );
               })}
