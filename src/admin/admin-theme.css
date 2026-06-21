@@ -274,7 +274,9 @@
 .badge-producto   { background-color: oklch(0.94 0.04 25);  color: oklch(0.40 0.14 25); }
 .badge-espacio    { background-color: oklch(0.93 0.04 155); color: oklch(0.36 0.14 155); }
 
-/* ── Responsive: admin ── */
+/* ── Responsive: admin ──
+   Breakpoint md=768px (mismo que samantha-web): en cuanto aparece la
+   hamburguesa, las tablas ya son cards → nunca scrollean en horizontal. */
 @media (max-width: 768px) {
   .admin-page { padding: 20px 16px; max-width: 100%; }
 

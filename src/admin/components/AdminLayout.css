@@ -22,12 +22,22 @@
 }
 
 .admin-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 24px 20px 16px;
   border-bottom: 1px solid var(--sm-line);
+  color: var(--sm-fg-2);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.admin-sidebar-brand:hover {
+  color: var(--sm-accent);
 }
 
 .admin-sidebar-brand h2 {
-  margin: 0 0 8px;
+  margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--sm-fg);
@@ -459,8 +469,8 @@
   display: none;
 }
 
-/* ── Responsive ≤860px: sidebar → drawer detrás de hamburguesa ── */
-@media (max-width: 860px) {
+/* ── Responsive ≤768px (md, mismo que samantha-web): sidebar → drawer ── */
+@media (max-width: 768px) {
   .admin-layout {
     flex-direction: column;
   }
@@ -477,6 +487,14 @@
     position: sticky;
     top: 0;
     z-index: 50;
+  }
+
+  .admin-topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sm-fg-2);
+    text-decoration: none;
   }
 
   .admin-topbar-brand h2 {
@@ -513,20 +531,21 @@
     background: oklch(0 0 0 / 0.4);
   }
 
-  /* El sidebar pasa a ser un panel desplegable full-width bajo la topbar */
+  /* El sidebar pasa a ser un panel FULL-SCREEN opaco (cubre todo el viewport;
+     la topbar queda encima con su ✕ para cerrar). */
   .admin-sidebar {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
+    bottom: 0;
     width: 100%;
-    height: auto;
-    max-height: 100vh;
+    height: 100vh;
     z-index: 48;
     flex-direction: column;
     border-right: none;
-    border-bottom: 1px solid var(--sm-line);
-    box-shadow: var(--sm-shadow, 0 8px 24px oklch(0 0 0 / 0.18));
+    border-bottom: none;
+    box-shadow: none;
     transform: translateY(-100%);
     visibility: hidden;
     transition:
@@ -548,7 +567,7 @@
 
   .admin-sidebar-nav {
     flex-direction: column;
-    flex: 0 1 auto;
+    flex: 1 1 auto; /* ocupa el alto disponible → footer pegado abajo */
     padding: 68px 12px 12px; /* 68px ≈ alto de la topbar fija */
     gap: 4px;
     overflow-x: visible;
@@ -561,12 +580,12 @@
     font-size: 0.95rem;
   }
 
-  /* Footer: botones COMPACTOS de SOLO ICONO, alineados a la derecha */
+  /* Footer del menú full-screen: botones full-width ETIQUETADOS (modo
+     oscuro + cerrar sesión legibles). */
   .admin-sidebar-footer {
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
     border-top: 1px solid var(--sm-line);
     border-left: none;
     padding: 12px;
@@ -574,21 +593,19 @@
 
   .admin-theme-btn,
   .admin-logout-btn {
-    width: 44px;
-    height: 44px;
-    min-height: 44px;
-    padding: 0;
-    flex: 0 0 auto;
-    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    justify-content: flex-start;
     border: 1px solid var(--sm-line);
     border-radius: var(--sm-r-md);
     background: var(--sm-bg-soft);
+    font-size: 0.95rem;
   }
 
-  /* Ocultar SOLO el texto: quedan botones de icono puro */
   .admin-theme-btn .admin-btn-label,
   .admin-logout-btn .admin-btn-label {
-    display: none;
+    display: inline;
   }
 }
 

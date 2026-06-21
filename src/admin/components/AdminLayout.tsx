@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, Link } from 'react-router-dom';
 import {
   BooksIcon,
   BuildingsIcon,
@@ -11,6 +11,7 @@ import {
   SignOutIcon,
   ListIcon,
   XIcon,
+  ArrowLeftIcon,
 } from '@phosphor-icons/react';
 import { useAuth } from '../context/AuthContext';
 import { STORAGE_KEYS } from '../constants/storageKeys';
@@ -43,9 +44,14 @@ export function AdminLayout() {
     <div className={`admin-layout admin-root${dark ? ' dark' : ''}`}>
       {/* Barra superior — SOLO mobile (≤860px) */}
       <header className="admin-topbar">
-        <div className="admin-topbar-brand">
+        <Link
+          to="/"
+          className="admin-topbar-brand"
+          aria-label="Volver al inicio"
+        >
+          <ArrowLeftIcon weight="bold" size={18} />
           <h2>model.ar</h2>
-        </div>
+        </Link>
         <button
           type="button"
           className="admin-hamburger"
@@ -75,9 +81,14 @@ export function AdminLayout() {
         id="admin-sidebar"
         className={`admin-sidebar${menuOpen ? ' admin-sidebar--open' : ''}`}
       >
-        <div className="admin-sidebar-brand">
+        <Link
+          to="/"
+          className="admin-sidebar-brand"
+          aria-label="Volver al inicio"
+        >
+          <ArrowLeftIcon weight="bold" size={16} />
           <h2>model.ar</h2>
-        </div>
+        </Link>
 
         <nav className="admin-sidebar-nav">
           {isSuperadmin && (
