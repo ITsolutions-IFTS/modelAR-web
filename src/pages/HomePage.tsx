@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import { getModel } from '@/services/sketchfab';
 import { getBestThumbnail } from '@/types/sketchfab';
 import type { SketchfabModel } from '@/types/sketchfab';
@@ -53,6 +55,39 @@ export const HomePage = () => {
         )}
 
         <div className="catalog-grid">
+          {loading &&
+            models.length === 0 &&
+            Array.from({ length: 6 }).map((_, i) => (
+              <article key={i} className="model-card">
+                <div className="model-card__thumb">
+                  <Skeleton
+                    baseColor="var(--surface-2)"
+                    highlightColor="var(--line)"
+                    height="100%"
+                    width="100%"
+                    inline
+                  />
+                </div>
+                <div className="model-card__body">
+                  <p className="model-card__name">
+                    <Skeleton
+                      baseColor="var(--surface-2)"
+                      highlightColor="var(--line)"
+                      width="82%"
+                      height={16}
+                    />
+                  </p>
+                  <p className="model-card__meta">
+                    <Skeleton
+                      baseColor="var(--surface-2)"
+                      highlightColor="var(--line)"
+                      width="56%"
+                      height={13}
+                    />
+                  </p>
+                </div>
+              </article>
+            ))}
           {filtered.map((model) => {
             const thumb = getBestThumbnail(model);
             return (
@@ -88,8 +123,6 @@ export const HomePage = () => {
             );
           })}
         </div>
-
-        {loading && <div className="state-loading">Cargando modelos...</div>}
       </div>
     </main>
   );
