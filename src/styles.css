@@ -706,9 +706,15 @@ code, pre {
   align-items: center;
 }
 
-/* Botón hamburguesa: oculto en desktop, visible en mobile */
-.app-header__menu-btn {
+/* Botón hamburguesa: oculto en desktop, visible en mobile.
+   Lleva las clases `app-header__back app-header__menu-btn`; como
+   `.app-header__back` define `display: inline-flex` y está más abajo en la
+   hoja, hay que igualar especificidad (doble clase) para que gane el `none`
+   en desktop. */
+.app-header__back.app-header__menu-btn {
   display: none;
+}
+.app-header__menu-btn {
   font-size: 1.15rem;
 }
 
@@ -785,28 +791,27 @@ code, pre {
   .search-bar__input { min-height: 44px; font-size: 1rem; }
   .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
 
-  /* Mostrar hamburguesa, ocultar links en fila por defecto */
-  .app-header__menu-btn { display: inline-flex; }
+  /* Mostrar hamburguesa, ocultar links en fila por defecto.
+     Doble clase para superar a `.app-header__back.app-header__menu-btn`. */
+  .app-header__back.app-header__menu-btn { display: inline-flex; }
 
+  /* Menú mobile: overlay full-screen OPACO bajo el header (la ✕ del header
+     queda visible encima para cerrar). Sin blur translúcido → sin opacidad rara. */
   .app-header__nav {
-    position: absolute;
-    top: calc(100% + 0.5rem);
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
     right: 0;
-    min-width: 11rem;
+    bottom: 0;
     flex-direction: column;
     align-items: stretch;
-    gap: 0.25rem;
-    padding: 0.5rem;
-    border: 1px solid var(--line);
-    border-radius: var(--r-md);
-    background: var(--surface);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.45);
-    z-index: 60;
+    gap: 0.5rem;
+    padding: 1.25rem 1rem;
+    background: var(--bg);
+    z-index: 49;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-6px);
+    transform: translateY(-8px);
     transition:
       opacity var(--duration-fast),
       transform var(--duration-fast),
@@ -822,7 +827,9 @@ code, pre {
   .app-header__nav .app-header__link {
     width: 100%;
     justify-content: flex-start;
-    padding: 0.6rem 0.75rem;
+    min-height: 48px;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
   }
 }
 
