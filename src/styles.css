@@ -782,10 +782,17 @@ code, pre {
   background: color-mix(in oklch, var(--accent) 12%, transparent);
 }
 
-/* ── Responsive: sitio público ── */
-@media (max-width: 640px) {
+/* ── Responsive: sitio público (md=768, igual que admin/samantha) ── */
+@media (max-width: 768px) {
   .page { padding: 1.25rem 0.875rem 2.5rem; }
-  .app-header { padding: 0 1rem; }
+  /* Sin backdrop-filter en mobile: un filter/backdrop-filter en el header
+     ATRAPA el `position: fixed` del menú (lo ancla a la caja del header en
+     vez del viewport) → el overlay colapsaba y el contenido se veía detrás. */
+  .app-header {
+    padding: 0 1rem;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
   .app-header__left { gap: 0.5rem; }
   .app-header__back { width: 32px; height: 32px; }
   .search-bar__input { min-height: 44px; font-size: 1rem; }
@@ -808,20 +815,17 @@ code, pre {
     gap: 0.5rem;
     padding: 1.25rem 1rem;
     background: var(--bg);
-    z-index: 49;
+    z-index: 60; /* por encima del header (50) */
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-8px);
     transition:
       opacity var(--duration-fast),
-      transform var(--duration-fast),
       visibility var(--duration-fast);
   }
 
   .app-header__nav--open {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
   }
 
   .app-header__nav .app-header__link {
@@ -833,9 +837,8 @@ code, pre {
   }
 }
 
-@media (max-width: 640px) and (prefers-reduced-motion: reduce) {
-  .app-header__nav { transition: none; transform: none; }
-  .app-header__nav--open { transform: none; }
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  .app-header__nav { transition: none; }
 }
 @media (max-width: 380px) {
   .catalog-grid { grid-template-columns: 1fr 1fr; }

@@ -31,10 +31,15 @@ function AppShell() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
   const isLanding = location.pathname === '/';
+  // La experiencia AR (/ar/:uid) es standalone: se llega por escaneo de QR,
+  // por el catálogo o por el preview del admin. En los 3 casos la nav pública
+  // de marketing es ruido/inconsistente, así que NO se muestra el AppHeader;
+  // la página ya tiene su propio "← Volver" que respeta el origen (navigate(-1)).
+  const isAr = location.pathname.startsWith('/ar/');
 
   return (
     <div className={isAdmin ? undefined : 'public-site'}>
-      {!isAdmin && !isLanding && <AppHeader />}
+      {!isAdmin && !isLanding && !isAr && <AppHeader />}
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
